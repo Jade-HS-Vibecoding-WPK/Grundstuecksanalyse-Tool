@@ -1,0 +1,2 @@
+# Grundstuecksanalyse-Tool
+Strukturierte Standortanalyse
