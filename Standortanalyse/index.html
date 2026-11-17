@@ -224,6 +224,17 @@
     input[type="range"] { width: 100%; accent-color: var(--rot); margin: 2px 0 0; }
     button.zweit[hidden] { display: none; }
 
+    /* Liste der Pläne */
+    .planListe { display: flex; flex-direction: column; gap: 4px; margin: 4px 0 14px; }
+    .planListe[hidden] { display: none; }
+    .planZeile { display: flex; align-items: center; gap: 6px; padding: 3px 4px 3px 8px; border: 1px solid var(--linie); background: var(--feld); }
+    .planZeile.gewaehlt { border-color: var(--rot); box-shadow: inset 3px 0 0 var(--rot); }
+    .planZeile input[type="checkbox"] { accent-color: var(--rot); width: 15px; height: 15px; margin: 0; flex: 0 0 auto; }
+    .planZeile button { margin-top: 0; width: auto; }
+    .planZeile button.planName { flex: 1 1 auto; min-width: 0; padding: 6px 4px; text-align: left; text-transform: none; letter-spacing: 0; font-weight: 600; font-size: 13px; color: var(--tinte); background: transparent; border-color: transparent; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .planZeile button.planName:hover { color: var(--rot); background: transparent; }
+    .planZeile button.planPfeil { flex: 0 0 auto; padding: 5px 7px; letter-spacing: 0; font-size: 11px; }
+
     /* Griffe zum Verschieben, Drehen und Vergrößern des Plans auf der Karte */
     .plan-griff { background: transparent; border: none; }
     .plan-griff::before { content: ""; position: absolute; box-sizing: border-box; }
@@ -674,9 +685,12 @@
       <details class="abschnitt">
         <summary><span class="nr">05</span> Eigener Plan</summary>
         <div class="inhalt">
-          <label for="planDatei">Plan hochladen (JPG, PNG oder PDF)</label>
+          <label for="planDatei">Plan hinzufügen (JPG, PNG oder PDF)</label>
           <input type="file" id="planDatei" accept="image/jpeg,image/png,application/pdf,.pdf" autocomplete="off">
+          <p class="hinweis" id="planAnzahl">0 von 5 Plänen geladen</p>
           <p class="hinweis" id="planInfo">Noch kein Plan geladen.</p>
+
+          <div id="planListe" class="planListe" hidden></div>
 
           <div id="planSeiteBox" hidden style="margin-bottom:12px">
             <label for="planSeite">PDF-Seite (<span id="planSeitenAnzahl"></span> Seiten)</label>
@@ -684,7 +698,8 @@
           </div>
 
           <div id="planSteuerung" hidden>
-            <label class="haken"><input type="checkbox" id="planZeigen" checked autocomplete="off"> Plan zeigen</label>
+            <label for="planName">Name des ausgewählten Plans</label>
+            <input type="text" id="planName" maxlength="60" autocomplete="off">
 
             <label for="planDeckkraft" style="margin-top:12px">Deckkraft: <span id="planDeckkraftWert">70 %</span></label>
             <input type="range" id="planDeckkraft" min="10" max="100" value="70" autocomplete="off">
@@ -706,6 +721,8 @@
               <option value="unter">unter den Ebenen</option>
             </select>
 
+            <label class="haken"><input type="checkbox" id="planGesperrt" autocomplete="off"> Plan sperren (nicht verschiebbar)</label>
+
             <div class="knopfreihe" style="margin-top:12px">
               <button type="button" id="planMitte" class="zweit">Auf Kartenmitte</button>
               <button type="button" id="planEinpassen" class="zweit">Zwei Punkte einpassen</button>
@@ -715,9 +732,9 @@
 
             <p class="hinweis">Ziehe den Kreis in der Mitte des Plans zum Verschieben, das Quadrat an der Ecke zum Drehen und Vergrößern. Oder nutze „Zwei Punkte einpassen“: Du klickst zwei bekannte Stellen auf dem Plan und dieselben Stellen auf der Karte, die App passt den Plan dann genau an.</p>
           </div>
+          <p class="hinweis">Du kannst bis zu fünf Pläne gleichzeitig laden. Klicke in der Liste auf einen Namen, um den Plan zu bearbeiten. Der Haken blendet ihn aus oder ein, mit ▲ und ▼ änderst du die Reihenfolge (oben in der Liste liegt oben auf der Karte). Gesperrte Pläne lassen sich nicht aus Versehen verschieben.</p>
         </div>
       </details>
-
       <details class="abschnitt">
         <summary><span class="nr">06</span> Zeichnen</summary>
         <div class="inhalt">
@@ -919,7 +936,7 @@
             <li><strong>Adresse</strong> in „01 Standort“ eingeben und „Adresse suchen“. Der rote Punkt ist dein Standort.</li>
             <li><strong>Karte</strong> oben rechts wählen: „Startkarte“ (ohne Symbole), „Hellgrau“ oder „Schwarzplan“ (schwarze Gebäude auf Weiß). „Bebauung“ zeigt die Gebäude, sobald du nah genug herangezoomt hast.</li>
             <li><strong>Analysedaten</strong> (04): Haken setzen oder „Alles einschalten“. Fußweg und Sonnenstand brauchen die Adresse.</li>
-            <li><strong>Eigener Plan</strong> (05): JPG, PNG oder PDF hochladen. Mit dem Kreis in der Mitte verschieben, mit dem roten Quadrat drehen und vergrößern, oder „Zwei Punkte einpassen“ für den genauen Maßstab.</li>
+            <li><strong>Eigene Pläne</strong> (05): Bis zu fünf JPG, PNG oder PDF hochladen. In der Liste wählst du einen Plan aus, blendest ihn mit dem Haken aus oder ein und änderst mit ▲ und ▼ die Reihenfolge. Mit dem Kreis in der Mitte verschieben, mit dem roten Quadrat drehen und vergrößern, oder „Zwei Punkte einpassen“ für den genauen Maßstab. „Plan sperren“ schützt vor Verschieben.</li>
             <li><strong>Zeichnen</strong> (06): Werkzeug wählen und in die Karte klicken. Objekte anklicken zum Ändern, Entf löscht, Strg+Z nimmt zurück. Mit „Strecke messen“ und „Fläche messen“ liest du Längen in Metern und Flächen in Quadratmetern ab, sie stehen auf der Karte und im gespeicherten Bild.</li>
             <li><strong>Ausschnitt</strong> (07): Maßstab und Papierformat wählen. Mit „Rahmen auf der Karte zeigen“ siehst du, was ins Bild kommt.</li>
             <li><strong>Beschriftung</strong> (08): Titel, Nordpfeil, Legende, Maßstabsbalken und Quelle ein- oder ausschalten.</li>
@@ -3294,26 +3311,36 @@
       if (marker) { marker.bringToFront(); }
     }
 
-    // ---------- Eigener Plan (hochgeladenes Bild auf der Karte) ----------
-    // Der Plan ist ein Bild, das mit Mittelpunkt, Breite in Metern und Drehung auf der Karte liegt. Er wird als
-    // Leinwand in einer eigenen Schicht angezeigt ("planPane", über den Ebenen, unter den Straßennamen) und
-    // beim Speichern im richtigen Maßstab ins Bild gezeichnet. Die Höhe ergibt sich aus dem Seitenverhältnis.
+    // ---------- Eigene Pläne (hochgeladene Bilder auf der Karte) ----------
+    // Bis zu fünf Pläne liegen gleichzeitig auf der Karte. Jeder Plan ist ein Bild, das mit Mittelpunkt, Breite in Metern und
+    // Drehung auf der Karte liegt. Die Pläne sind Leinwände in zwei Schichten ("planPane" über den Ebenen, "planPaneUnter" darunter,
+    // beide unter den Straßennamen) und werden beim Speichern im richtigen Maßstab ins Bild gezeichnet. Die Höhe ergibt sich aus dem
+    // Seitenverhältnis. "plaene" ist die Stapelreihenfolge (zuerst = zuunterst). "eigenerPlan" ist der in der Liste ausgewählte Plan:
+    // Felder, Griffe und die Zwei-Punkte-Hilfe wirken immer auf ihn.
     var PLAN_MAX_SEITE = 8192;          // größere Bilder werden beim Laden auf diese Kantenlänge verkleinert
-    var eigenerPlan = null;             // { bild: Leinwand, name, w, h, mitte: LatLng, breiteM, drehung, deckkraft, zeigen, lage }
-    var planElement = null;             // die Leinwand im Kartenfenster
+    var PLAN_MAX_ANZAHL = 5;            // so viele Pläne höchstens (sonst werden Projektdatei und Speicher zu groß)
+    var plaene = [];                    // { bild: Leinwand, elem: Leinwand im Kartenfenster, name, w, h, mitte: LatLng, breiteM, drehung, deckkraft, zeigen, lage, gesperrt, format, nr, datenUrl, pdf, info }
+    var eigenerPlan = null;             // der ausgewählte Plan oder null
 
     karte.createPane("planPane");
     karte.getPane("planPane").style.zIndex = 440;
     karte.getPane("planPane").style.pointerEvents = "none";
+    karte.createPane("planPaneUnter");
+    karte.getPane("planPaneUnter").style.zIndex = 300;
+    karte.getPane("planPaneUnter").style.pointerEvents = "none";
 
     var feldPlanDatei = document.getElementById("planDatei");
     var planInfo = document.getElementById("planInfo");
     var planSteuerung = document.getElementById("planSteuerung");
-    var feldPlanZeigen = document.getElementById("planZeigen");
+    var planListeFeld = document.getElementById("planListe");
+    var planAnzahlFeld = document.getElementById("planAnzahl");
+    var feldPlanName = document.getElementById("planName");
     var feldPlanDeckkraft = document.getElementById("planDeckkraft");
     var feldPlanBreite = document.getElementById("planBreite");
     var feldPlanDrehung = document.getElementById("planDrehung");
     var feldPlanLage = document.getElementById("planLage");
+    var feldPlanGesperrt = document.getElementById("planGesperrt");
+    var knopfPlanMitte = document.getElementById("planMitte");
     var knopfPlanEinpassen = document.getElementById("planEinpassen");
     var knopfPlanAbbrechen = document.getElementById("planAbbrechen");
 
@@ -3327,15 +3354,21 @@
       return 40075016.686 * Math.cos(breite * Math.PI / 180) / (256 * Math.pow(2, karte.getZoom()));
     }
     // Bildschirmpunkte pro Bildpunkt des Plans (aktueller Zoom)
-    function planPunkteProBildpunkt() {
-      return eigenerPlan.breiteM / planMeterProPunkt(eigenerPlan.mitte.lat) / eigenerPlan.w;
+    function planPunkteProBildpunkt(p) {
+      p = p || eigenerPlan;
+      return p.breiteM / planMeterProPunkt(p.mitte.lat) / p.w;
     }
     function planGradInZahl(grad) {   // auf -180 bis 180 bringen
       var g = ((grad + 180) % 360 + 360) % 360 - 180;
       return g === -180 ? 180 : g;
     }
+    function planTransform(p, c, s) {
+      c = c || planPunkt(p.mitte);
+      s = s === undefined ? planPunkteProBildpunkt(p) : s;
+      return "translate(" + c.x + "px," + c.y + "px) rotate(" + p.drehung + "deg) scale(" + s + ") translate(" + (-p.w / 2) + "px," + (-p.h / 2) + "px)";
+    }
 
-    // Griffe auf dem Plan: Kreis in der Mitte = verschieben, Quadrat an der Ecke = drehen und vergrößern
+    // Griffe auf dem ausgewählten Plan: Kreis in der Mitte = verschieben, Quadrat an der Ecke = drehen und vergrößern
     var planGriffMitte = L.marker([0, 0], {
       draggable: true, keyboard: false, zIndexOffset: 1500, title: "Ziehen, um den Plan zu verschieben",
       icon: L.divIcon({ className: "plan-griff plan-griff-mitte", iconSize: [26, 26], iconAnchor: [13, 13] })
@@ -3354,20 +3387,17 @@
       return L.point(c.x + x * Math.cos(a) - y * Math.sin(a), c.y + x * Math.sin(a) + y * Math.cos(a));
     }
 
-    // Zeichnet den Plan an die richtige Stelle (nach Verschieben, Zoomen, Ändern der Werte)
+    // Zeichnet alle Pläne an die richtige Stelle (nach Verschieben, Zoomen, Ändern der Werte)
     function aktualisierePlanAnzeige() {
-      if (!eigenerPlan || !planElement) { return; }
-      var an = eigenerPlan.zeigen;
-      planElement.style.display = an ? "block" : "none";
-      if (an) {
-        var c = planPunkt(eigenerPlan.mitte);
-        var s = planPunkteProBildpunkt();
-        planElement.style.opacity = String(eigenerPlan.deckkraft);
-        planElement.style.transform = "translate(" + c.x + "px," + c.y + "px) rotate(" + eigenerPlan.drehung + "deg) scale(" + s +
-          ") translate(" + (-eigenerPlan.w / 2) + "px," + (-eigenerPlan.h / 2) + "px)";
-      }
-      // Griffe nur, wenn der Plan sichtbar ist und gerade nicht eingepasst wird
-      var griffeAn = an && !planWahl;
+      plaene.forEach(function (p) {
+        p.elem.style.display = p.zeigen ? "block" : "none";
+        if (p.zeigen) {
+          p.elem.style.opacity = String(p.deckkraft);
+          p.elem.style.transform = planTransform(p);
+        }
+      });
+      // Griffe nur, wenn der ausgewählte Plan sichtbar und nicht gesperrt ist und gerade nicht eingepasst wird
+      var griffeAn = !!(eigenerPlan && eigenerPlan.zeigen && !eigenerPlan.gesperrt && !planWahl);
       if (griffeAn) {
         if (!karte.hasLayer(planGriffe)) { planGriffe.addTo(karte); }
         planGriffMitte.setLatLng(eigenerPlan.mitte);
@@ -3378,31 +3408,105 @@
     }
     karte.on("zoom viewreset moveend resize", aktualisierePlanAnzeige);
 
-    // Felder in der Seitenleiste an die Werte des Plans angleichen
+    // Schichten und Stapelreihenfolge: jede Leinwand in die Schicht ihrer "Lage", in der Reihenfolge der Liste "plaene"
+    function planStapelNeu() {
+      plaene.forEach(function (p) {
+        karte.getPane(p.lage === "unter" ? "planPaneUnter" : "planPane").appendChild(p.elem);
+      });
+    }
+
+    // Die Liste der Pläne in der Seitenleiste (oben in der Liste = oben auf der Karte)
+    function planListeBauen() {
+      planListeFeld.innerHTML = "";
+      planListeFeld.hidden = !plaene.length;
+      planAnzahlFeld.textContent = plaene.length + " von " + PLAN_MAX_ANZAHL + " Plänen geladen";
+      for (var i = plaene.length - 1; i >= 0; i--) {
+        (function (p, i) {
+          var zeile = document.createElement("div");
+          zeile.className = "planZeile" + (p === eigenerPlan ? " gewaehlt" : "");
+          var haken = document.createElement("input");
+          haken.type = "checkbox"; haken.checked = p.zeigen; haken.title = "Plan zeigen oder ausblenden";
+          haken.setAttribute("aria-label", "Plan „" + p.name + "“ zeigen");
+          haken.addEventListener("change", function () {
+            p.zeigen = haken.checked;
+            if (!p.zeigen && planWahl && p === eigenerPlan) { planAbbrechenWahl(); }
+            planGeaendert();
+          });
+          var name = document.createElement("button");
+          name.type = "button"; name.className = "planName"; name.title = "Diesen Plan auswählen und bearbeiten";
+          name.textContent = (p.gesperrt ? "gesperrt · " : "") + p.name;
+          name.addEventListener("click", function () { waehlePlan(p); });
+          var hoch = document.createElement("button");
+          hoch.type = "button"; hoch.className = "planPfeil"; hoch.textContent = "▲"; hoch.title = "Nach oben (über die anderen Pläne)";
+          hoch.setAttribute("aria-label", "Plan „" + p.name + "“ nach oben");
+          hoch.disabled = i === plaene.length - 1;
+          hoch.addEventListener("click", function () { verschiebePlan(p, 1); });
+          var runter = document.createElement("button");
+          runter.type = "button"; runter.className = "planPfeil"; runter.textContent = "▼"; runter.title = "Nach unten (unter die anderen Pläne)";
+          runter.setAttribute("aria-label", "Plan „" + p.name + "“ nach unten");
+          runter.disabled = i === 0;
+          runter.addEventListener("click", function () { verschiebePlan(p, -1); });
+          zeile.appendChild(haken); zeile.appendChild(name); zeile.appendChild(hoch); zeile.appendChild(runter);
+          planListeFeld.appendChild(zeile);
+        })(plaene[i], i);
+      }
+    }
+
+    function verschiebePlan(p, richtung) {
+      var i = plaene.indexOf(p), j = i + richtung;
+      if (i < 0 || j < 0 || j >= plaene.length) { return; }
+      plaene[i] = plaene[j]; plaene[j] = p;
+      planStapelNeu();
+      planListeBauen();
+      planGeaendert();
+    }
+
+    // Felder in der Seitenleiste an die Werte des ausgewählten Plans angleichen
     function planFelderAktualisieren() {
+      planSteuerung.hidden = !eigenerPlan;
+      document.getElementById("planSeiteBox").hidden = !(eigenerPlan && eigenerPlan.pdf && eigenerPlan.pdf.anzahl > 1);
       if (!eigenerPlan) { return; }
+      feldPlanName.value = eigenerPlan.name;
       feldPlanBreite.value = String(Math.round(eigenerPlan.breiteM * 10) / 10);
       feldPlanDrehung.value = String(Math.round(planGradInZahl(eigenerPlan.drehung) * 10) / 10);
       feldPlanDeckkraft.value = String(Math.round(eigenerPlan.deckkraft * 100));
       document.getElementById("planDeckkraftWert").textContent = Math.round(eigenerPlan.deckkraft * 100) + " %";
-      feldPlanZeigen.checked = eigenerPlan.zeigen;
       feldPlanLage.value = eigenerPlan.lage;
+      feldPlanGesperrt.checked = eigenerPlan.gesperrt;
+      // Gesperrte Pläne lassen sich nicht verschieben, drehen oder neu einpassen
+      [feldPlanBreite, feldPlanDrehung, knopfPlanMitte, knopfPlanEinpassen].forEach(function (f) { f.disabled = eigenerPlan.gesperrt; });
+      if (eigenerPlan.pdf) {
+        feldPlanSeite.max = String(eigenerPlan.pdf.anzahl);
+        feldPlanSeite.value = String(eigenerPlan.pdf.seite);
+        document.getElementById("planSeitenAnzahl").textContent = String(eigenerPlan.pdf.anzahl);
+      }
+      planInfo.textContent = eigenerPlan.info || "";
     }
     function planGeaendert() {
       aktualisierePlanAnzeige();
       aktualisiereExportInfo();
     }
 
-    // Lage der Schicht: über oder unter den Ebenen (Flächen, Gebäude, Kreise, Punkte)
-    function planLageAnwenden() {
-      karte.getPane("planPane").style.zIndex = (eigenerPlan && eigenerPlan.lage === "unter") ? 300 : 440;
+    // Plan auswählen (aus der Liste oder nach dem Laden); null = keiner
+    function waehlePlan(p) {
+      if (p !== eigenerPlan) { planAbbrechenWahl(); }
+      eigenerPlan = p || null;
+      planFelderAktualisieren();
+      if (!eigenerPlan) { planInfo.textContent = plaene.length ? "Wähle einen Plan in der Liste aus, um ihn zu bearbeiten." : "Noch kein Plan geladen."; }
+      planListeBauen();
+      aktualisierePlanAnzeige();
     }
 
-    // Plan setzen (neues Bild geladen): mittig auf die Adresse bzw. die Kartenmitte, 70 % der Fensterbreite.
+    // Plan setzen (neues Bild geladen): mittig auf die Adresse bzw. die Kartenmitte, 70 % der Fensterbreite. Der neue Plan wird ausgewählt.
     // "bild" ist ein Bild oder eine Leinwand (bei PDF), "zusatz" ein Text für die Infozeile (z. B. die PDF-Seite).
-    var planBildNr = 0;                 // zählt mit, wenn der Plan ein anderes Bild bekommt (für das Sichern des Projekts)
+    // Gibt den Plan zurück (null, wenn schon fünf Pläne da sind).
+    var planBildNr = 0;                 // zählt mit, wenn ein Plan ein anderes Bild bekommt (für das Sichern des Projekts)
     // "format" ("png" oder "jpeg") sagt, wie das Bild in der Projektdatei gespeichert wird (PNG behält Durchsichtigkeit)
     function setzePlan(bild, name, zusatz, format) {
+      if (plaene.length >= PLAN_MAX_ANZAHL) {
+        planInfo.textContent = "Es sind schon " + PLAN_MAX_ANZAHL + " Pläne geladen (mehr gehen nicht). Entferne zuerst einen Plan.";
+        return null;
+      }
       var bw = bild.naturalWidth || bild.width, bh = bild.naturalHeight || bild.height;
       // zu große Bilder verkleinern (spart Speicher, siehe PLAN_MAX_SEITE)
       var faktor = Math.min(1, PLAN_MAX_SEITE / Math.max(bw, bh));
@@ -3414,50 +3518,56 @@
       cx.drawImage(bild, 0, 0, w, h);
 
       planAbbrechenWahl();
-      if (planElement && planElement.parentNode) { planElement.parentNode.removeChild(planElement); }
-      planElement = leinwand;
-      planElement.style.position = "absolute";
-      planElement.style.left = "0";
-      planElement.style.top = "0";
-      planElement.style.transformOrigin = "0 0";
-      planElement.style.pointerEvents = "none";
-      planElement.style.maxWidth = "none";
-      karte.getPane("planPane").appendChild(planElement);
+      leinwand.style.position = "absolute";
+      leinwand.style.left = "0";
+      leinwand.style.top = "0";
+      leinwand.style.transformOrigin = "0 0";
+      leinwand.style.pointerEvents = "none";
+      leinwand.style.maxWidth = "none";
 
       var mitte = marker ? marker.getLatLng() : karte.getCenter();
       var fensterBreiteM = karte.getSize().x * planMeterProPunkt(mitte.lat);
-      eigenerPlan = {
-        bild: leinwand, name: name, w: w, h: h, mitte: mitte,
+      var p = {
+        bild: leinwand, elem: leinwand, name: name, w: w, h: h, mitte: mitte,
         breiteM: Math.max(10, Math.round(fensterBreiteM * 0.7)), drehung: 0,
-        deckkraft: 0.7, zeigen: true, lage: feldPlanLage.value,
-        format: format === "png" ? "png" : "jpeg", nr: ++planBildNr, datenUrl: null
+        deckkraft: 0.7, zeigen: true, lage: "ueber", gesperrt: false,
+        format: format === "png" ? "png" : "jpeg", nr: ++planBildNr, datenUrl: null, pdf: null,
+        info: "Geladen: " + name + (zusatz ? ", " + zusatz : "") + " (" + bw + " × " + bh + " Pixel" +
+          (faktor < 1 ? ", für die Anzeige auf " + w + " × " + h + " verkleinert" : "") + ")."
       };
-      planLageAnwenden();
-      planSteuerung.hidden = false;
-      planInfo.textContent = "Geladen: " + name + (zusatz ? ", " + zusatz : "") + " (" + bw + " × " + bh + " Pixel" +
-        (faktor < 1 ? ", für die Anzeige auf " + w + " × " + h + " verkleinert" : "") + ").";
-      planFelderAktualisieren();
+      plaene.push(p);
+      planStapelNeu();
+      waehlePlan(p);
       planGeaendert();
+      return p;
     }
 
-    function entfernePlan() {
+    // Entfernt einen Plan (ohne Angabe: den ausgewählten). Danach ist der oberste übrige Plan ausgewählt.
+    function entfernePlan(p) {
+      p = p || eigenerPlan;
+      var i = plaene.indexOf(p);
+      if (i < 0) { return; }
       planAbbrechenWahl();
-      if (planElement && planElement.parentNode) { planElement.parentNode.removeChild(planElement); }
-      planElement = null;
+      if (p.elem.parentNode) { p.elem.parentNode.removeChild(p.elem); }
+      plaene.splice(i, 1);
+      var neu = (p === eigenerPlan) ? (plaene.length ? plaene[Math.min(i, plaene.length - 1)] : null) : eigenerPlan;
+      eigenerPlan = null;
+      waehlePlan(neu);
+      aktualisiereExportInfo();
+    }
+    function entferneAllePlaene() {
+      planAbbrechenWahl();
+      plaene.forEach(function (p) { if (p.elem.parentNode) { p.elem.parentNode.removeChild(p.elem); } });
+      plaene = [];
       eigenerPlan = null;
       if (karte.hasLayer(planGriffe)) { karte.removeLayer(planGriffe); }
-      planSteuerung.hidden = true;
-      planSeiteBox.hidden = true;
-      planPdf = null;
-      planInfo.textContent = "Noch kein Plan geladen.";
+      waehlePlan(null);
       aktualisiereExportInfo();
     }
 
     // ----- PDF-Pläne (mit pdf.js aus dem Ordner pdfjs, wird erst beim ersten PDF geladen) -----
     var PLAN_PDF_MAX_SEITE = 6000;       // längste Kante der gezeichneten PDF-Seite in Bildpunkten (höchstens)
     var PLAN_PDF_DPI = 200;              // so fein wird gezeichnet, solange es unter der Höchstgrenze bleibt
-    var planPdf = null;                  // { dokument, anzahl, name } solange ein PDF geladen ist
-    var planSeiteBox = document.getElementById("planSeiteBox");
     var feldPlanSeite = document.getElementById("planSeite");
     var pdfJsLadevorgang = null;
 
@@ -3494,17 +3604,17 @@
       });
     }
 
-    // Anderes Bild für den vorhandenen Plan (andere PDF-Seite): Lage, Breite, Drehung und Deckkraft bleiben
-    function ersetzePlanBild(leinwand) {
-      var alt = planElement;
+    // Anderes Bild für einen vorhandenen Plan (andere PDF-Seite): Lage, Breite, Drehung und Deckkraft bleiben
+    function ersetzePlanBild(p, leinwand) {
+      var alt = p.elem;
       leinwand.style.cssText = alt.style.cssText;
       alt.parentNode.replaceChild(leinwand, alt);
-      planElement = leinwand;
-      eigenerPlan.bild = leinwand;
-      eigenerPlan.nr = ++planBildNr;      // neues Bild (andere PDF-Seite): beim Sichern neu speichern
-      eigenerPlan.datenUrl = null;
-      eigenerPlan.w = leinwand.width;
-      eigenerPlan.h = leinwand.height;
+      p.elem = leinwand;
+      p.bild = leinwand;
+      p.nr = ++planBildNr;      // neues Bild (andere PDF-Seite): beim Sichern neu speichern
+      p.datenUrl = null;
+      p.w = leinwand.width;
+      p.h = leinwand.height;
       planGeaendert();
     }
 
@@ -3514,12 +3624,10 @@
         return teile[0].getDocument({ data: new Uint8Array(teile[1]) }).promise;
       }).then(function (dokument) {
         return zeichnePdfSeite(dokument, 1).then(function (leinwand) {
-          setzePlan(leinwand, datei.name, dokument.numPages > 1 ? "Seite 1 von " + dokument.numPages : "");
-          planPdf = { dokument: dokument, anzahl: dokument.numPages, name: datei.name };
-          planSeiteBox.hidden = dokument.numPages < 2;
-          feldPlanSeite.max = String(dokument.numPages);
-          feldPlanSeite.value = "1";
-          document.getElementById("planSeitenAnzahl").textContent = String(dokument.numPages);
+          var p = setzePlan(leinwand, datei.name, dokument.numPages > 1 ? "Seite 1 von " + dokument.numPages : "");
+          if (!p) { return; }
+          p.pdf = { dokument: dokument, anzahl: dokument.numPages, name: datei.name, seite: 1 };
+          planFelderAktualisieren();
         });
       }).catch(function (fehler) {
         var text;
@@ -3534,15 +3642,18 @@
       });
     }
 
-    // Andere Seite des PDFs wählen
+    // Andere Seite des PDFs wählen (für den ausgewählten Plan)
     feldPlanSeite.addEventListener("change", function () {
-      if (!planPdf || !eigenerPlan) { return; }
-      var nr = Math.max(1, Math.min(planPdf.anzahl, Math.round(Number(feldPlanSeite.value)) || 1));
+      var p = eigenerPlan;
+      if (!p || !p.pdf) { return; }
+      var nr = Math.max(1, Math.min(p.pdf.anzahl, Math.round(Number(feldPlanSeite.value)) || 1));
       feldPlanSeite.value = String(nr);
       planInfo.textContent = "Seite " + nr + " wird gezeichnet …";
-      zeichnePdfSeite(planPdf.dokument, nr).then(function (leinwand) {
-        ersetzePlanBild(leinwand);
-        planInfo.textContent = "Geladen: " + planPdf.name + ", Seite " + nr + " von " + planPdf.anzahl + " (" + leinwand.width + " × " + leinwand.height + " Pixel).";
+      zeichnePdfSeite(p.pdf.dokument, nr).then(function (leinwand) {
+        p.pdf.seite = nr;
+        ersetzePlanBild(p, leinwand);
+        p.info = "Geladen: " + p.pdf.name + ", Seite " + nr + " von " + p.pdf.anzahl + " (" + leinwand.width + " × " + leinwand.height + " Pixel).";
+        if (p === eigenerPlan) { planInfo.textContent = p.info; }
       }).catch(function () {
         planInfo.textContent = "Diese Seite konnte nicht gezeichnet werden.";
       });
@@ -3551,12 +3662,15 @@
     feldPlanDatei.addEventListener("change", function () {
       var datei = feldPlanDatei.files && feldPlanDatei.files[0];
       if (!datei) { return; }
+      if (plaene.length >= PLAN_MAX_ANZAHL) {
+        planInfo.textContent = "Es sind schon " + PLAN_MAX_ANZAHL + " Pläne geladen (mehr gehen nicht). Entferne zuerst einen Plan.";
+        feldPlanDatei.value = "";
+        return;
+      }
       if (datei.type === "application/pdf" || /\.pdf$/i.test(datei.name)) {
         ladePdfPlan(datei).then(function () { feldPlanDatei.value = ""; });
         return;
       }
-      planPdf = null;
-      planSeiteBox.hidden = true;
       if (!/^image\/(jpeg|png)$/.test(datei.type)) {
         planInfo.textContent = "Diese Datei ist kein JPG, PNG oder PDF. Bitte eine Datei in einem dieser Formate wählen.";
         feldPlanDatei.value = "";
@@ -3577,7 +3691,11 @@
       bild.src = adresse;
     });
 
-    feldPlanZeigen.addEventListener("change", function () { if (eigenerPlan) { eigenerPlan.zeigen = feldPlanZeigen.checked; planGeaendert(); } });
+    feldPlanName.addEventListener("input", function () {
+      if (!eigenerPlan) { return; }
+      eigenerPlan.name = feldPlanName.value.trim() || "Plan";
+      planListeBauen();
+    });
     feldPlanDeckkraft.addEventListener("input", function () {
       if (!eigenerPlan) { return; }
       eigenerPlan.deckkraft = Number(feldPlanDeckkraft.value) / 100;
@@ -3586,35 +3704,41 @@
     });
     feldPlanBreite.addEventListener("change", function () {
       var wert = Number(feldPlanBreite.value);
-      if (eigenerPlan && wert >= 1) { eigenerPlan.breiteM = wert; }
+      if (eigenerPlan && !eigenerPlan.gesperrt && wert >= 1) { eigenerPlan.breiteM = wert; }
       planFelderAktualisieren();
       planGeaendert();
     });
     feldPlanDrehung.addEventListener("change", function () {
       var wert = Number(feldPlanDrehung.value);
-      if (eigenerPlan && isFinite(wert)) { eigenerPlan.drehung = planGradInZahl(wert); }
+      if (eigenerPlan && !eigenerPlan.gesperrt && isFinite(wert)) { eigenerPlan.drehung = planGradInZahl(wert); }
       planFelderAktualisieren();
       planGeaendert();
     });
     feldPlanLage.addEventListener("change", function () {
       if (!eigenerPlan) { return; }
       eigenerPlan.lage = feldPlanLage.value;
-      planLageAnwenden();
+      planStapelNeu();
       planGeaendert();
     });
-    document.getElementById("planMitte").addEventListener("click", function () {
+    feldPlanGesperrt.addEventListener("change", function () {
       if (!eigenerPlan) { return; }
+      eigenerPlan.gesperrt = feldPlanGesperrt.checked;
+      if (eigenerPlan.gesperrt) { planAbbrechenWahl(); }
+      planFelderAktualisieren();
+      planListeBauen();
+      planGeaendert();
+    });
+    knopfPlanMitte.addEventListener("click", function () {
+      if (!eigenerPlan || eigenerPlan.gesperrt) { return; }
       eigenerPlan.mitte = marker ? marker.getLatLng() : karte.getCenter();
       planGeaendert();
     });
-    document.getElementById("planEntfernen").addEventListener("click", entfernePlan);
+    document.getElementById("planEntfernen").addEventListener("click", function () { entfernePlan(); });
 
     // Verschieben mit dem Kreis in der Mitte
     planGriffMitte.on("drag", function () {
       eigenerPlan.mitte = planGriffMitte.getLatLng();
-      var c = planPunkt(eigenerPlan.mitte);
-      planElement.style.transform = "translate(" + c.x + "px," + c.y + "px) rotate(" + eigenerPlan.drehung + "deg) scale(" +
-        planPunkteProBildpunkt() + ") translate(" + (-eigenerPlan.w / 2) + "px," + (-eigenerPlan.h / 2) + "px)";
+      eigenerPlan.elem.style.transform = planTransform(eigenerPlan);
       planGriffEcke.setLatLng(planLatLng(planEckPunkt()));
     });
     planGriffMitte.on("dragend", planGeaendert);
@@ -3630,17 +3754,15 @@
       eigenerPlan.drehung = planGradInZahl((Math.atan2(dy, dx) - ausgang) * 180 / Math.PI);
       var s = laenge / Math.sqrt(Math.pow(eigenerPlan.w / 2, 2) + Math.pow(eigenerPlan.h / 2, 2));
       eigenerPlan.breiteM = s * eigenerPlan.w * planMeterProPunkt(eigenerPlan.mitte.lat);
-      var c2 = c;
-      planElement.style.transform = "translate(" + c2.x + "px," + c2.y + "px) rotate(" + eigenerPlan.drehung + "deg) scale(" + s +
-        ") translate(" + (-eigenerPlan.w / 2) + "px," + (-eigenerPlan.h / 2) + "px)";
+      eigenerPlan.elem.style.transform = planTransform(eigenerPlan, c, s);
       planFelderAktualisieren();
     });
     planGriffEcke.on("dragend", planGeaendert);
 
     // ----- Zwei-Punkte-Hilfe -----
     // Schritt 1: Punkt A im Plan anklicken. Schritt 2: dieselbe Stelle auf der Karte. Schritt 3 und 4: ebenso für Punkt B.
-    // Aus den beiden Paaren rechnet die App Größe, Drehung und Lage des Plans aus.
-    var planWahl = null;                 // null = aus, sonst { schritt: 0..3, bildPunkte: [], kartenPunkte: [], deckkraftVorher }
+    // Aus den beiden Paaren rechnet die App Größe, Drehung und Lage des (ausgewählten) Plans aus.
+    var planWahl = null;                 // null = aus, sonst { schritt: 0..3, bildPunkte: [], kartenPunkte: [], deckkraftVorher, plan }
     var planWahlMarken = L.layerGroup();
     var PLAN_WAHL_TEXTE = [
       "Einpassen 1 von 4: Klicke auf einen bekannten Punkt im Plan (Punkt A), zum Beispiel eine Straßenecke.",
@@ -3661,9 +3783,9 @@
     }
 
     function planStarteWahl() {
-      if (!eigenerPlan) { return; }
-      if (!eigenerPlan.zeigen) { eigenerPlan.zeigen = true; planFelderAktualisieren(); }
-      planWahl = { schritt: 0, bildPunkte: [], kartenPunkte: [], deckkraftVorher: eigenerPlan.deckkraft };
+      if (!eigenerPlan || eigenerPlan.gesperrt) { return; }
+      if (!eigenerPlan.zeigen) { eigenerPlan.zeigen = true; planListeBauen(); }
+      planWahl = { schritt: 0, bildPunkte: [], kartenPunkte: [], deckkraftVorher: eigenerPlan.deckkraft, plan: eigenerPlan };
       planWahlMarken.clearLayers();
       planWahlMarken.addTo(karte);
       knopfPlanEinpassen.hidden = true;
@@ -3675,7 +3797,8 @@
 
     function planAbbrechenWahl() {
       if (!planWahl) { return; }
-      if (eigenerPlan) { eigenerPlan.deckkraft = planWahl.deckkraftVorher; }
+      var p = planWahl.plan;
+      if (p) { p.deckkraft = planWahl.deckkraftVorher; }
       planWahl = null;
       planWahlMarken.clearLayers();
       if (karte.hasLayer(planWahlMarken)) { karte.removeLayer(planWahlMarken); }
@@ -3757,21 +3880,27 @@
     knopfPlanAbbrechen.addEventListener("click", planAbbrechenWahl);
     document.addEventListener("keydown", function (ereignis) { if (ereignis.key === "Escape") { planAbbrechenWahl(); } });
 
-    // Zeichnet den Plan ins Bild: Mitte, Größe und Drehung wie auf der Karte, aber im Maßstab des Bildes
-    function zeichnePlanInBild(c, exportPlan, k) {
-      var q = zuPixel(eigenerPlan.mitte.lat, eigenerPlan.mitte.lng, k.z);
+    // Zeichnet einen Plan ins Bild: Mitte, Größe und Drehung wie auf der Karte, aber im Maßstab des Bildes
+    function zeichnePlanInBild(c, exportPlan, k, p) {
+      var q = zuPixel(p.mitte.lat, p.mitte.lng, k.z);
       var cx = (q.x - k.links) * k.f, cy = (q.y - k.oben) * k.f;
-      var s = eigenerPlan.breiteM / exportPlan.meterProPx / eigenerPlan.w;
+      var s = p.breiteM / exportPlan.meterProPx / p.w;
       c.save();
-      c.globalAlpha = eigenerPlan.deckkraft;
+      c.globalAlpha = p.deckkraft;
       c.imageSmoothingEnabled = true;
       c.imageSmoothingQuality = "high";
       c.translate(cx, cy);
-      c.rotate(eigenerPlan.drehung * Math.PI / 180);
+      c.rotate(p.drehung * Math.PI / 180);
       c.scale(s, s);
-      c.drawImage(eigenerPlan.bild, -eigenerPlan.w / 2, -eigenerPlan.h / 2);
+      c.drawImage(p.bild, -p.w / 2, -p.h / 2);
       c.restore();
     }
+    // Alle sichtbaren Pläne einer Lage ("unter" den Ebenen oder "ueber" ihnen) in der Stapelreihenfolge zeichnen
+    function zeichnePlaeneInBild(c, exportPlan, k, lage) {
+      plaene.forEach(function (p) { if (p.zeigen && (p.lage === "unter") === (lage === "unter")) { zeichnePlanInBild(c, exportPlan, k, p); } });
+    }
+
+    planListeBauen();
 
     // ---------- Zeichnen (Punkte, Linien, Flächen, Pfeile, Texte) ----------
     // Jedes gezeichnete Objekt steht in der Liste "zeichnung": { id, art, punkte: [{lat, lng}], farbe, groesse, strich, name, text }.
@@ -5129,7 +5258,7 @@
           " Die Entfernungskreise fehlen noch: Dafür bitte eine Adresse suchen.") : "") +
         (sichtbareWegenetz().length ? (marker ? " Die Erreichbarkeit nach Wegenetz wird eingezeichnet." :
           " Die Erreichbarkeit nach Wegenetz fehlt noch: Dafür bitte eine Adresse suchen.") : "") +
-        (eigenerPlan && eigenerPlan.zeigen ? " Der eigene Plan wird eingezeichnet." : "") +
+        (plaene.some(function (pl) { return pl.zeigen; }) ? (plaene.filter(function (pl) { return pl.zeigen; }).length > 1 ? " Die eigenen Pläne werden eingezeichnet." : " Der eigene Plan wird eingezeichnet.") : "") +
         (zeichnungImBild() ? " Die Zeichnung (" + zeichnung.length + (zeichnung.length === 1 ? " Objekt" : " Objekte") + ") wird eingezeichnet." : "") +
         (karte.hasLayer(OEPNV.ebene) ? " Die Haltestellen werden eingezeichnet." : "") +
         (karte.hasLayer(BAEUME2D.ebene) ? " Die Bäume werden eingezeichnet." : "") +
@@ -5594,8 +5723,8 @@
         }
 
         // Eigener Plan: je nach Einstellung "Lage" unter den Ebenen (hier) oder über den Ebenen (weiter unten)
-        var planImBild = !!(eigenerPlan && eigenerPlan.zeigen);
-        if (planImBild && eigenerPlan.lage === "unter") { zeichnePlanInBild(c, plan, k); }
+        var planImBild = plaene.some(function (pl) { return pl.zeigen; });
+        if (planImBild) { zeichnePlaeneInBild(c, plan, k, "unter"); }
 
         // Flächen (Parks, Wald, Gewässer, Plätze): durchscheinend direkt auf der Karte, unter den Gebäuden
         var bildFlaechen = flaechen ? flaechenGruppenImBild() : [];
@@ -5664,7 +5793,7 @@
         if (oepnvImBild) { zeichneOepnvInBild(c, plan, k, pxProMm, haltestellen); }
 
         // Eigener Plan über den Ebenen (wie auf dem Bildschirm: über den Punkten, unter den Straßennamen)
-        if (planImBild && eigenerPlan.lage !== "unter") { zeichnePlanInBild(c, plan, k); }
+        if (planImBild) { zeichnePlaeneInBild(c, plan, k, "ueber"); }
 
         // Eigene Zeichnung (Punkte, Linien, Flächen, Pfeile) über dem Plan; die Texte kommen weiter unten ganz nach oben
         var zeichnungDa = zeichnungImBild();
@@ -6395,12 +6524,12 @@
     });
 
     // ---------- Projekt speichern, öffnen und automatisch sichern ----------
-    // Ein Projekt ist ein Zustand der App: Adresse, Ansicht, Hintergrundkarte, eingeschaltete Ebenen, eigener Plan
+    // Ein Projekt ist ein Zustand der App: Adresse, Ansicht, Hintergrundkarte, eingeschaltete Ebenen, eigene Pläne
     // (als Bild), Zeichnung und alle Einstellungen zum Speichern. Er wird als JSON-Datei gespeichert (Knöpfe oben in der
     // Seitenleiste) und zusätzlich laufend im Browser gesichert (IndexedDB), damit nach einem versehentlichen Schließen
     // oder Neuladen nichts verloren ist. Beim nächsten Start fragt die App, ob der letzte Stand wiederhergestellt werden soll.
     var PROJEKT_FORMAT = "standortanalyse-projekt";
-    var PROJEKT_VERSION = 1;
+    var PROJEKT_VERSION = 2;           // 2: mehrere Pläne ("plaene"); Dateien der Version 1 (ein Plan in "plan") lassen sich weiter öffnen
     var PROJEKT_FELDER = ["massstab", "massstabFrei", "papier", "ausrichtung", "titel", "format", "aufloesung"];
     var PROJEKT_HAKEN = ["optTitel", "optNordpfeil", "optLegende", "optBalken", "optQuelle", "rahmenZeigen"];
     var projektMeldungFeld = document.getElementById("projektMeldung");
@@ -6428,12 +6557,11 @@
     }
 
     // Das Bild des Plans als Text (Data-URL). PNG bleibt PNG (Durchsichtigkeit), alles andere wird JPEG. Wird nur einmal berechnet.
-    function projektPlanBild() {
-      if (!eigenerPlan) { return null; }
-      if (!eigenerPlan.datenUrl) {
-        eigenerPlan.datenUrl = eigenerPlan.bild.toDataURL(eigenerPlan.format === "png" ? "image/png" : "image/jpeg", 0.92);
+    function projektPlanBild(p) {
+      if (!p.datenUrl) {
+        p.datenUrl = p.bild.toDataURL(p.format === "png" ? "image/png" : "image/jpeg", 0.92);
       }
-      return eigenerPlan.datenUrl;
+      return p.datenUrl;
     }
 
     // Sammelt den kompletten Zustand. Mit mitPlanBild = false fehlt nur das (große) Bild des Plans.
@@ -6458,28 +6586,30 @@
         exportMitte: exportMitteManuell ? { lat: exportMitteManuell.lat, lng: exportMitteManuell.lng } : null,
         zeichnung: zeichnung, zeichenNr: zeichenNr, zeichenZeigen: zeichenZeigen,
         baeumeAus: Object.keys(baumAus),
-        plan: null
+        plaene: [],                    // Reihenfolge wie im Stapel (zuerst = zuunterst)
+        planGewaehlt: plaene.indexOf(eigenerPlan)
       };
-      if (eigenerPlan) {
-        projekt.plan = {
-          name: eigenerPlan.name, w: eigenerPlan.w, h: eigenerPlan.h, lat: eigenerPlan.mitte.lat, lng: eigenerPlan.mitte.lng,
-          breiteM: eigenerPlan.breiteM, drehung: eigenerPlan.drehung, deckkraft: eigenerPlan.deckkraft,
-          zeigen: eigenerPlan.zeigen, lage: eigenerPlan.lage, format: eigenerPlan.format, nr: eigenerPlan.nr
+      plaene.forEach(function (pl) {
+        var eintrag = {
+          name: pl.name, w: pl.w, h: pl.h, lat: pl.mitte.lat, lng: pl.mitte.lng,
+          breiteM: pl.breiteM, drehung: pl.drehung, deckkraft: pl.deckkraft,
+          zeigen: pl.zeigen, lage: pl.lage, gesperrt: pl.gesperrt, format: pl.format, nr: pl.nr
         };
-        if (mitPlanBild) { projekt.plan.bild = projektPlanBild(); }
-      }
+        if (mitPlanBild) { eintrag.bild = projektPlanBild(pl); }
+        projekt.plaene.push(eintrag);
+      });
       return projekt;
     }
 
     // Ist das Projekt "leer" (nichts, was sich zu sichern lohnt)?
     function projektIstLeer(p) {
-      return !p.adresse && !p.plan && !(p.zeichnung && p.zeichnung.length) && !(p.baeumeAus && p.baeumeAus.length) && !Object.keys(p.analyse || {}).length && !(p.karte && p.karte.bebauung);
+      return !p.adresse && !p.plan && !(p.plaene && p.plaene.length) && !(p.zeichnung && p.zeichnung.length) && !(p.baeumeAus && p.baeumeAus.length) && !Object.keys(p.analyse || {}).length && !(p.karte && p.karte.bebauung);
     }
 
     // Stellt einen gesammelten Zustand wieder her. Gibt ein Versprechen zurück (der Plan wird erst geladen).
     function projektAnwenden(p) {
       // 1. alles Bisherige entfernen
-      entfernePlan();
+      entferneAllePlaene();
       zeichenSetzeWerkzeug("auswahl");
       zeichenEntwurfAbbrechen();
 
@@ -6544,36 +6674,47 @@
       zeichneAlles();
       zeichenFelderVonAuswahl();
 
-      // 7. Plan (das Bild wird erst geladen), danach Ansicht
-      var planFertig = new Promise(function (fertig) {
-        if (!p.plan || !p.plan.bild) { fertig(null); return; }
-        var bild = new Image();
-        bild.onload = function () {
-          setzePlan(bild, p.plan.name, "", p.plan.format);
-          eigenerPlan.mitte = L.latLng(p.plan.lat, p.plan.lng);
-          eigenerPlan.breiteM = p.plan.breiteM;
-          eigenerPlan.drehung = p.plan.drehung;
-          eigenerPlan.deckkraft = p.plan.deckkraft;
-          eigenerPlan.zeigen = p.plan.zeigen !== false;
-          eigenerPlan.lage = p.plan.lage || "ueber";
-          planLageAnwenden();
-          planFelderAktualisieren();
-          fertig(null);
-        };
-        bild.onerror = function () { fertig("Das Bild des Plans in der Projektdatei konnte nicht gelesen werden."); };
-        bild.src = p.plan.bild;
+      // 7. Pläne (die Bilder werden erst geladen, einer nach dem anderen), danach Ansicht
+      var planListe = (p.plaene && p.plaene.length) ? p.plaene : (p.plan ? [p.plan] : []);     // Version 1: ein einzelner Plan
+      var planFehler = [];
+      var planFertig = planListe.reduce(function (kette, eintrag, nr) {
+        return kette.then(function () {
+          return new Promise(function (fertig) {
+            if (!eintrag || !eintrag.bild) { fertig(); return; }
+            var bild = new Image();
+            bild.onload = function () {
+              var pl = setzePlan(bild, eintrag.name || "Plan", "", eintrag.format);
+              if (pl) {
+                pl.mitte = L.latLng(eintrag.lat, eintrag.lng);
+                pl.breiteM = eintrag.breiteM;
+                pl.drehung = eintrag.drehung;
+                pl.deckkraft = eintrag.deckkraft;
+                pl.zeigen = eintrag.zeigen !== false;
+                pl.lage = eintrag.lage || "ueber";
+                pl.gesperrt = !!eintrag.gesperrt;
+              }
+              fertig();
+            };
+            bild.onerror = function () { planFehler.push("Das Bild des Plans „" + (eintrag.name || nr + 1) + "“ in der Projektdatei konnte nicht gelesen werden."); fertig(); };
+            bild.src = eintrag.bild;
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        planStapelNeu();
+        var gew = (typeof p.planGewaehlt === "number" && p.planGewaehlt >= 0 && p.planGewaehlt < plaene.length) ? plaene[p.planGewaehlt] : (plaene.length ? plaene[plaene.length - 1] : null);
+        waehlePlan(gew);
+        return planFehler.length ? planFehler.join(" ") : null;
       });
-      return planFertig.then(function (planFehler) {
+      return planFertig.then(function (fehlerText) {
         karte.setView([p.karte.lat, p.karte.lng], p.karte.zoom, { animate: false });
         gezeichneteGrenzen = null;
         aktualisiereBebauung();
         aktualisiereRahmen();
         planGeaendert();
         aktualisiereExportInfo();
-        return planFehler;
+        return fehlerText;
       });
     }
-
     // ---- Speichern in eine Datei ----
     function projektDateiname() {
       var a = (aktuelleAnzeige || "").split(",")[0].trim().replace(/[^A-Za-z0-9ÄÖÜäöüß]+/g, "-").replace(/^-+|-+$/g, "");
@@ -6625,10 +6766,10 @@
     });
 
     // ---- Automatisch im Browser sichern (IndexedDB) ----
-    // Zwei Einträge: "zustand" (klein, ändert sich oft) und "planbild" (groß, nur bei neuem Plan).
+    // Zwei Einträge: "zustand" (klein, ändert sich oft) und "planbilder" (groß, nur wenn sich die Bilder der Pläne ändern: Nummer -> Bild; ältere Sicherungen haben einen einzelnen "planbild").
     var autoAn = false;                 // erst nach der Frage "Wiederherstellen?" einschalten, sonst würde der alte Stand überschrieben
     var autoLetzterSchluessel = "";
-    var autoPlanNr = null;
+    var autoPlanNr = null;              // Nummern der gesicherten Plan-Bilder, z. B. "3,4"
 
     function idbOeffnen() {
       return new Promise(function (fertig, fehler) {
@@ -6660,11 +6801,14 @@
       var schluessel = JSON.stringify(z, function (k, v) { return k === "gespeichert" ? undefined : v; });
       if (schluessel === autoLetzterSchluessel) { return; }
       autoLetzterSchluessel = schluessel;
-      var planNr = eigenerPlan ? eigenerPlan.nr : null;
+      var planNr = plaene.length ? plaene.map(function (pl) { return pl.nr; }).join(",") : null;
       idbSchreibe("zustand", z).then(function () {
         if (planNr === autoPlanNr) { return null; }
         autoPlanNr = planNr;
-        return planNr === null ? idbLoesche("planbild") : idbSchreibe("planbild", { nr: planNr, bild: projektPlanBild() });
+        if (planNr === null) { return Promise.all([idbLoesche("planbilder"), idbLoesche("planbild")]); }
+        var bilder = {};
+        plaene.forEach(function (pl) { bilder[pl.nr] = projektPlanBild(pl); });
+        return idbSchreibe("planbilder", bilder).then(function () { return idbLoesche("planbild"); });
       }).catch(function () { /* Sichern im Browser nicht möglich (z. B. privates Fenster): kein Problem, die Projektdatei bleibt */ });
     }
     setInterval(autoSichern, 4000);
@@ -6681,8 +6825,10 @@
         kasten.hidden = false;
         document.getElementById("wiederherstellenJa").onclick = function () {
           kasten.hidden = true;
-          idbLies("planbild").then(function (b) {
-            if (z.plan && b && b.nr === z.plan.nr) { z.plan.bild = b.bild; }
+          Promise.all([idbLies("planbilder"), idbLies("planbild")]).then(function (b) {
+            var bilder = b[0] || {};
+            (z.plaene || []).forEach(function (pl) { if (bilder[pl.nr]) { pl.bild = bilder[pl.nr]; } });
+            if (z.plan && b[1] && b[1].nr === z.plan.nr) { z.plan.bild = b[1].bild; }      // Sicherung aus der Zeit mit nur einem Plan
             return projektAnwenden(z);
           }).then(function (planFehler) {
             zeigeProjektMeldung(planFehler ? "Letzter Stand wiederhergestellt. Achtung: " + planFehler : "Letzter Stand wiederhergestellt.", planFehler ? "fehler" : "ok");
@@ -6692,7 +6838,7 @@
         };
         document.getElementById("wiederherstellenNein").onclick = function () {
           kasten.hidden = true;
-          Promise.all([idbLoesche("zustand"), idbLoesche("planbild")]).catch(function () {}).then(beginnen);
+          Promise.all([idbLoesche("zustand"), idbLoesche("planbild"), idbLoesche("planbilder")]).catch(function () {}).then(beginnen);
         };
       }).catch(beginnen);
     })();
