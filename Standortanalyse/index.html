@@ -689,6 +689,7 @@
           <details class="analyseGruppe"><summary><span class="titel">Nutzungsarten</span><span class="anzahl"></span></summary><div id="analyseNutzung"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Lärm (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseLaerm"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Planung und Naturschutz (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseStadt"></div></details>
+          <details class="analyseGruppe"><summary><span class="titel">Flächennutzungsplan (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseFnp"></div><p class="hinweis" style="margin:4px 0 0">Geplante Nutzung der Flächen nach dem Flächennutzungsplan der Stadt (Stand Änderungen bis 05.07.2024). Er ist nur eine grobe Vorgabe und nicht grundstücksscharf; die Festsetzungen im Bebauungsplan gehen vor. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <p class="hinweis">Bei „ÖPNV“ zeigt ein Klick auf eine Haltestelle ihren Namen, die Linien und die Abfahrten; „Haltestellen nach Takt“ färbt sie nach der Häufigkeit (Fahrplan eines normalen Dienstags). Unter „Grün und Freiräume“ gibt es zusätzlich „Spielen und Bewegen“: Spielplätze (Klick zeigt Name und Zugang), der Einzugsbereich von 200 m um öffentliche Spielplätze sowie Fußball-, Basketball-, Skate-, Fitness- und Hundewiesen-Orte aus OpenStreetMap. Unter „Luftqualität“ steht die Messstation des Umweltbundesamts am Heiligengeistwall; ein Klick zeigt die Jahresmittelwerte der letzten Jahre. Unter „Verkehr und Mobilität“ stehen Radwege, Fahrradabstellanlagen, Parken, Carsharing und Ladestationen (ein Klick auf eine Ladestation zeigt Betreiber und Leistung). Die Themen (Fußweg, Boden, Grundwasser …) lassen sich mit einem Klick auf die Überschrift auf- und zuklappen; die rote Zahl daneben zeigt, wie viele Ebenen davon eingeschaltet sind. Fußweg und Sonnenstand brauchen eine gesuchte Adresse (der rote Punkt ist der Mittelpunkt). Die anderen Ebenen zeigen alle Orte in Oldenburg. „Einzelbäume“ zeigt die in OpenStreetMap erfassten Bäume (unvollständig); eigene Bäume zeichnest du mit dem Werkzeug „Baum“ in 06. „Starkregen“ ist die Hinweiskarte des Bundes (BKG) für Niedersachsen. „Boden“, „Geologie und Baugrund“, „Grundwasser“ sowie „Versiegelung und Altlasten“ sind Karten des Landesamts für Bergbau, Energie und Geologie (LBEG, NIBIS-Kartenserver). Alle diese Karten werden online geladen und brauchen Internet (auch beim Speichern des Bildes, das dann einen Moment länger dauert); sie sind eine Orientierung und keine Planungsgrundlage. Wo eine Karte nichts zeigt, hat das Land dort keine Daten (zum Beispiel ist die Bodenkarte in der bebauten Innenstadt leer). Unter „Legende“ siehst du die Farberklärung des Landesamts. „Alles einschalten“ schaltet diese Karten nicht ein, „Alles ausschalten“ schaltet sie aus. Lärm, Bebauungspläne, Naturschutz und Stadtbezirke sind offene Daten der Stadt Oldenburg (Datenlizenz Deutschland – Namensnennung 2.0), die Quelle steht automatisch im Bild. Die Lärmdaten sind groß und brauchen beim ersten Mal einen Moment. Alles Eingeschaltete erscheint auch im gespeicherten Bild und in der Legende.</p>
         </div>
       </details>
@@ -1975,9 +1976,11 @@
       flaechen: { datei: "flaechen_oldenburg.js", variable: "FLAECHEN_OLDENBURG", daten: null, vorgang: null },
       nutzung:  { datei: "nutzung_oldenburg.js",  variable: "NUTZUNG_OLDENBURG",  daten: null, vorgang: null },
       stadt:    { datei: "stadt_oldenburg.js",    variable: "STADT_OLDENBURG",    daten: null, vorgang: null },
-      laerm:    { datei: "laerm_oldenburg.js",    variable: "LAERM_OLDENBURG",    daten: null, vorgang: null }
+      laerm:    { datei: "laerm_oldenburg.js",    variable: "LAERM_OLDENBURG",    daten: null, vorgang: null },
+      fnp:      { datei: "fnp_oldenburg.js",      variable: "FNP_OLDENBURG",      daten: null, vorgang: null }
     };
     var STADT_QUELLE_TEXT = "Stadt Oldenburg (Oldb), Datenlizenz Deutschland – Namensnennung 2.0";
+    var FNP_QUELLE_TEXT = "Flächennutzungsplan: Stadt Oldenburg (Oldb), Stand Änderungen bis 05.07.2024, Datenlizenz Deutschland – Zero 2.0";
     // Weitere Eigenschaften einer Gruppe (alle freiwillig):
     //   klassen: { Klasse: [Farbe, Text] }  Farbe nach Klasse (Attribut der Fläche), z. B. beim Lärm
     //   gebuendelt: true                     alle Flächen einer Klasse als ein Mehrfach-Vieleck zeichnen (viele kleine Teile, schnell)
@@ -1985,6 +1988,7 @@
     //   punkte: true                         die Gruppe besteht aus Punkten statt Flächen
     //   beschriftung: true                   Text (Attribut) in der Mitte jeder Fläche
     //   stadt: true                          Daten der Stadt Oldenburg (andere Quellenangabe)
+    //   fnp: true                            Flächennutzungsplan der Stadt (Quelle FNP_QUELLE_TEXT); nichtAlle: "Alles einschalten" lässt die Ebene aus
     var LAERM_LDEN = { Lden5559: ["#f6d776", "55–59 dB"], Lden6064: ["#f0a54a", "60–64 dB"], Lden6569: ["#e0603a", "65–69 dB"],
                        Lden7074: ["#b02a3a", "70–74 dB"], LdenAb75: ["#6a1f6e", "ab 75 dB"] };
     var LAERM_NACHT = { Lnight5054: ["#f6d776", "50–54 dB"], Lnight5559: ["#f0a54a", "55–59 dB"], Lnight6064: ["#e0603a", "60–64 dB"],
@@ -2008,6 +2012,16 @@
       { quelle: "stadt", id: "wallhecken", name: "Wallhecken", legende: "Wallhecken (geschützt)", farbe: "#6d4c41", gebuendelt: true, deckkraft: 0.9, kontur: 1, stadt: true },
       { quelle: "stadt", id: "naturdenkmale", name: "Naturdenkmale", legende: "Naturdenkmale", farbe: "#d84315", punkte: true, stadt: true },
       { quelle: "stadt", id: "bezirke", name: "Stadtbezirke", legende: "Stadtbezirke (Grenzen)", farbe: "#1a1a1a", deckkraft: 0.03, kontur: 2, beschriftung: true, stadt: true },
+      // Flächennutzungsplan (geplante Nutzung der Stadt, Stand Änderungen bis 05.07.2024); unter den Bebauungsplänen, damit deren Umrisse sichtbar bleiben
+      { quelle: "fnp", id: "fnp_wohnen",       name: "Wohnbauflächen",        legende: "FNP: Wohnbauflächen",        farbe: "#e57373", deckkraft: 0.5, fnp: true, nichtAlle: true },
+      { quelle: "fnp", id: "fnp_gemischt",     name: "Gemischte Bauflächen",  legende: "FNP: Gemischte Bauflächen",  farbe: "#ffb74d", deckkraft: 0.5, fnp: true, nichtAlle: true },
+      { quelle: "fnp", id: "fnp_gewerbe",      name: "Gewerbliche Bauflächen", legende: "FNP: Gewerbliche Bauflächen", farbe: "#9e9e9e", deckkraft: 0.55, fnp: true, nichtAlle: true },
+      { quelle: "fnp", id: "fnp_sonder",       name: "Sonderbauflächen",      legende: "FNP: Sonderbauflächen",      farbe: "#ba68c8", deckkraft: 0.5, fnp: true, nichtAlle: true },
+      { quelle: "fnp", id: "fnp_gemeinbedarf", name: "Gemeinbedarf",          legende: "FNP: Flächen für den Gemeinbedarf", farbe: "#ffd54f", deckkraft: 0.55, fnp: true, nichtAlle: true },
+      { quelle: "fnp", id: "fnp_gruen",        name: "Grünflächen",           legende: "FNP: Grünflächen",           farbe: "#81c784", deckkraft: 0.5, fnp: true, nichtAlle: true },
+      { quelle: "fnp", id: "fnp_wald",         name: "Wald",                  legende: "FNP: Wald",                  farbe: "#388e3c", deckkraft: 0.5, fnp: true, nichtAlle: true },
+      { quelle: "fnp", id: "fnp_wasser",       name: "Wasserflächen",         legende: "FNP: Wasserflächen",         farbe: "#64b5f6", deckkraft: 0.55, fnp: true, nichtAlle: true },
+      { quelle: "fnp", id: "fnp_landwirtschaft", name: "Landwirtschaft",      legende: "FNP: Landwirtschaft",        farbe: "#dce775", deckkraft: 0.5, fnp: true, nichtAlle: true },
       { quelle: "laerm", id: "laerm_lden", name: "Straßenlärm, ganzer Tag", legende: "Straßenlärm ganzer Tag (L_DEN)", farbe: "#e0603a",
         klassen: LAERM_LDEN, gebuendelt: true, deckkraft: 0.6, stadt: true },
       { quelle: "laerm", id: "laerm_nacht", name: "Straßenlärm, nachts", legende: "Straßenlärm nachts (L_Night)", farbe: "#e0603a",
@@ -2017,7 +2031,7 @@
       if (gruppe.deckkraft === undefined) { gruppe.deckkraft = FLAECHEN_DECKKRAFT; }
       gruppe.ebene = L.layerGroup();
       gruppe.ebene.getAttribution = function () {
-        return gruppe.stadt ? "Daten: " + STADT_QUELLE_TEXT : "Flächen: &copy; OpenStreetMap-Mitwirkende";
+        return gruppe.fnp ? FNP_QUELLE_TEXT : (gruppe.stadt ? "Daten: " + STADT_QUELLE_TEXT : "Flächen: &copy; OpenStreetMap-Mitwirkende");
       };
       return gruppe;
     });
@@ -2143,6 +2157,7 @@
     baueAnalyseHaken("analyseNutzung", FLAECHEN.filter(function (g) { return g.quelle === "nutzung"; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseLaerm", FLAECHEN.filter(function (g) { return g.quelle === "laerm"; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseStadt", FLAECHEN.filter(function (g) { return g.quelle === "stadt"; }), function (gruppe) { return gruppe.name; });
+    baueAnalyseHaken("analyseFnp", FLAECHEN.filter(function (g) { return g.quelle === "fnp"; }), function (gruppe) { return gruppe.name; });
 
     // Maßstabsbalken unten links
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(karte);
@@ -2372,7 +2387,7 @@
       sammelSchalten = true;
       try {
         alleAnalyseEbenen().forEach(function (eintrag) {
-          if (an && !eintrag.untergrund && !karte.hasLayer(eintrag.ebene)) { karte.addLayer(eintrag.ebene); }      // Boden, Geologie, Grundwasser bleiben aus (zu viele Karten übereinander)
+          if (an && !eintrag.untergrund && !eintrag.nichtAlle && !karte.hasLayer(eintrag.ebene)) { karte.addLayer(eintrag.ebene); }      // Boden, Geologie, Grundwasser bleiben aus (zu viele Karten übereinander)
           if (!an && karte.hasLayer(eintrag.ebene)) { karte.removeLayer(eintrag.ebene); }
         });
       } finally {
@@ -6333,8 +6348,9 @@
                         (luftImBild ? "  ·  " + LUFT_QUELLE_TEXT : "") +
                         (spielImBild ? "  ·  " + SPIEL_QUELLE_TEXT : "") +
                         (bildWegenetz.length ? "  ·  Wegenetz: © OpenStreetMap-Mitwirkende" : "") +
-                        (bildFlaechen.some(function (g) { return !g.stadt; }) ? "  ·  Flächen: © OpenStreetMap-Mitwirkende" : "") +
-                        (bildFlaechen.some(function (g) { return g.stadt; }) ? "  ·  Daten: " + STADT_QUELLE_TEXT : "");
+                        (bildFlaechen.some(function (g) { return !g.stadt && !g.fnp; }) ? "  ·  Flächen: © OpenStreetMap-Mitwirkende" : "") +
+                        (bildFlaechen.some(function (g) { return g.stadt; }) ? "  ·  Daten: " + STADT_QUELLE_TEXT : "") +
+                        (bildFlaechen.some(function (g) { return g.fnp; }) ? "  ·  " + FNP_QUELLE_TEXT : "");
           var hQuelle = zeichneTextfeld(c, [{ text: urheber, klein: true }], plan.B - 6 * pxProMm, 0, pxProMm, true, untenSlot);
           untenSlot -= hQuelle + 2 * pxProMm;
         }

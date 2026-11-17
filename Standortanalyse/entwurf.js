@@ -196,6 +196,12 @@
       K.bezirk = bez && bez.a ? bez.a : "";
       var bpl = (fl.bplan || []).filter(function (f) { return inFlaeche(f, P.lat, P.lng); }).length;
       K.bplan = bpl > 0;
+      var fnpTreffer = window.FLAECHEN.filter(function (g) { return g.fnp && (fl[g.id] || []).some(function (f) { return inFlaeche(f, P.lat, P.lng); }); }).map(function (g) { return g.name; });
+      K.fnp = fnpTreffer;
+      if (window.FLAECHEN.some(function (g) { return g.fnp; }) && Object.keys(fl).some(function (id) { return /^fnp_/.test(id); })) {
+        A.push(zeile("Flächennutzungsplan der Stadt (geplante Nutzung, grob und nicht grundstücksscharf; Bebauungsplan und Festsetzungen gehen vor)", fnpTreffer.length ? fnpTreffer.join(", ") : "keine Darstellung am Standort in den Daten (zum Beispiel Straße oder Fläche ohne Eintrag)"));
+        teile.quellen.push(window.FNP_QUELLE_TEXT);
+      }
       A.push(zeile("Bebauungsplan", bpl ? "Der Punkt liegt im Umriss eines rechtsverbindlichen Bebauungsplans (Stadt Oldenburg, Datenlizenz dl-de/by-2-0). Plannummer und Festsetzungen sind in den App-Daten NICHT enthalten und müssen beim Planungsamt geprüft werden." : "Der Punkt liegt in keinem Umriss eines Bebauungsplans in den Daten. Das heißt nicht, dass keine planungsrechtlichen Regeln gelten (zum Beispiel § 34 BauGB); das muss geprüft werden."));
 
       // Grundstück aus der Zeichnung

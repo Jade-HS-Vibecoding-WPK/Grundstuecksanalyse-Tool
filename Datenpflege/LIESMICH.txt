@@ -94,5 +94,7 @@ O) Gelaende (3D-Ansicht)  ->  Standortanalyse\gelaende_oldenburg.js
    ganze Stadt (ca. 9 MB; Hoehen in Dezimetern, gepackt). Es werden etwa 250 MB uebertragen (dauerte 2,5 Minuten), nichts wird gesammelt.
    Mit -MaxMinuten wird abgebrochen, wenn es zu lange dauert. Das Gelaende aendert sich selten; alle paar Jahre erneuern.
 
+Flaechennutzungsplan der Stadt Oldenburg (23_Flaechennutzungsplan_aktualisieren.ps1): Holt die Flaechen des Flaechennutzungsplans (Wohn-, gemischte, gewerbliche und Sonderbauflaechen, Gemeinbedarf, Gruen, Wald, Wasser, Landwirtschaft) aus dem INSPIRE-Downloaddienst der Stadt (WFS auf inspire.govconnect.de, Stand: Aenderungen bis 05.07.2024, Lizenz dl-zero-de/2.0) und schreibt Standortanalyse\fnp_oldenburg.js (ca. 0,7 MB). Ein Schritt, dauert etwa 20 Sekunden. Der Plan mit neuerem Stand (20.12.2024) hat im Dienst die Angabe "Nutzungsbedingungen unbekannt" und wird deshalb nicht benutzt. Alle paar Jahre oder bei einer neuen FNP-Aenderung erneuern.
+
 Online-Karten (kein Download noetig, keine Datenpflege): Starkregen (BKG) sowie Boden, Geologie, Grundwasser, Versiegelung und Altlasten (LBEG, NIBIS-Kartenserver) werden beim Zuschalten direkt vom Dienst geladen. Funktionieren die Adressen oder Kartennamen einmal nicht mehr, steht die Liste in "Standortanalyse\index.html" (Suche nach NIBIS_WMS bzw. STARKREGEN_WMS).
 Ausnahme: Gebaeudehoehen (I) kommen vom LGLN (CC BY 4.0), die Daten der Stadt Oldenburg (G) von der Stadt Oldenburg (dl-de/by-2-0).

@@ -2157,7 +2157,8 @@
     ["Grundwasser (LBEG, Online-Dienst)", function () { return GRUNDWASSER; }, function (g) { return g.name; }],
     ["Versiegelung und Altlasten (LBEG, Online-Dienst)", function () { return VERSIEGELUNG; }, function (g) { return g.name; }],
     ["Lärm (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "laerm"; }); }, function (g) { return g.name; }],
-    ["Planung und Naturschutz (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "stadt"; }); }, function (g) { return g.name; }]
+    ["Planung und Naturschutz (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "stadt"; }); }, function (g) { return g.name; }],
+    ["Flächennutzungsplan (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "fnp"; }); }, function (g) { return g.name; }]
   ];
 
   function analyseBauen() {
@@ -3557,6 +3558,7 @@
     var stadtDaten = c.vektor !== true && typeof FLAECHEN !== "undefined" && FLAECHEN.some(function (g) { return g.stadt && karte.hasLayer(g.ebene); });
     zeilen.push({ t: QUELLE_HOEHEN + (z.gelaende ? "  ·  " + QUELLE_GELAENDE : "") + (c.vektor === true ? "  ·  Grundrisse: © OpenStreetMap-Mitwirkende" : "  ·  " + QUELLE_KARTE) +
       (stadtDaten && typeof STADT_QUELLE_TEXT !== "undefined" ? "  ·  Daten: " + STADT_QUELLE_TEXT : "") +
+      (typeof FLAECHEN !== "undefined" && typeof FNP_QUELLE_TEXT !== "undefined" && c.vektor !== true && FLAECHEN.some(function (g) { return g.fnp && karte.hasLayer(g.ebene); }) ? "  ·  " + FNP_QUELLE_TEXT : "") +
       (c.vektor !== true && typeof dienstQuellenText === "function" ? dienstQuellenText() : ""), klein: true });
     var abstand = 6 * u, zeile = 17 * u, kleinZeile = 14 * u;
     var breite = 0;
