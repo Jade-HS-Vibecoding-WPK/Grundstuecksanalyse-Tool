@@ -970,10 +970,15 @@
           <div id="entwurfErgebnis" hidden>
             <label for="entwurfText" style="margin-top:12px">Fertiger Text für die KI</label>
             <textarea id="entwurfText" rows="10" readonly autocomplete="off"></textarea>
-            <div class="knopfreihe" style="margin-top:8px">
-              <button type="button" id="entwurfKopieren" class="zweit">In die Zwischenablage</button>
-              <button type="button" id="entwurfSpeichern" class="zweit">Als Textdatei</button>
-            </div>
+            <button type="button" id="entwurfKopieren" class="zweit">In die Zwischenablage kopieren</button>
+
+            <label for="entwurfFormat" style="margin-top:12px">Dateiformat</label>
+            <select id="entwurfFormat" autocomplete="off">
+              <option value="docx" selected>Word (.docx)</option>
+              <option value="pdf">PDF (.pdf)</option>
+              <option value="txt">Textdatei (.txt)</option>
+            </select>
+            <button type="button" id="entwurfSpeichern" class="zweit">Speichern</button>
             <p class="hinweis">Füge den Text in eine KI ein und lies das Ergebnis kritisch. Die Zahlen sind Näherungen aus offenen Daten und ersetzen keine amtliche Auskunft; die KI darf nichts erfinden, was hier fehlt (Abschnitt „Nicht vorhanden“ im Text).</p>
           </div>
         </div>
@@ -6943,13 +6948,17 @@
       document.getElementById("entwurfSpeichern").addEventListener("click", function () {
         var a = (aktuelleAnzeige || "").split(",")[0].trim().replace(/[^A-Za-z0-9ÄÖÜäöüß]+/g, "-").replace(/^-+|-+$/g, "");
         var d = new Date(), tag = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
-        var name = "Entwurfsstrategie_" + (a ? a + "_" : "") + tag + ".txt";
+        var format = document.getElementById("entwurfFormat").value;
+        var name = "Entwurfsstrategie_" + (a ? a + "_" : "") + tag + "." + format;
+        var titel = "Entwurfsstrategie – Eingabetext für die KI" + (aktuelleAnzeige ? " (" + aktuelleAnzeige.split(",")[0].trim() + ")" : "");
+        var blob;
+        try { blob = window.entwurf.datei(feld.value, format, titel); } catch (x) { zeige("Die Datei konnte nicht erstellt werden.", "fehler"); if (window.console) { console.error(x); } return; }
         var link = document.createElement("a");
         link.download = name;
-        link.href = URL.createObjectURL(new Blob([feld.value], { type: "text/plain;charset=utf-8" }));
+        link.href = URL.createObjectURL(blob);
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
         setTimeout(function () { URL.revokeObjectURL(link.href); }, 10000);
-        zeige("Gespeichert als " + name + ".", "ok");
+        zeige("Gespeichert als " + name + " (" + Math.max(1, Math.round(blob.size / 1024)) + " KB).", "ok");
       });
     })();
 

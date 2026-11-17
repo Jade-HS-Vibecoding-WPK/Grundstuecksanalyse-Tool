@@ -669,7 +669,176 @@ The result should enable a meaningful architectural decision between three genui
     return z_.join("\n");
   }
 
+  // ---------- Dateiformate: Textdatei, Word (.docx), PDF ----------
+  // Beide Formate werden ohne Zusatzprogramme in der App selbst gebaut. Die Zeilen des Textes werden dafür grob eingeteilt:
+  // Überschriften (Großbuchstaben, "A. SITE ..."), Aufzählungspunkte ("- ", eingerückt je zwei Leerzeichen), Leerzeilen und normaler Text.
+  function zeileEinteilen(l) {
+    if (/^\s*$/.test(l)) { return { art: "leer" }; }
+    if (/^=+ .* =+$/.test(l)) { return { art: "h1", text: l.replace(/^=+ | =+$/g, "") }; }
+    var pm = l.match(/^(\s*)- (.*)$/);
+    if (pm) { return { art: "punkt", text: pm[2], ebene: Math.floor(pm[1].length / 2) }; }
+    if (l.length < 90 && /^[A-ZÄÖÜ0-9][A-ZÄÖÜ0-9 &\/\-—.,:()]{3,}$/.test(l)) { return { art: "h2", text: l }; }
+    if (/^[A-D]\. [A-Z][A-Z ]{3,}/.test(l) || /^NICHT VORHANDEN/.test(l)) { return { art: "h2", text: l }; }
+    return { art: "text", text: l.replace(/^\s+/, "") };
+  }
+
+  // -- PDF (Helvetica, A4, Seitenzahlen) --
+  function winAnsi(s) {
+    var karte = { "„": 0x84, "“": 0x93, "”": 0x94, "‘": 0x91, "’": 0x92, "–": 0x96, "—": 0x97, "•": 0x95, "€": 0x80, "…": 0x85, "™": 0x99 };
+    var ersatz = { "₂": "2", "₁": "1", "−": "-", "≥": ">=", "≤": "<=", "≈": "~", "→": "->", "½": "1/2", " ": " " };
+    var aus = "";
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charAt(i), k = s.charCodeAt(i);
+      if (k < 128 || (k >= 160 && k <= 255)) { aus += c; }
+      else if (karte[c] !== undefined) { aus += String.fromCharCode(karte[c]); }
+      else if (ersatz[c] !== undefined) { aus += ersatz[c]; }
+      else { aus += "?"; }
+    }
+    return aus;
+  }
+  function pdfText(s) { return winAnsi(s).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)"); }
+  function pdfBauen(text, titel) {
+    var cv = document.createElement("canvas").getContext("2d");
+    var B = 595.28, H = 841.89, RAND = 56, OBEN = 62, UNTEN = 62, BR = B - 2 * RAND;
+    function breite(t, fett, gr) { cv.font = (fett ? "bold " : "") + gr + "px Arial, Helvetica, sans-serif"; return cv.measureText(t).width; }
+    function umbrechen(t, fett, gr, maxB) {
+      var worte = t.split(" "), zeilen = [], akt = "";
+      worte.forEach(function (w) {
+        var probe = akt ? akt + " " + w : w;
+        if (breite(probe, fett, gr) <= maxB) { akt = probe; return; }
+        if (akt) { zeilen.push(akt); akt = ""; }
+        while (breite(w, fett, gr) > maxB) {          // sehr langes Wort: hart trennen
+          var n = w.length; while (n > 1 && breite(w.slice(0, n), fett, gr) > maxB) { n--; }
+          zeilen.push(w.slice(0, n)); w = w.slice(n);
+        }
+        akt = w;
+      });
+      zeilen.push(akt);
+      return zeilen;
+    }
+    var seiten = [[]], y = OBEN;
+    function neueSeite() { seiten.push([]); y = OBEN; }
+    function setzen(t, x0, fett, gr, vorher, nachher, punktX) {      // punktX: vor die erste Zeile kommt ein Aufzählungspunkt an dieser Stelle
+      var zeilen = umbrechen(t, fett, gr, BR - (x0 - RAND)), lh = gr * 1.38;
+      y += vorher;
+      zeilen.forEach(function (z, i) {
+        if (y + lh > H - UNTEN) { neueSeite(); }
+        y += lh;
+        var sp = seiten[seiten.length - 1];
+        if (i === 0 && punktX !== undefined) { sp.push({ x: punktX, y: y - gr * 0.28, t: "•", fett: false, gr: gr }); }
+        sp.push({ x: x0, y: y - gr * 0.28, t: z, fett: fett, gr: gr });
+      });
+      y += nachher;
+    }
+    setzen(titel, RAND, true, 17, 0, 6);
+    text.split("\n").forEach(function (l) {
+      var e = zeileEinteilen(l);
+      if (e.art === "leer") { y += 5; }
+      else if (e.art === "h1") { setzen(e.text, RAND, true, 13.5, 10, 4); }
+      else if (e.art === "h2") { setzen(e.text, RAND, true, 11, 8, 2); }
+      else if (e.art === "punkt") {
+        var x = RAND + 8 + e.ebene * 14;
+        setzen(e.text, x + 9, false, 9.5, 0, 1, x);
+      }
+      else { setzen(e.text, RAND, false, 9.5, 0, 2); }
+    });
+    // PDF-Objekte schreiben (nur Zeichen unter 256, Länge = Bytes)
+    var objs = [], N = seiten.length;
+    objs[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+    var kids = []; for (var i = 0; i < N; i++) { kids.push((5 + 2 * i) + " 0 R"); }
+    objs[2] = "<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + N + " >>";
+    objs[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>";
+    objs[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>";
+    function f2(n) { return (Math.round(n * 100) / 100).toString(); }
+    seiten.forEach(function (sp, i) {
+      var c = [];
+      sp.forEach(function (e) { c.push("BT /" + (e.fett ? "F2" : "F1") + " " + f2(e.gr) + " Tf " + f2(e.x) + " " + f2(H - e.y) + " Td (" + pdfText(e.t) + ") Tj ET"); });
+      var fuss = "Seite " + (i + 1) + " von " + N, fb = breite(fuss, false, 8);
+      c.push("BT /F1 8 Tf " + f2((B - fb) / 2) + " " + f2(32) + " Td (" + pdfText(fuss) + ") Tj ET");
+      var inhalt = c.join("\n");
+      objs[5 + 2 * i] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + f2(B) + " " + f2(H) + "] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents " + (6 + 2 * i) + " 0 R >>";
+      objs[6 + 2 * i] = "<< /Length " + inhalt.length + " >>\nstream\n" + inhalt + "\nendstream";
+    });
+    var info = 5 + 2 * N;
+    objs[info] = "<< /Title (" + pdfText(titel) + ") /Producer (Standortanalyse Oldenburg) >>";
+    var out = "%PDF-1.4\n", off = [];
+    for (var o = 1; o <= info; o++) { off[o] = out.length; out += o + " 0 obj\n" + objs[o] + "\nendobj\n"; }
+    var xref = out.length;
+    out += "xref\n0 " + (info + 1) + "\n0000000000 65535 f \n";
+    for (var q = 1; q <= info; q++) { out += ("0000000000" + off[q]).slice(-10) + " 00000 n \n"; }
+    out += "trailer\n<< /Size " + (info + 1) + " /Root 1 0 R /Info " + info + " 0 R >>\nstartxref\n" + xref + "\n%%EOF";
+    var bytes = new Uint8Array(out.length);
+    for (var b = 0; b < out.length; b++) { bytes[b] = out.charCodeAt(b) & 255; }
+    return new Blob([bytes], { type: "application/pdf" });
+  }
+
+  // -- Word (.docx = ZIP aus einigen XML-Dateien, hier ohne Komprimierung geschrieben) --
+  var CRC_TABELLE = null;
+  function crc32(bytes) {
+    if (!CRC_TABELLE) { CRC_TABELLE = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) { c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); } CRC_TABELLE[n] = c >>> 0; } }
+    var crc = 0xFFFFFFFF;
+    for (var i = 0; i < bytes.length; i++) { crc = CRC_TABELLE[(crc ^ bytes[i]) & 255] ^ (crc >>> 8); }
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+  function zipBauen(dateien) {          // dateien = [{ name, text }]
+    var enc = new TextEncoder(), teile = [], zentral = [], offset = 0;
+    var d = new Date(), zeit = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), datum = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+    function u16(v) { return [v & 255, (v >> 8) & 255]; }
+    function u32(v) { return [v & 255, (v >> 8) & 255, (v >> 16) & 255, (v >>> 24) & 255]; }
+    dateien.forEach(function (f) {
+      var name = enc.encode(f.name), daten = enc.encode(f.text), crc = crc32(daten);
+      var kopf = [0x50, 0x4b, 0x03, 0x04].concat(u16(20), u16(0x0800), u16(0), u16(zeit), u16(datum), u32(crc), u32(daten.length), u32(daten.length), u16(name.length), u16(0));
+      teile.push(new Uint8Array(kopf), name, daten);
+      zentral.push({ name: name, crc: crc, groesse: daten.length, offset: offset });
+      offset += kopf.length + name.length + daten.length;
+    });
+    var zStart = offset, zGroesse = 0;
+    zentral.forEach(function (z) {
+      var e = [0x50, 0x4b, 0x01, 0x02].concat(u16(20), u16(20), u16(0x0800), u16(0), u16(zeit), u16(datum), u32(z.crc), u32(z.groesse), u32(z.groesse), u16(z.name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(z.offset));
+      teile.push(new Uint8Array(e), z.name); zGroesse += e.length + z.name.length;
+    });
+    teile.push(new Uint8Array([0x50, 0x4b, 0x05, 0x06].concat(u16(0), u16(0), u16(zentral.length), u16(zentral.length), u32(zGroesse), u32(zStart), u16(0))));
+    return new Blob(teile, { type: "application/zip" });
+  }
+  function xml(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, ""); }
+  function docxBauen(text, titel) {
+    var W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", ab = [];
+    function absatz(t, stil, einzug) {
+      var ppr = (stil ? '<w:pStyle w:val="' + stil + '"/>' : "") + (einzug !== undefined ? '<w:spacing w:after="40"/><w:ind w:left="' + (360 + einzug * 360) + '" w:hanging="260"/>' : "");
+      return "<w:p>" + (ppr ? "<w:pPr>" + ppr + "</w:pPr>" : "") + '<w:r><w:t xml:space="preserve">' + xml(t) + "</w:t></w:r></w:p>";
+    }
+    ab.push(absatz(titel, "Title"));
+    text.split("\n").forEach(function (l) {
+      var e = zeileEinteilen(l);
+      if (e.art === "leer") { return; }
+      if (e.art === "h1") { ab.push(absatz(e.text, "Heading1")); }
+      else if (e.art === "h2") { ab.push(absatz(e.text, "Heading2")); }
+      else if (e.art === "punkt") { ab.push(absatz("•  " + e.text, null, e.ebene)); }
+      else { ab.push(absatz(e.text)); }
+    });
+    var dokument = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="' + W + '"><w:body>' + ab.join("") +
+      '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>';
+    function stil(id, name, gr, fett, vor, nach) {
+      return '<w:style w:type="paragraph" w:styleId="' + id + '"><w:name w:val="' + name + '"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="' + vor + '" w:after="' + nach + '"/></w:pPr><w:rPr>' + (fett ? "<w:b/>" : "") + '<w:sz w:val="' + gr + '"/></w:rPr></w:style>';
+    }
+    var styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:styles xmlns:w="' + W + '"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="21"/><w:lang w:val="de-DE"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="80" w:line="264" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>' +
+      '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>' +
+      stil("Title", "Title", 36, true, 0, 160) + stil("Heading1", "heading 1", 28, true, 280, 100) + stil("Heading2", "heading 2", 23, true, 200, 60) + "</w:styles>";
+    var typen = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>';
+    var rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+    var docRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+    var blob = zipBauen([{ name: "[Content_Types].xml", text: typen }, { name: "_rels/.rels", text: rels }, { name: "word/document.xml", text: dokument }, { name: "word/_rels/document.xml.rels", text: docRels }, { name: "word/styles.xml", text: styles }]);
+    return new Blob([blob], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+  }
+
   window.entwurf = {
+    // format: "txt", "docx" oder "pdf"; gibt eine Datei (Blob) zurück
+    datei: function (text, format, titel) {
+      if (format === "docx") { return docxBauen(text, titel); }
+      if (format === "pdf") { return pdfBauen(text, titel); }
+      return new Blob([text], { type: "text/plain;charset=utf-8" });
+    },
     // opt: { aufgabe, flaeche, nutzer, geschosse, wuensche, hoehen (bool), starkregen (bool) }; melde(text) zeigt den Fortschritt
     erstellen: function (opt, melde) {
       if (!window.marker) { return Promise.reject(new Error("Adresse fehlt")); }
