@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Standortanalyse Oldenburg</title>
 
+  <!-- Schneller Start: Verbindung zum Bibliotheks-Server früh aufbauen und die Kartendaten schon laden, während die Seite noch gelesen wird -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preload" href="karte_oldenburg.js" as="script">
+
   <!-- Karten-Bibliothek Leaflet (zeigt die Karte an) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
@@ -903,7 +907,7 @@
           <p class="hinweis" style="margin-top:0">Die Umgebung als 3D-Modell mit vereinfachten Dachformen und dem Schatten der Sonne. Du wählst Datum und Uhrzeit und siehst, wo Schatten fällt. Eigene Baukörper entstehen aus Flächen, die du in „06 Zeichnen“ zeichnest und denen du eine Höhe gibst. Die 3D-Ansicht lässt sich als Bild speichern.</p>
           <button type="button" id="ansicht3dKnopf">3D-Ansicht öffnen</button>
           <div id="ansicht3dMeldung" class="meldung" aria-live="polite"></div>
-          <p class="hinweis">Das Modell zeigt den Ausschnitt um den roten Punkt (ohne Adresse: um die Kartenmitte). Beim ersten Öffnen werden etwa 17 MB Höhendaten geladen, das dauert einen Moment.</p>
+          <p class="hinweis">Das Modell zeigt den Ausschnitt um den roten Punkt (ohne Adresse: um die Kartenmitte). Beim ersten Öffnen werden große Datendateien geladen (Gebäudehöhen und Gelände, zusammen etwa 13 MB), das dauert einen Moment. Sobald du diesen Abschnitt aufklappst, beginnt das Laden schon im Hintergrund.</p>
         </div>
       </details>
 
@@ -6696,27 +6700,52 @@
     // ---------- 3D-Ansicht (Abschnitt 10) ----------
     // three.js (3D-Bibliothek), die Gebäudehöhen und der Programmteil der Ansicht werden erst beim ersten Öffnen geladen.
     var ansicht3dLadevorgang = null;
-    function ladeSkriptDatei(adresse, pruefung) {
-      return new Promise(function (fertig, fehler) {
-        if (pruefung()) { fertig(); return; }
-        var skript = document.createElement("script");
-        skript.src = adresse;
-        skript.onload = fertig;
-        skript.onerror = function () { fehler(new Error("Datei " + adresse + " fehlt")); };
-        document.head.appendChild(skript);
-      });
+    // Die Dateien der 3D-Ansicht: alle werden gleichzeitig geladen, laufen aber in dieser Reihenfolge (three.js zuerst, der Programmteil nach den Daten)
+    var ANSICHT3D_DATEIEN = [
+      { adresse: "three/three.min.js", pruefung: function () { return !!window.THREE; } },
+      { adresse: "hoehen_oldenburg.js", pruefung: function () { return !!window.HOEHEN_OLDENBURG || !!window.hoehenGeladen; } },
+      { adresse: "gelaende_oldenburg.js", pruefung: function () { return !!window.GELAENDE_OLDENBURG; } },
+      { adresse: "ansicht3d.js", pruefung: function () { return !!window.ansicht3d; } }
+    ];
+    function ladeSkriptReihe(liste) {
+      return Promise.all(liste.map(function (d) {
+        return new Promise(function (fertig, fehler) {
+          if (d.pruefung()) { fertig(); return; }
+          var skript = document.createElement("script");
+          skript.src = d.adresse;
+          skript.async = false;            // lädt gleichzeitig, läuft aber in der Reihenfolge, in der die Skripte angehängt wurden
+          skript.onload = fertig;
+          skript.onerror = function () { fehler(new Error("Datei " + d.adresse + " fehlt")); };
+          document.head.appendChild(skript);
+        });
+      }));
     }
     function ladeAnsicht3d() {
       if (ansicht3dLadevorgang) { return ansicht3dLadevorgang; }
-      ansicht3dLadevorgang = ladeSkriptDatei("three/three.min.js", function () { return !!window.THREE; })
-        .then(function () { return ladeSkriptDatei("hoehen_oldenburg.js", function () { return !!window.HOEHEN_OLDENBURG || !!window.hoehenGeladen; }); })
-        .then(function () { return ladeSkriptDatei("ansicht3d.js", function () { return !!window.ansicht3d; }); })
+      ansicht3dLadevorgang = ladeSkriptReihe(ANSICHT3D_DATEIEN)
         .catch(function (fehler) { ansicht3dLadevorgang = null; throw fehler; });
       return ansicht3dLadevorgang;
     }
+    // Schon im Hintergrund laden, wenn jemand den Abschnitt aufklappt oder mit der Maus zum Knopf geht (der Browser merkt sich die Dateien)
+    var ansicht3dVorgeladen = false;
+    function vorladeAnsicht3d() {
+      if (ansicht3dVorgeladen) { return; }
+      ansicht3dVorgeladen = true;
+      ANSICHT3D_DATEIEN.forEach(function (d) {
+        if (d.pruefung()) { return; }
+        var l = document.createElement("link");
+        l.rel = "prefetch"; l.as = "script"; l.href = d.adresse;
+        document.head.appendChild(l);
+      });
+    }
+    (function () {
+      var knopf = document.getElementById("ansicht3dKnopf"), abschnitt = knopf.closest("details");
+      if (abschnitt) { abschnitt.addEventListener("toggle", function () { if (abschnitt.open) { vorladeAnsicht3d(); } }); }
+      ["pointerenter", "focus", "touchstart"].forEach(function (e) { knopf.addEventListener(e, vorladeAnsicht3d, { passive: true }); });
+    })();
     document.getElementById("ansicht3dKnopf").addEventListener("click", function () {
       var feld = document.getElementById("ansicht3dMeldung");
-      feld.textContent = "3D-Ansicht wird geladen …";
+      feld.textContent = "3D-Ansicht wird geladen … (beim ersten Mal große Datendateien, bei langsamem Internet kann das etwas dauern)";
       feld.className = "meldung";
       ladeAnsicht3d().then(function () {
         feld.textContent = "";
