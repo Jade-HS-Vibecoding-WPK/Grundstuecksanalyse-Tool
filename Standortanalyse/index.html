@@ -600,7 +600,69 @@
         padding: 16px 16px 20px;
       }
     }
-</style>
+
+    /* =====================================================================
+       GESTALTUNG 2: klar architektonisch (schweizerisch)
+       Reines Weiß, schwarze Haarlinien, strenges Raster mit Nummernspalte, Grotesk-Schrift, eckige Elemente, ein Signalrot.
+       Dieser Block überschreibt den Plankopf-Stil weiter oben. Wer den alten Stil zurückhaben möchte, löscht den ganzen Block.
+       ===================================================================== */
+    :root {
+      --papier: #ffffff;
+      --karten-grund: #ededed;
+      --feld: #ffffff;
+      --tinte: #111111;
+      --linie: #d2d2d2;             /* feine Linien innerhalb der Abschnitte */
+      --grau: #6b6b6b;
+      --rot: #e2231a;               /* Signalrot als einziger Akzent */
+      --fehler: #b3170f;
+      --flaeche: #f3f3f3;           /* heller Grauton für gewählte Zeilen */
+      --schrift: "Helvetica Neue", Helvetica, Arial, "Segoe UI", system-ui, sans-serif;
+    }
+    .seitenleiste { width: 364px; flex: 0 0 364px; padding: 24px 22px 28px; border-right: 1px solid var(--tinte); scrollbar-width: thin; scrollbar-color: #111 transparent; }
+    .kopf { padding-bottom: 14px; margin-bottom: 0; border-bottom: 3px solid var(--tinte); }
+    h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.015em; text-transform: none; line-height: 1.05; }
+    .untertitel { margin-top: 7px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.28em; text-transform: uppercase; color: var(--tinte); }
+    /* Abschnitte: Nummernspalte links, Titel daneben, Zeichen rechts; Haarlinien dazwischen */
+    .abschnitt { border-bottom: 1px solid var(--tinte); }
+    .abschnitt summary { display: grid; grid-template-columns: 34px 1fr auto; align-items: baseline; gap: 0; padding: 13px 0 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.13em; }
+    .abschnitt summary .nr { color: var(--grau); font-weight: 400; letter-spacing: 0.06em; font-variant-numeric: tabular-nums; }
+    .abschnitt[open] > summary .nr { color: var(--rot); font-weight: 700; }
+    .abschnitt summary::after { font-size: 15px; font-weight: 300; }
+    .abschnitt summary:hover { color: var(--rot); }
+    .abschnitt .inhalt { padding: 2px 0 18px 34px; }
+    label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; color: var(--grau); }
+    input[type="text"], input[type="number"], select, textarea { padding: 9px 10px; background: #fff; border: 1px solid var(--tinte); border-radius: 0; }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { outline: none; box-shadow: inset 0 -2px 0 var(--tinte), 0 0 0 1px var(--tinte); }
+    ::placeholder { color: #9a9a9a; }
+    button { padding: 10px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; border-radius: 0; background: var(--tinte); border: 1px solid var(--tinte); color: #fff; }
+    button:hover { background: var(--rot); border-color: var(--rot); }
+    button.zweit { color: var(--tinte); background: #fff; border: 1px solid var(--tinte); }
+    button.zweit:hover { color: #fff; background: var(--tinte); border-color: var(--tinte); }
+    button.zweit.aktiv { color: #fff; background: var(--tinte); border-color: var(--tinte); }
+    .projektleiste button, .werkzeugreihe button, .wiederherstellen button { letter-spacing: 0.1em; }
+    label.haken, label.haken input, .planZeile input[type="checkbox"], input[type="range"], .leaflet-control-layers-selector { accent-color: var(--tinte); }
+    label.haken { font-size: 13px; }
+    .wiederherstellen { background: #fff; border: 1px solid var(--tinte); border-left: 4px solid var(--rot); }
+    .planZeile { background: #fff; border: 1px solid var(--tinte); }
+    .planZeile.gewaehlt { background: var(--flaeche); border-color: var(--tinte); box-shadow: inset 4px 0 0 var(--rot); }
+    .planZeile button.planPfeil { color: var(--tinte); background: #fff; border: 1px solid var(--tinte); }
+    .planZeile button.planPfeil:hover { color: #fff; background: var(--tinte); }
+    .verlauf button:hover { background: var(--flaeche); box-shadow: inset 3px 0 0 var(--rot); }
+    .gruppentitel, .hilfe h3 { font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; color: var(--grau); }
+    .abschnitt details.analyseGruppe { border-top: 1px solid var(--linie); }
+    .abschnitt details.analyseGruppe > summary { display: flex; padding: 9px 0 7px; font-size: 12.5px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--tinte); }
+    .abschnitt details.analyseGruppe > summary .anzahl:not(:empty) { padding: 1px 6px; font-size: 10px; font-weight: 700; color: #fff; background: var(--tinte); border-radius: 0; }
+    .palette button.farbe { border: 1px solid var(--tinte); border-radius: 0; }
+    .ladeanzeige, .kartenstatus { background: #fff; border: 1px solid var(--tinte); }
+    .kartenstatus { text-align: left; border-left: 4px solid var(--tinte); }
+    .kartenstatus.fehler { border-color: var(--fehler); }
+    .kreis-beschriftung span { background: #fff; }
+    .leaflet-bar a:hover { background: var(--tinte); color: #fff; }
+    .leaflet-control-layers-list label { letter-spacing: 0.02em; }
+    @media (max-width: 760px) {
+      .seitenleiste { width: 100%; flex: 0 0 auto; }
+      .abschnitt .inhalt { padding-left: 0; }
+    }</style>
 </head>
 
 <body>
