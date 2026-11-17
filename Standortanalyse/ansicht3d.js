@@ -1549,15 +1549,32 @@
   }
 
   // Lädt (falls gewünscht) das Gelände und richtet z.gh ein; bei einem Fehler steht das Modell auf ebenem Boden
+  // Die Geländedaten werden immer geladen: Die Höhen der Gebäude in der Datei sind Höhen über NHN und werden damit auf den Boden bezogen
+  // (siehe hoehenKorrigieren). Der Haken "Gelände" bestimmt nur, ob das Relief im Modell zu sehen ist.
   function gelaendeVorbereiten(z) {
     z.gelFehler = "";
-    if (!z.el("a3dGelaende").checked) { gelaendeEinrichten(z, null); return Promise.resolve(); }
+    var relief = z.el("a3dGelaende").checked;
     z.el("a3dStatus").textContent = "Gelände wird geladen …";
-    return gelaendeLaden().then(function (G) { gelaendeEinrichten(z, G); }, function (x) {
+    return gelaendeLaden().then(function (G) { hoehenKorrigieren(G); gelaendeEinrichten(z, relief ? G : null); }, function (x) {
       gelaendeEinrichten(z, null);
       z.el("a3dGelaende").checked = false;
-      z.gelFehler = " Das Gelände konnte nicht geladen werden (" + (x && x.message ? x.message : "Datei gelaende_oldenburg.js fehlt oder ist beschädigt") + "), das Modell steht auf ebenem Boden.";
+      z.gelFehler = " Das Gelände konnte nicht geladen werden (" + (x && x.message ? x.message : "Datei gelaende_oldenburg.js fehlt oder ist beschädigt") + "), das Modell steht auf ebenem Boden und die Gebäudehöhen sind dann um die Geländehöhe (in Oldenburg etwa 0 bis 20 m) zu hoch.";
     });
+  }
+  // Höhen in der Gebäudedatei (Traufe, First) sind Höhen über NHN, nicht über dem Boden (geprüft: sie steigen mit der Geländehöhe, Traufe minus
+  // Gelände ergibt im Median 3,6 m). Hier einmal je Gebäude die Geländehöhe an der Gebäudemitte abziehen.
+  var gebaeudeKorrigiert = false;
+  function hoehenKorrigieren(G) {
+    if (gebaeudeKorrigiert || !G) { return; }
+    var liste = entpacke();
+    for (var i = 0; i < liste.length; i++) {
+      var g = liste[i], q = utm32(g.lat, g.lng);
+      var c = Math.round((q.e - G.e0) / G.schritt - 0.5), r = Math.round((G.n1 - q.n) / G.schritt - 0.5);
+      c = c < 0 ? 0 : (c > G.W - 1 ? G.W - 1 : c); r = r < 0 ? 0 : (r > G.H - 1 ? G.H - 1 : r);
+      var boden = G.h[r * G.W + c] / 10;
+      g.t = Math.max(0.5, g.t - boden); g.f = Math.max(g.t, g.f - boden);
+    }
+    gebaeudeKorrigiert = true;
   }
   // Kleinste und größte Geländehöhe im Ausschnitt (über NHN), grob abgetastet
   function gelaendeSpanne(R) {
@@ -4168,5 +4185,6 @@
     }, 40);
   }
 
-  window.ansicht3d = { oeffnen: oeffnen, schliessen: schliessen, sonnenstand: sonnenstand };
+  // daten: für entwurf.js (Entwurfsstrategie): Gebäude mit Höhen, Gelände und die Umrechnung nach UTM
+  window.ansicht3d = { oeffnen: oeffnen, schliessen: schliessen, sonnenstand: sonnenstand, daten: { gebaeude: function () { return gelaendeLaden().then(function (G) { hoehenKorrigieren(G); return entpacke(); }); }, gelaende: gelaendeLaden, utm32: utm32 } };
 })();

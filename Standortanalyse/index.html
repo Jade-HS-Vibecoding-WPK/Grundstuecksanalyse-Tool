@@ -224,6 +224,12 @@
     input[type="range"] { width: 100%; accent-color: var(--rot); margin: 2px 0 0; }
     button.zweit[hidden] { display: none; }
 
+    /* Mehrzeilige Felder (Entwurfsstrategie) */
+    textarea { display: block; width: 100%; padding: 9px 10px; font-size: 13px; font-family: inherit; line-height: 1.45; color: var(--tinte); background: var(--feld); border: 1px solid var(--tinte); border-radius: 0; resize: vertical; }
+    textarea:focus { outline: 2px solid var(--rot); outline-offset: -1px; }
+    #entwurfText { font-size: 12px; }
+    #entwurfMeldung:empty { display: none; }
+
     /* Liste der Pläne */
     .planListe { display: flex; flex-direction: column; gap: 4px; margin: 4px 0 14px; }
     .planListe[hidden] { display: none; }
@@ -929,7 +935,52 @@
       </details>
 
       <details class="abschnitt">
-        <summary><span class="nr">11</span> Hilfe</summary>
+        <summary><span class="nr">11</span> Entwurfsstrategie</summary>
+        <div class="inhalt">
+          <p class="hinweis" style="margin-top:0">Die App stellt aus deiner Standortanalyse einen fertigen Text für eine KI zusammen (zum Beispiel Claude oder ChatGPT). Die KI entwickelt daraus drei unterschiedliche Entwurfsstrategien: Stadtkontinuität, offene Landschaft und Hybrid. Du brauchst eine gesuchte Adresse (der rote Punkt). Die App schickt selbst nichts ins Internet, außer der Starkregen-Abfrage.</p>
+
+          <label for="entwurfAufgabe">Bauaufgabe und Nutzung</label>
+          <textarea id="entwurfAufgabe" rows="3" placeholder="Zum Beispiel: Wohnhaus mit Kita im Erdgeschoss, Gemeinschaftsräume, Tiefgarage" autocomplete="off"></textarea>
+
+          <div class="gitter" style="margin-top:12px">
+            <div>
+              <label for="entwurfFlaeche">Geschossfläche in m²</label>
+              <input type="number" id="entwurfFlaeche" min="0" step="10" placeholder="ca." autocomplete="off">
+            </div>
+            <div>
+              <label for="entwurfNutzer">Zahl der Nutzer</label>
+              <input type="number" id="entwurfNutzer" min="0" step="1" placeholder="ca." autocomplete="off">
+            </div>
+          </div>
+
+          <label for="entwurfGeschosse" style="margin-top:12px">Höhe oder Geschossgrenze</label>
+          <input type="text" id="entwurfGeschosse" placeholder="Zum Beispiel: höchstens 4 Geschosse" autocomplete="off">
+
+          <label for="entwurfWuensche" style="margin-top:12px">Nachhaltigkeit und Wünsche des Auftraggebers</label>
+          <textarea id="entwurfWuensche" rows="3" placeholder="Zum Beispiel: Holzbau, Dachbegrünung, möglichst viele Bäume erhalten" autocomplete="off"></textarea>
+
+          <label class="haken"><input type="checkbox" id="entwurfHoehen" checked autocomplete="off"> Gebäudehöhen und Gelände einbeziehen</label>
+          <p class="hinweis" style="margin:2px 0 0 24px">Lädt beim ersten Mal große Dateien (ca. 13 MB) und liefert Bebauungsdichte, Traufhöhen und Geländehöhen.</p>
+          <label class="haken"><input type="checkbox" id="entwurfRegen" checked autocomplete="off"> Starkregen am Standort abfragen</label>
+          <p class="hinweis" style="margin:2px 0 0 24px">Fragt den Online-Dienst des Bundes ab, braucht Internet.</p>
+
+          <button type="button" id="entwurfKnopf">Text erstellen</button>
+          <div id="entwurfMeldung" class="meldung" aria-live="polite"></div>
+
+          <div id="entwurfErgebnis" hidden>
+            <label for="entwurfText" style="margin-top:12px">Fertiger Text für die KI</label>
+            <textarea id="entwurfText" rows="10" readonly autocomplete="off"></textarea>
+            <div class="knopfreihe" style="margin-top:8px">
+              <button type="button" id="entwurfKopieren" class="zweit">In die Zwischenablage</button>
+              <button type="button" id="entwurfSpeichern" class="zweit">Als Textdatei</button>
+            </div>
+            <p class="hinweis">Füge den Text in eine KI ein und lies das Ergebnis kritisch. Die Zahlen sind Näherungen aus offenen Daten und ersetzen keine amtliche Auskunft; die KI darf nichts erfinden, was hier fehlt (Abschnitt „Nicht vorhanden“ im Text).</p>
+          </div>
+        </div>
+      </details>
+
+      <details class="abschnitt">
+        <summary><span class="nr">12</span> Hilfe</summary>
         <div class="inhalt hilfe">
           <h3>So gehst du vor</h3>
           <ol>
@@ -942,6 +993,7 @@
             <li><strong>Beschriftung</strong> (08): Titel, Nordpfeil, Legende, Maßstabsbalken und Quelle ein- oder ausschalten.</li>
             <li><strong>Speichern</strong> (09): „Als Bild speichern“ (PNG) oder als PDF. Beim Drucken „100 %“ wählen, dann stimmt der Maßstab.</li>
             <li><strong>3D-Ansicht</strong> (10): „3D-Ansicht öffnen“. Datum und Uhrzeit wählen, der Schatten wandert mit. Ziehen dreht das Modell, Rechtsklick ziehen verschiebt, das Mausrad zoomt. Für einen eigenen Baukörper in „06 Zeichnen“ eine Fläche zeichnen, die Höhe eintragen und die 3D-Ansicht öffnen. Die Sonnenstunden (im Jahresmittel, mit Schatten von Gebäuden und Bäumen) berechnest du im Abschnitt „Sonnenstunden“ der 3D-Ansicht; das Ergebnis erscheint danach auch hier in der Karte. Bäume stehen im Abschnitt „Bäume“ der 3D-Ansicht. Eigene Bäume setzt du hier unter „06 Zeichnen“ mit dem Werkzeug „Baum“ (Höhe, Krone und Baumart darunter; der Kreis zeigt die Krone) oder direkt in der 3D-Ansicht. Im Abschnitt „Analysedaten“ der 3D-Ansicht schaltest du dieselben Ebenen wie in der Karte (sie liegen auf dem Boden, Haltestellen und Einrichtungen stehen als Pfähle). Im Abschnitt „Messen“ der 3D-Ansicht misst du Entfernungen, Strecken und Gebäudehöhen und prüfst, ob ein Punkt im Schatten liegt.</li>
+          <li><strong>Entwurfsstrategie</strong> (11): Aus deiner Analyse entsteht ein fertiger Text für eine KI, die drei Entwurfsstrategien entwickelt. Adresse suchen, bei Bedarf eine Fläche „Grundstück“ zeichnen, Bauaufgabe eintragen, „Text erstellen“, dann kopieren und in die KI einfügen. Die Zahlen sind Näherungen aus offenen Daten, was die App nicht weiß, steht unter „Nicht vorhanden“.</li>
           </ol>
 
           <h3>Gut zu wissen</h3>
@@ -6530,8 +6582,8 @@
     // oder Neuladen nichts verloren ist. Beim nächsten Start fragt die App, ob der letzte Stand wiederhergestellt werden soll.
     var PROJEKT_FORMAT = "standortanalyse-projekt";
     var PROJEKT_VERSION = 2;           // 2: mehrere Pläne ("plaene"); Dateien der Version 1 (ein Plan in "plan") lassen sich weiter öffnen
-    var PROJEKT_FELDER = ["massstab", "massstabFrei", "papier", "ausrichtung", "titel", "format", "aufloesung"];
-    var PROJEKT_HAKEN = ["optTitel", "optNordpfeil", "optLegende", "optBalken", "optQuelle", "rahmenZeigen"];
+    var PROJEKT_FELDER = ["massstab", "massstabFrei", "papier", "ausrichtung", "titel", "format", "aufloesung", "entwurfAufgabe", "entwurfFlaeche", "entwurfNutzer", "entwurfGeschosse", "entwurfWuensche"];
+    var PROJEKT_HAKEN = ["optTitel", "optNordpfeil", "optLegende", "optBalken", "optQuelle", "rahmenZeigen", "entwurfHoehen", "entwurfRegen"];
     var projektMeldungFeld = document.getElementById("projektMeldung");
 
     function zeigeProjektMeldung(text, art) {
@@ -6841,6 +6893,64 @@
           Promise.all([idbLoesche("zustand"), idbLoesche("planbild"), idbLoesche("planbilder")]).catch(function () {}).then(beginnen);
         };
       }).catch(beginnen);
+    })();
+
+    // ---------- Entwurfsstrategie (Abschnitt 11) ----------
+    // Der Programmteil (entwurf.js, enthält die Vorlage) wird erst beim ersten Klick geladen.
+    var entwurfLadevorgang = null;
+    function ladeEntwurf() {
+      if (window.entwurf) { return Promise.resolve(); }
+      if (entwurfLadevorgang) { return entwurfLadevorgang; }
+      entwurfLadevorgang = new Promise(function (fertig, fehler) {
+        var skript = document.createElement("script");
+        skript.src = "entwurf.js";
+        skript.onload = fertig;
+        skript.onerror = function () { entwurfLadevorgang = null; fehler(new Error("entwurf.js fehlt")); };
+        document.head.appendChild(skript);
+      });
+      return entwurfLadevorgang;
+    }
+    (function () {
+      var knopf = document.getElementById("entwurfKnopf"), meld = document.getElementById("entwurfMeldung");
+      var ergebnis = document.getElementById("entwurfErgebnis"), feld = document.getElementById("entwurfText");
+      function zeige(text, art) { meld.textContent = text; meld.className = "meldung " + (art || ""); }
+      knopf.addEventListener("click", function () {
+        if (!marker) { zeige("Bitte zuerst eine Adresse suchen. Der rote Punkt ist der Mittelpunkt der Analyse.", "fehler"); return; }
+        knopf.disabled = true;
+        zeige("Wird erstellt …");
+        var opt = {
+          aufgabe: document.getElementById("entwurfAufgabe").value, flaeche: document.getElementById("entwurfFlaeche").value,
+          nutzer: document.getElementById("entwurfNutzer").value, geschosse: document.getElementById("entwurfGeschosse").value,
+          wuensche: document.getElementById("entwurfWuensche").value,
+          hoehen: document.getElementById("entwurfHoehen").checked, starkregen: document.getElementById("entwurfRegen").checked
+        };
+        ladeEntwurf().then(function () { return window.entwurf.erstellen(opt, zeige); }).then(function (text) {
+          feld.value = text;
+          ergebnis.hidden = false;
+          zeige("Fertig: " + text.length.toLocaleString("de-DE") + " Zeichen. Kopiere den Text und füge ihn in eine KI ein.", "ok");
+        }).catch(function (fehler) {
+          zeige(fehler && fehler.message === "entwurf.js fehlt"
+            ? "Die Datei entwurf.js fehlt. Sie muss im selben Ordner wie index.html liegen."
+            : "Der Text konnte nicht erstellt werden. Bitte noch einmal versuchen. Wenn es wieder nicht klappt, schalte „Gebäudehöhen und Gelände einbeziehen“ aus.", "fehler");
+          if (window.console) { console.error(fehler); }
+        }).then(function () { knopf.disabled = false; });
+      });
+      document.getElementById("entwurfKopieren").addEventListener("click", function () {
+        function ok() { zeige("In die Zwischenablage kopiert.", "ok"); }
+        function auswahl() { feld.focus(); feld.select(); try { document.execCommand("copy"); ok(); } catch (e) { zeige("Kopieren ging nicht. Markiere den Text und kopiere ihn mit Strg+C.", "fehler"); } }
+        if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(feld.value).then(ok, auswahl); } else { auswahl(); }
+      });
+      document.getElementById("entwurfSpeichern").addEventListener("click", function () {
+        var a = (aktuelleAnzeige || "").split(",")[0].trim().replace(/[^A-Za-z0-9ÄÖÜäöüß]+/g, "-").replace(/^-+|-+$/g, "");
+        var d = new Date(), tag = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+        var name = "Entwurfsstrategie_" + (a ? a + "_" : "") + tag + ".txt";
+        var link = document.createElement("a");
+        link.download = name;
+        link.href = URL.createObjectURL(new Blob([feld.value], { type: "text/plain;charset=utf-8" }));
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        setTimeout(function () { URL.revokeObjectURL(link.href); }, 10000);
+        zeige("Gespeichert als " + name + ".", "ok");
+      });
     })();
 
     // ---------- 3D-Ansicht (Abschnitt 10) ----------
