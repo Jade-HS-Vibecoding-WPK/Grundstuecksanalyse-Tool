@@ -186,13 +186,16 @@
       var Dm = new Date();
       var A = teile.A, B = teile.B, C = teile.C, Dd = teile.D;
       var fl = daten.flaechen || {};
+      var K = teile.kenn = {};           // Kennzahlen für das Standortprofil (Kacheln, Stärken und Hinweise)
 
       // ===== A. Standort =====
       A.push(zeile("Adresse (so gesucht)", window.aktuelleAnzeige || "nicht angegeben"));
       A.push(zeile("Lage des roten Punkts (Mittelpunkt aller Umkreise)", z(P.lat, 6) + " N, " + z(P.lng, 6) + " O (WGS 84)"));
       var bez = (fl.bezirke || []).filter(function (f) { return inFlaeche(f, P.lat, P.lng); })[0];
       A.push(zeile("Stadtbezirk", bez && bez.a ? bez.a : "nicht in den Daten gefunden"));
+      K.bezirk = bez && bez.a ? bez.a : "";
       var bpl = (fl.bplan || []).filter(function (f) { return inFlaeche(f, P.lat, P.lng); }).length;
+      K.bplan = bpl > 0;
       A.push(zeile("Bebauungsplan", bpl ? "Der Punkt liegt im Umriss eines rechtsverbindlichen Bebauungsplans (Stadt Oldenburg, Datenlizenz dl-de/by-2-0). Plannummer und Festsetzungen sind in den App-Daten NICHT enthalten und müssen beim Planungsamt geprüft werden." : "Der Punkt liegt in keinem Umriss eines Bebauungsplans in den Daten. Das heißt nicht, dass keine planungsrechtlichen Regeln gelten (zum Beispiel § 34 BauGB); das muss geprüft werden."));
 
       // Grundstück aus der Zeichnung
@@ -259,7 +262,7 @@
       // ===== B. Standortanalyse =====
       // Gebäude, Höhen und Gelände
       if (daten.a3d) {
-        var G = daten.a3d.gebaeude, n1 = 0, n2 = 0, gf1 = 0, gf2 = 0, trauf = [], first = [], dachCls = [0, 0, 0, 0, 0], hoehenKl = [0, 0, 0, 0, 0], nah = [];
+        var G = daten.a3d.gebaeude, n1 = 0, n2 = 0, gf1 = 0, gf2 = 0, trauf = [], traufHaupt = [], first = [], dachCls = [0, 0, 0, 0, 0], hoehenKl = [0, 0, 0, 0, 0], nah = [];
         // Die Höhen sind schon auf den Boden bezogen: ansicht3d.js zieht von den Werten der Datei (Höhen über NHN) die Geländehöhe ab.
         var Gd0 = daten.a3d.gelaende, u0 = daten.a3d.utm32, ohneHoehe = 0;
         var hAt = function (lat, lng) {
@@ -290,7 +293,7 @@
           if (d <= R1) {
             n1++; gf1 += flaeche;
             if (g.cls >= 0 && g.cls < 5) { dachCls[g.cls]++; }
-            if (tr !== null) { trauf.push(tr); first.push(fi); hoehenKl[tr <= 4 ? 0 : tr <= 7 ? 1 : tr <= 10 ? 2 : tr <= 13 ? 3 : 4]++; } else { ohneHoehe++; }
+            if (tr !== null) { trauf.push(tr); if (flaeche >= 50) { traufHaupt.push(tr); } first.push(fi); hoehenKl[tr <= 4 ? 0 : tr <= 7 ? 1 : tr <= 10 ? 2 : tr <= 13 ? 3 : 4]++; } else { ohneHoehe++; }
           }
           if (d <= 60) { nah.push({ d: d, g: g, flaeche: flaeche, tr: tr, fi: fi }); }
         });
@@ -300,9 +303,11 @@
         var mit = function (a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : 0; };
         B.push("Bebauung (Gebäudemodell des Landes LGLN, LoD2; Näherung, Gebäude am Rand des Kreises zählen ganz):");
         B.push("  - Gebäude im 400-m-Umkreis: " + z(n1) + "; im 800-m-Umkreis: " + z(n2));
+        K.gebaeude400 = n1; K.gebaeude800 = n2; K.ueberbaut400 = gf1 / kreisflaeche1;
         B.push("  - Überbaute Fläche (Summe der Gebäudegrundflächen) im 400-m-Umkreis: ca. " + prozent(gf1 / kreisflaeche1) + " der Kreisfläche; im 800-m-Umkreis: ca. " + prozent(gf2 / kreisflaeche2) + " (Gebäudegrundflächen im Verhältnis zur Kreisfläche, nicht zur Grundstücksfläche; keine GRZ nach BauNVO)");
         B.push("  - Die Zahl der Gebäude enthält auch Nebengebäude (Garagen, Schuppen, Anbauten) und Gebäudeteile.");
         if (trauf.length) {
+          K.traufeMedian = med(trauf); if (traufHaupt.length) { traufHaupt.sort(function (a, b) { return a - b; }); K.traufeHaupt = med(traufHaupt); } K.firstMax = first[first.length - 1]; K.hoch13 = hoehenKl[4] / trauf.length; K.niedrig7 = (hoehenKl[0] + hoehenKl[1]) / trauf.length;
           B.push("  - Höhen über Gelände (Höhenangabe der Datei minus Geländehöhe am Gebäude; Genauigkeit etwa 1 bis 5 m), ohne Höhenwert: " + z(ohneHoehe) + " Gebäude");
           B.push("  - Traufhöhe im 400-m-Umkreis: Median " + z(med(trauf), 1) + " m, Mittel " + z(mit(trauf), 1) + " m, größte Firsthöhe " + z(first[first.length - 1], 1) + " m");
           B.push("  - Verteilung nach Traufhöhe (grob, bei etwa 3 m je Geschoss; keine amtliche Geschosszahl; enthält auch niedrige Nebengebäude): bis 4 m " + prozent(hoehenKl[0] / trauf.length) + ", 4–7 m " + prozent(hoehenKl[1] / trauf.length) + ", 7–10 m " + prozent(hoehenKl[2] / trauf.length) + ", 10–13 m " + prozent(hoehenKl[3] / trauf.length) + ", über 13 m " + prozent(hoehenKl[4] / trauf.length));
@@ -329,6 +334,7 @@
           });
           B.push("Gelände (Höhenmodell DGM1 des Landes, 5-m-Raster; glättet Deiche und Böschungen):");
           if (hp !== null) {
+            K.hoeheAmPunkt = hp; if (c1) { K.hoeheDiff400 = mx1 - mn1; }
             B.push("  - Höhe am roten Punkt: ca. " + z(hp, 1) + " m über NHN");
             if (c1) { B.push("  - Im 400-m-Umkreis: " + z(mn1, 1) + " bis " + z(mx1, 1) + " m über NHN (Unterschied " + z(mx1 - mn1, 1) + " m); im 800-m-Umkreis: " + z(mn2, 1) + " bis " + z(mx2, 1) + " m (Unterschied " + z(mx2 - mn2, 1) + " m)"); }
           } else { B.push("  - Der Punkt liegt außerhalb des Höhenmodells."); }
@@ -345,6 +351,7 @@
       gruppenInfo.forEach(function (gi) {
         if (!fl[gi[0]]) { return; }
         var a = anteile(pts, fl[gi[0]]);
+        (K.anteil = K.anteil || {})[gi[0]] = a;
         B.push("  - " + gi[1] + ": " + prozent(a.a1) + " im 400-m-Umkreis, " + prozent(a.a2) + " im 800-m-Umkreis");
       });
       teile.quellen.push("Flächen und Nutzungen: © OpenStreetMap-Mitwirkende (ODbL)");
@@ -357,6 +364,7 @@
           if (d <= R2) { bn2++; }
           if (d <= R1) { bn1++; var kr = window.baumKroneBreite(b); krone1 += Math.PI * kr * kr / 4; if (b.h > 0) { mitH += b.h; nH++; } if (b.ig) { ig++; } }
         });
+        K.baeume400 = bn1;
         B.push(zeile("Einzelbäume (OpenStreetMap, unvollständig; viele Straßenbäume fehlen)", z(bn1) + " im 400-m-Umkreis, " + z(bn2) + " im 800-m-Umkreis" + (nH ? "; bei " + nH + " ist die Höhe erfasst (Mittel " + z(mitH / nH, 1) + " m)" : "") + (ig ? "; " + ig + " immergrün/Nadel" : "") + "; Kronenfläche der erfassten Bäume im 400-m-Umkreis ca. " + prozent(Math.min(1, krone1 / (Math.PI * R1 * R1))) + " (geschätzt, Kronenbreite oft nicht erfasst)"));
         var nah30 = daten.baeume.filter(function (b) { return O.abstand(b.lat, b.lng) <= 40; });
         if (nah30.length) { B.push(zeile("Erfasste Bäume im 40-m-Umkreis um den roten Punkt", nah30.length + " (z. B. " + nah30.slice(0, 5).map(function (b) { return O.richtung(b.lat, b.lng) + " " + z(Math.round(O.abstand(b.lat, b.lng))) + " m" + (b.h > 0 ? ", " + z(b.h, 0) + " m hoch" : ""); }).join("; ") + ")")); }
@@ -365,6 +373,7 @@
       // Bewegung: ÖPNV, Fahrplan, Rad, Auto
       if (daten.oepnv) {
         var bus = punktGruppe(O, daten.oepnv.filter(function (p) { return !p.bahn; })), bahnh = punktGruppe(O, daten.oepnv.filter(function (p) { return p.bahn; }));
+        K.bus400 = bus.n1; K.busNaechste = bus.naechste; K.bahnNaechste = bahnh.naechste;
         B.push(zeile("Haltestellen (OpenStreetMap)", "Bushaltepunkte: " + z(bus.n1) + " im 400-m-, " + z(bus.n2) + " im 800-m-Umkreis, " + abstandText(bus.naechste) + "; Bahnhof/Haltepunkt: " + abstandText(bahnh.naechste)));
         teile.quellen.push("Haltestellen: © OpenStreetMap-Mitwirkende (ODbL)");
       }
@@ -372,6 +381,7 @@
         var nahe = daten.fahrplan.filter(function (h) { return O.abstand(h.lat, h.lng) <= R1; }).sort(function (a, b) { return b.abf - a.abf; });
         if (nahe.length) {
           var alleLinien = {}; nahe.forEach(function (h) { String(h.linien || "").split(/\s*[,;]\s*/).forEach(function (l) { if (l) { alleLinien[l] = true; } }); });
+          K.takt400 = nahe[0].abf / 14; K.linien400 = Object.keys(alleLinien).length;
           B.push("Fahrplan (gtfs.de, ein normaler Dienstag, 6–20 Uhr, ohne Endhaltestellen; Haltestellen gleichen Namens zusammengefasst):");
           B.push("  - Haltestellen im 400-m-Umkreis: " + nahe.length + ", verschiedene Linien: " + Object.keys(alleLinien).length);
           nahe.slice(0, 5).forEach(function (h) { B.push("  - " + h.name + " (" + z(Math.round(O.abstand(h.lat, h.lng) / 10) * 10) + " m, " + O.richtung(h.lat, h.lng) + "): " + z(h.abf / 14, 1) + " Abfahrten pro Stunde im Mittel, Linien " + (h.linien || "keine Angabe")); });
@@ -382,10 +392,11 @@
         var mz = [];
         window.MOBILITAET.forEach(function (g) {
           var d = daten.mobil[g.id]; if (!d) { return; }
-          if (d.punkte) { var pg = punktGruppe(O, d.punkte); mz.push("  - " + g.name + ": " + z(pg.n1) + " im 400-m-, " + z(pg.n2) + " im 800-m-Umkreis, " + abstandText(pg.naechste)); }
+          if (d.punkte) { var pg = punktGruppe(O, d.punkte); (K.mob = K.mob || {})[g.id] = pg; mz.push("  - " + g.name + ": " + z(pg.n1) + " im 400-m-, " + z(pg.n2) + " im 800-m-Umkreis, " + abstandText(pg.naechste)); }
           if (d.linien) {
             var l1 = 0, l2 = 0;
             d.linien.forEach(function (li) { for (var i = 1; i < li.length; i++) { var mlat = (li[i][0] + li[i - 1][0]) / 2, mlng = (li[i][1] + li[i - 1][1]) / 2, dd = O.abstand(mlat, mlng); if (dd > R2) { continue; } var a = O.xy(li[i - 1][0], li[i - 1][1]), b = O.xy(li[i][0], li[i][1]), len = Math.sqrt((a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1])); l2 += len; if (dd <= R1) { l1 += len; } } });
+            (K.mob = K.mob || {})[g.id] = { l1: l1, l2: l2 };
             mz.push("  - " + g.name + ": ca. " + z(Math.round(l1 / 10) * 10) + " m Länge im 400-m-, ca. " + z(Math.round(l2 / 10) * 10) + " m im 800-m-Umkreis");
           }
         });
@@ -399,6 +410,7 @@
         B.push("Einrichtungen (OpenStreetMap, nicht vollständig; Zahl der Einträge, nicht Größe oder Qualität):");
         window.EINRICHTUNGEN.forEach(function (g) {
           var pg = punktGruppe(O, daten.einr[g.id] || []);
+          (K.einr = K.einr || {})[g.id] = pg;
           B.push("  - " + g.name + ": " + z(pg.n1) + " im 400-m-, " + z(pg.n2) + " im 800-m-Umkreis, " + abstandText(pg.naechste));
         });
         teile.quellen.push("Einrichtungen: © OpenStreetMap-Mitwirkende (ODbL)");
@@ -407,6 +419,7 @@
         var sp = punktGruppe(O, daten.spiel.spielplaetze), oeff = daten.spiel.spielplaetze.filter(function (s) { return !/privat|customers|no/i.test(s.zugang || ""); });
         var spo = punktGruppe(O, oeff);
         var orte = Object.keys(daten.spiel.orte).map(function (id) { var g = window.SPIEL.filter(function (x) { return x.id === id; })[0]; var pg = punktGruppe(O, daten.spiel.orte[id]); return (g ? g.name : id) + ": " + z(pg.n1) + " im 400-m-Umkreis, " + abstandText(pg.naechste); });
+        K.spiel = sp; K.spielOeff = spo;
         B.push(zeile("Spielplätze (OpenStreetMap)", z(sp.n1) + " im 400-m-, " + z(sp.n2) + " im 800-m-Umkreis, " + abstandText(sp.naechste) + "; davon wahrscheinlich öffentlich (Zugang nicht eingeschränkt): " + abstandText(spo.naechste)));
         B.push("  - Bewegungsorte: " + orte.join("; "));
       }
@@ -425,6 +438,8 @@
         var list = fl[L[0]]; if (!list) { return; }
         var amPunkt = list.filter(function (f) { return inFlaeche(f, P.lat, P.lng); }).map(function (f) { return L[2][f.a] ? L[2][f.a][1] : f.a; });
         var alle = anteile(pts, list);
+        if (L[0] === "laerm_lden") { K.laermTag = amPunkt; K.laermAnteil400 = alle.a1; }
+        if (L[0] === "laerm_nacht") { K.laermNacht = amPunkt; }
         laermZeilen.push("  - " + L[1] + " am roten Punkt: " + (amPunkt.length ? amPunkt.join(", ") : "keine Kartierung an dieser Stelle (unter der Schwelle von 55 dB tags bzw. 50 dB nachts oder keine kartierte Straße)") + "; Anteil der Fläche mit Kartierung: " + prozent(alle.a1) + " im 400-m-, " + prozent(alle.a2) + " im 800-m-Umkreis");
       });
       if (laermZeilen.length) {
@@ -437,6 +452,7 @@
       schutz.forEach(function (s) {
         if (!fl[s[0]]) { return; }
         var r = naechsteFlaeche(O, fl[s[0]], R2);
+        (K.schutz = K.schutz || {})[s[0]] = r.abstand;
         sz.push("  - " + s[1] + ": " + (r.abstand === 0 ? "der Punkt liegt darin" : (r.abstand <= R2 ? "nächste Fläche ca. " + z(Math.round(r.abstand / 10) * 10) + " m entfernt" : "keine im 800-m-Umkreis")));
       });
       if (fl.naturdenkmale) { var nd = (fl.naturdenkmale || []).map(function (p) { return { lat: p.lat, lng: p.lng }; }); var ndg = punktGruppe(O, nd); sz.push("  - Naturdenkmale: " + z(ndg.n2) + " im 800-m-Umkreis, " + abstandText(ndg.naechste)); }
@@ -445,6 +461,7 @@
       if (daten.luft && daten.luft.length) {
         var best = daten.luft.slice().sort(function (a, b) { return O.abstand(a.lat, a.lng) - O.abstand(b.lat, b.lng); })[0];
         var lj = best.jahre[best.jahre.length - 1];
+        K.no2 = lj.no2; K.luftJahr = lj.jahr; K.luftAbstand = O.abstand(best.lat, best.lng);
         B.push(zeile("Luftqualität", "nächste amtliche Messstation „" + best.name + "“ (Art: " + best.art + ") in ca. " + z(Math.round(O.abstand(best.lat, best.lng) / 10) * 10) + " m; Jahresmittel " + lj.jahr + ": NO₂ " + (lj.no2 === null ? "–" : z(lj.no2, 1)) + ", PM10 " + (lj.pm10 === null ? "–" : z(lj.pm10, 1)) + ", PM2,5 " + (lj.pm25 === null ? "–" : z(lj.pm25, 1)) + " µg/m³ (Grenzwerte EU bis 2029: 40/40/25; Richtwerte WHO 2021: 10/15/5). Gilt nur für die Messstelle, nicht für jeden Ort der Stadt."));
         teile.quellen.push(window.LUFT_QUELLE_TEXT);
       }
@@ -452,6 +469,7 @@
         B.push("Starkregen (Hinweiskarte des Bundes, BKG; Simulation ohne Kanalnetz und Versickerung; Online-Abfrage für ein 200 × 200 m großes Fenster um den roten Punkt):");
         regenErg.forEach(function (e) {
           var r = e.r, kl = window.STARKREGEN_KLASSEN;
+          (K.regen = K.regen || {})[e.g.id] = r;
           if (!r) { B.push("  - " + e.g.name + ": Abfrage nicht möglich (kein Internet oder Dienst nicht erreichbar)"); }
           else { B.push("  - " + e.g.name + ": " + (r.anteil > 0 ? prozent(r.anteil) + " des Fensters überflutet, größte Tiefe im Fenster " + (r.tiefste >= 0 ? kl[r.tiefste][1] : "unter 10 cm") + (r.mitte >= 0 ? "; am roten Punkt selbst " + kl[r.mitte][1] : "; am roten Punkt selbst keine Überflutung dargestellt") : "keine Überflutung (ab 10 cm) im Fenster dargestellt")); }
         });
@@ -657,6 +675,14 @@ The result should enable a meaningful architectural decision between three genui
     z_.push("D. DESIGN CONSTRAINTS (Randbedingungen)");
     t.D.forEach(function (l) { z_.push(l); });
     z_.push("");
+    var bwt = bewerten(t);
+    if (bwt.gesamt) {
+      z_.push("E. APP-BEWERTUNG (einfache Einschätzung der App aus den Zahlen oben, nur zur Orientierung; bitte kritisch prüfen und nicht blind übernehmen)");
+      z_.push("- Gesamtnote: " + z(bwt.gesamt.note, 1) + " (" + bwt.gesamt.wort + "), Skala Schulnoten 1 = sehr gut bis 6 = ungenügend");
+      bwt.kategorien.forEach(function (k) { z_.push("- " + k.titel + ": " + z(k.note, 1) + " (" + k.wort + ") – " + k.text); });
+      z_.push("- " + bwt.hinweis);
+      z_.push("");
+    }
     z_.push("NICHT VORHANDEN bzw. UNBEKANNT (bitte als Lücken und Annahmen behandeln):");
     var gesehen = {};
     t.fehlt.forEach(function (l) { if (!gesehen[l]) { gesehen[l] = true; z_.push("- " + l); } });
@@ -832,17 +858,562 @@ The result should enable a meaningful architectural decision between three genui
     return new Blob([blob], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
   }
 
+  // ---------- Standortprofil: lesbare Fassung für Word und PDF ----------
+  // Aus denselben Daten wie der KI-Text (teile.A bis D und teile.kenn) entsteht ein Dokument für Menschen: Deckblatt mit Kennzahlen, Kurzfassung mit
+  // Stärken und Hinweisen (nur aus den Zahlen abgeleitet) und die Daten in Tabellen. Die englische Anweisung für die KI steht dort nicht.
+  var FARBE_ROT = "C0392B", FARBE_TINTE = "1A1A1A", FARBE_GRAU = "77746D", FARBE_LINIE = "CDC9C0", FARBE_PAPIER = "F5F3EE";
+
+  // Teilt die Textzeilen in Gruppen (Überschrift, Zeilen mit Merkmal und Wert, Notizen)
+  function profilGruppen(t) {
+    var gruppen = [], index = {};
+    function gruppe(titel) { if (!index[titel]) { index[titel] = { titel: titel, zeilen: [], notiz: "" }; gruppen.push(index[titel]); } return index[titel]; }
+    function teilePos(text) {            // erstes ": " außerhalb von Klammern
+      var d = 0;
+      for (var i = 0; i < text.length - 1; i++) { var c = text.charAt(i); if (c === "(") { d++; } else if (c === ")") { d--; } else if (d === 0 && c === ":" && text.charAt(i + 1) === " ") { return i; } }
+      return -1;
+    }
+    function kopfTeilen(text) { var m = text.match(/^(.*?) \((.*)\)$/); return m ? { titel: m[1], notiz: m[2] } : { titel: text, notiz: "" }; }
+    function lies(liste, standard, zuordnen) {
+      var akt = gruppe(standard);
+      liste.forEach(function (l) {
+        if (/^[^\s-]/.test(l) && /:$/.test(l)) {                        // Gruppenüberschrift ohne Einrückung ("Bebauung (...):")
+          var h = kopfTeilen(l.replace(/:$/, "")); akt = gruppe(h.titel); if (h.notiz && !akt.notiz) { akt.notiz = h.notiz; } return;
+        }
+        var ein = l.match(/^(\s*)- (.*)$/);
+        if (!ein) { return; }
+        var text = ein[2], tief = ein[1].length >= 4, pos = teilePos(text);
+        if (ein[1].length === 0) {
+          var label = pos > 0 ? text.slice(0, pos) : text.replace(/:\s*$/, ""), wert = pos > 0 ? text.slice(pos + 2) : "";
+          if (/Zur Zeit in der Karte eingeschaltete|^Hintergrundkarte/.test(label)) { return; }
+          if (wert.replace(/\s+/g, "") === "") { var h2 = kopfTeilen(label); akt = gruppe(h2.titel); if (h2.notiz && !akt.notiz) { akt.notiz = h2.notiz; } return; }
+          akt = gruppe(zuordnen ? zuordnen(label) : standard);
+          akt.zeilen.push({ l: label, w: wert });
+          return;
+        }
+        if (/:\s*$/.test(text) && pos < 0) { akt.zeilen.push({ l: text.replace(/:\s*$/, ""), w: "", kopf: true }); return; }
+        if (pos > 0 && !/^\(.*\)$/.test(text)) { akt.zeilen.push({ l: text.slice(0, pos), w: text.slice(pos + 2), tief: tief }); }
+        else { akt.zeilen.push({ note: text.replace(/^\(|\)$/g, ""), tief: tief }); }
+      });
+    }
+    lies(t.A, "Standort", function (label) { return /gezeichnete|Messungen|Benannte Linien|Beschriftungen|Eigene Bäume|Hochgeladene Pläne/.test(label) ? "Eigene Zeichnung und Pläne" : "Standort"; });
+    lies(t.B, "Umgebung", function (label) {
+      if (/Bahnstrecke/.test(label)) { return "Bahn"; }
+      if (/Einzelbäume|Erfasste Bäume/.test(label)) { return "Vegetation"; }
+      if (/^Haltestellen/.test(label)) { return "Haltestellen"; }
+      if (/^Fahrplan/.test(label)) { return "Fahrplan"; }
+      if (/Spielplätze/.test(label)) { return "Spielen und Bewegen"; }
+      if (/Luftqualität/.test(label)) { return "Luftqualität"; }
+      return "Umgebung";
+    });
+    lies(t.C, "Projektangaben (Angaben des Nutzers)");
+    lies(t.D, "Randbedingungen");
+    return gruppen.filter(function (g) { return g.zeilen.length; });
+  }
+
+  function aufrunden10(m) { return z(Math.round(m / 10) * 10); }
+  // Kennzahlen, Kurzfassung, Stärken und Hinweise: alles nur aus den berechneten Zahlen
+  function profilBewertung(t, adresse) {
+    var K = t.kenn || {}, kacheln = [], staerken = [], achten = [], i;
+    function kachel(wert, text) { if (kacheln.length < 6) { kacheln.push({ wert: wert, text: text }); } }
+    if (K.gebaeude400 !== undefined) { kachel(z(K.gebaeude400), "Gebäude im 400-m-Umkreis"); }
+    if (K.ueberbaut400 !== undefined) { kachel(prozent(K.ueberbaut400), "überbaute Fläche im 400-m-Umkreis"); }
+    if (K.traufeMedian !== undefined) { kachel(z(K.traufeMedian, 1) + " m", "Traufhöhe der Gebäude (Median)"); }
+    if (K.busNaechste !== undefined && isFinite(K.busNaechste)) { kachel(aufrunden10(K.busNaechste) + " m", "bis zur nächsten Bushaltestelle"); }
+    if (K.einr && K.einr.laeden && isFinite(K.einr.laeden.naechste)) { kachel(aufrunden10(K.einr.laeden.naechste) + " m", "bis zum nächsten Laden"); }
+    if (K.anteil && K.anteil.parks) { kachel(prozent(K.anteil.parks.a1), "Grünflächen im 400-m-Umkreis"); }
+    if (K.hoeheDiff400 !== undefined && kacheln.length < 6) { kachel(z(K.hoeheDiff400, 1) + " m", "Höhenunterschied im 400-m-Umkreis"); }
+
+    // Stärken
+    if (K.busNaechste !== undefined && K.busNaechste <= 300) { staerken.push("Eine Bushaltestelle liegt nur etwa " + aufrunden10(K.busNaechste) + " m entfernt."); }
+    if (K.takt400 !== undefined && K.takt400 >= 3) { staerken.push("Gute Anbindung: an der besten Haltestelle im 400-m-Umkreis fahren im Mittel etwa " + z(K.takt400, 1) + " Fahrten pro Stunde (" + K.linien400 + " Linien im Umkreis)."); }
+    [["laeden", "Einkaufen", "ein Laden"], ["schulen", "Schule oder Kita", "eine Schule oder Kita"], ["aerzte", "Arzt oder Apotheke", "ein Arzt oder eine Apotheke"]].forEach(function (e) {
+      var g = K.einr && K.einr[e[0]]; if (g && g.naechste <= 400) { staerken.push("Alltag zu Fuß: " + e[2] + " ist in etwa " + aufrunden10(g.naechste) + " m erreichbar."); }
+    });
+    if (K.anteil && K.anteil.parks && K.anteil.parks.a1 >= 0.1) { staerken.push("Grünflächen: etwa " + prozent(K.anteil.parks.a1) + " des 400-m-Umkreises sind Parks, Gärten oder Wiesen (nach OpenStreetMap)."); }
+    if (K.spiel && K.spiel.naechste <= 300) { staerken.push("Ein Spielplatz liegt nur etwa " + aufrunden10(K.spiel.naechste) + " m entfernt."); }
+    if (K.mob && K.mob.radweg && K.mob.radweg.l1 >= 800) { staerken.push("Gutes Radwegenetz: etwa " + z(Math.round(K.mob.radweg.l1 / 10) * 10) + " m Radwege im 400-m-Umkreis."); }
+    if (K.ueberbaut400 !== undefined && K.ueberbaut400 >= 0.35 && K.ueberbaut400 <= 0.6) { staerken.push("Kompakte Bebauung (etwa " + prozent(K.ueberbaut400) + " überbaut) unterstützt kurze Wege."); }
+
+    // Hinweise
+    if (K.laermTag && K.laermTag.length) { achten.push("Straßenlärm am Standort: " + K.laermTag.join(", ") + " (ganzer Tag, Lärmkartierung der Stadt)."); }
+    else if (K.laermAnteil400 !== undefined && K.laermAnteil400 > 0.3) { achten.push("In etwa " + prozent(K.laermAnteil400) + " des 400-m-Umkreises liegt Straßenlärm ab 55 dB vor; am Standort selbst nicht kartiert."); }
+    var rg = K.regen && (K.regen.extrem || K.regen.agw);
+    if (K.regen) {
+      var ex = K.regen.extrem, ag = K.regen.agw;
+      if (ex && (ex.mitte >= 0)) { achten.push("Starkregen: Am Standort selbst ist bei einem extremen Ereignis eine Überflutung dargestellt."); }
+      else if (ex && ex.anteil >= 0.2) { achten.push("Starkregen: Im 100-m-Umfeld sind bei einem extremen Ereignis etwa " + prozent(ex.anteil) + " überflutet; die Fließwege sollten angesehen werden."); }
+      if (ag && ag.mitte >= 0) { achten.push("Starkregen: Schon bei einem außergewöhnlichen Ereignis ist der Standort überflutet dargestellt."); }
+    }
+    if (K.schutz) {
+      [["nsg", "Naturschutzgebiet"], ["lsg", "Landschaftsschutzgebiet"], ["biotope", "geschütztes Biotop"], ["wallhecken", "Wallhecke"]].forEach(function (s) {
+        var d = K.schutz[s[0]]; if (d !== undefined && d <= 100) { achten.push((d === 0 ? "Der Standort liegt in einem" : "In nur etwa " + aufrunden10(d) + " m Entfernung liegt ein") + " " + s[1] + ": Abstimmung mit der Naturschutzbehörde einplanen."); }
+      });
+    }
+    if (K.hoeheDiff400 !== undefined && K.hoeheDiff400 >= 5) { achten.push("Geländeunterschied von etwa " + z(K.hoeheDiff400, 1) + " m im 400-m-Umkreis."); }
+    if (K.ueberbaut400 !== undefined && K.ueberbaut400 < 0.15) { achten.push("Locker bebaute Umgebung (etwa " + prozent(K.ueberbaut400) + " überbaut): Für das Leitbild der kurzen Wege liegen Ziele eher weit auseinander."); }
+    if (K.ueberbaut400 !== undefined && K.ueberbaut400 > 0.6) { achten.push("Sehr dichte Bebauung (etwa " + prozent(K.ueberbaut400) + " überbaut): Freiraum, Grün und Belichtung beachten."); }
+    if (K.hoch13 !== undefined && K.hoch13 >= 0.3) { achten.push("Viele hohe Gebäude (Traufe über 13 m: " + prozent(K.hoch13) + "): Verschattung des Grundstücks prüfen."); }
+    if (K.no2 !== undefined && K.no2 !== null && K.no2 >= 30) { achten.push("Luft: An der nächsten Messstation lag NO₂ " + K.luftJahr + " bei " + z(K.no2, 1) + " µg/m³ (EU-Grenzwert 40, WHO-Richtwert 10); die Station liegt etwa " + aufrunden10(K.luftAbstand) + " m entfernt."); }
+    if (K.busNaechste !== undefined && K.busNaechste > 500) { achten.push("Die nächste Bushaltestelle ist etwa " + aufrunden10(K.busNaechste) + " m entfernt."); }
+    else if (K.takt400 === undefined && K.busNaechste !== undefined) { achten.push("Im 400-m-Umkreis liegt keine Haltestelle mit Fahrplandaten."); }
+    if (K.bplan) { achten.push("Der Standort liegt im Umriss eines Bebauungsplans: Festsetzungen beim Planungsamt prüfen."); }
+    if ((t.fehlt || []).some(function (f) { return /^Grundstücksgrenze/.test(f); })) { achten.push("Das Grundstück ist nicht gezeichnet; Größe und Zuschnitt sind unbekannt."); }
+
+    // Kurzfassung als Fließtext
+    var s = [];
+    s.push("Das Profil beschreibt den Standort" + (adresse ? " „" + adresse + "“" : "") + (K.bezirk ? " (" + K.bezirk + ")" : "") + " mit Daten aus einem Umkreis von 400 und 800 m (5 und 10 Minuten zu Fuß in Luftlinie).");
+    if (K.gebaeude400 !== undefined) {
+      s.push("Im 400-m-Umkreis stehen etwa " + z(K.gebaeude400) + " Gebäude (inklusive Nebengebäude), rund " + prozent(K.ueberbaut400) + " der Fläche sind überbaut" + (K.traufeMedian !== undefined ? "; die Traufhöhe liegt im Median bei " + z(K.traufeMedian, 1) + " m" : "") + ".");
+    }
+    if (K.anteil && K.anteil.wohnen) { s.push("Nach OpenStreetMap ist das Umfeld zu etwa " + prozent(K.anteil.wohnen.a1) + " Wohnnutzung" + (K.anteil.gewerbe && K.anteil.gewerbe.a1 >= 0.05 ? " und zu " + prozent(K.anteil.gewerbe.a1) + " Gewerbe und Handel" : "") + "."); }
+    s.push("Die Aussagen beruhen nur auf offenen Daten; sie sind Näherungen für den frühen Entwurf und ersetzen keine amtliche Auskunft oder Vermessung.");
+    return { kacheln: kacheln, staerken: staerken, achten: achten, kurz: s.join(" ") };
+  }
+
+  function profilModell(t) {
+    var adresse = (window.aktuelleAnzeige || "").trim(), b = profilBewertung(t, adresse);
+    var P = window.marker.getLatLng();
+    return { titel: "Standortprofil", adresse: adresse || "Standort ohne Adresse", datum: t.stand.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" }),
+             koord: z(P.lat, 5) + " N, " + z(P.lng, 5) + " O", kacheln: b.kacheln, kurz: b.kurz, staerken: b.staerken, achten: b.achten, gruppen: profilGruppen(t),
+             bewertung: bewerten(t), fehlt: t.fehlt.filter(function (l, i, a) { return a.indexOf(l) === i; }), quellen: t.quellen.filter(function (q, i, a) { return a.indexOf(q) === i; }) };
+  }
+
+  // -- Word --
+  function docxProfil(m) {
+    var W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", BR = 9638;
+    function r(t, o) {
+      o = o || {};
+      return "<w:r><w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\" w:cs=\"Arial\"/>" + (o.fett ? "<w:b/>" : "") + (o.kursiv ? "<w:i/>" : "") + (o.farbe ? "<w:color w:val=\"" + o.farbe + "\"/>" : "") +
+        (o.abst ? "<w:spacing w:val=\"" + o.abst + "\"/>" : "") + "<w:sz w:val=\"" + Math.round((o.gr || 10) * 2) + "\"/></w:rPr><w:t xml:space=\"preserve\">" + xml(t) + "</w:t></w:r>";
+    }
+    function p(runs, o) {
+      o = o || {};
+      var pr = (o.keep ? "<w:keepNext/>" : "") + (o.umbruch ? "<w:pageBreakBefore/>" : "") +
+        (o.rand ? "<w:pBdr><w:bottom w:val=\"single\" w:sz=\"" + o.rand + "\" w:space=\"4\" w:color=\"" + FARBE_ROT + "\"/></w:pBdr>" : "") +
+        "<w:spacing w:before=\"" + Math.round((o.vor || 0) * 20) + "\" w:after=\"" + Math.round((o.nach === undefined ? 4 : o.nach) * 20) + "\" w:line=\"" + (o.zeile || 264) + "\" w:lineRule=\"auto\"/>" +
+        (o.einzug !== undefined ? "<w:ind w:left=\"" + o.einzug + "\" w:hanging=\"" + (o.haengt || 0) + "\"/>" : "") + (o.ausr ? "<w:jc w:val=\"" + o.ausr + "\"/>" : "");
+      return "<w:p><w:pPr>" + pr + "</w:pPr>" + (Array.isArray(runs) ? runs.join("") : runs) + "</w:p>";
+    }
+    function zelle(inhalt, breite, o) {
+      o = o || {};
+      return "<w:tc><w:tcPr><w:tcW w:w=\"" + breite + "\" w:type=\"dxa\"/>" + (o.span ? "<w:gridSpan w:val=\"" + o.span + "\"/>" : "") +
+        "<w:tcBorders><w:top w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"" + FARBE_LINIE + "\"/><w:left w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"" + FARBE_LINIE + "\"/><w:bottom w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"" + FARBE_LINIE + "\"/><w:right w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"" + FARBE_LINIE + "\"/></w:tcBorders>" +
+        "<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"" + (o.fuell || "FFFFFF") + "\"/>" + (o.mitte ? "<w:vAlign w:val=\"center\"/>" : "") + "</w:tcPr>" + inhalt + "</w:tc>";
+    }
+    function tabelle(spalten, zeilen) {
+      return "<w:tbl><w:tblPr><w:tblW w:w=\"" + BR + "\" w:type=\"dxa\"/><w:tblLayout w:type=\"fixed\"/><w:tblCellMar><w:top w:w=\"60\" w:type=\"dxa\"/><w:left w:w=\"110\" w:type=\"dxa\"/><w:bottom w:w=\"60\" w:type=\"dxa\"/><w:right w:w=\"110\" w:type=\"dxa\"/></w:tblCellMar></w:tblPr><w:tblGrid>" +
+        spalten.map(function (s) { return "<w:gridCol w:w=\"" + s + "\"/>"; }).join("") + "</w:tblGrid>" + zeilen.map(function (zl) { return "<w:tr><w:trPr><w:cantSplit/></w:trPr>" + zl + "</w:tr>"; }).join("") + "</w:tbl>";
+    }
+    function punkte(liste, farbe) {
+      return liste.map(function (t) { return p([r("•  ", { farbe: farbe, fett: true, gr: 10.5 }), r(t, { gr: 10.5 })], { einzug: 360, haengt: 260, nach: 3 }); }).join("");
+    }
+    function ueberschrift(nr, titel, o) {
+      return p([r(nr ? nr + "  " : "", { fett: true, farbe: FARBE_ROT, gr: 13 }), r(titel, { fett: true, gr: 13 })], { keep: true, vor: (o && o.vor !== undefined) ? o.vor : 16, nach: 4, umbruch: o && o.umbruch, rand: o && o.rand });
+    }
+    var ab = [];
+    // Deckblatt
+    ab.push(p(r("STANDORTANALYSE OLDENBURG", { gr: 9, farbe: FARBE_GRAU, fett: true, abst: 40 }), { vor: 30, nach: 6 }));
+    ab.push(p(r(m.titel, { gr: 34, fett: true }), { nach: 6, rand: 18, zeile: 240 }));
+    ab.push(p(r(m.adresse, { gr: 16, fett: true, farbe: FARBE_ROT }), { vor: 8, nach: 2 }));
+    ab.push(p(r(m.datum + "   ·   " + m.koord + " (WGS 84)", { gr: 9.5, farbe: FARBE_GRAU }), { nach: 14 }));
+    if (m.kacheln.length) {
+      var b3 = Math.floor(BR / 3), zeilenK = [];
+      for (var i = 0; i < m.kacheln.length; i += 3) {
+        var zs = "";
+        for (var j = 0; j < 3; j++) {
+          var k = m.kacheln[i + j];
+          zs += zelle(k ? p(r(k.wert, { gr: 20, fett: true, farbe: FARBE_ROT }), { ausr: "center", vor: 4, nach: 0, zeile: 240 }) + p(r(k.text, { gr: 8.5, farbe: FARBE_GRAU }), { ausr: "center", nach: 4, zeile: 240 }) : p("", { nach: 0 }),
+                      j === 2 ? BR - 2 * b3 : b3, { fuell: FARBE_PAPIER, mitte: true });
+        }
+        zeilenK.push(zs);
+      }
+      ab.push(tabelle([b3, b3, BR - 2 * b3], zeilenK));
+    }
+    ab.push(ueberschrift("", "Kurzfassung", { vor: 18 }));
+    ab.push(p(r(m.kurz, { gr: 10.5 }), { nach: 6 }));
+    if (m.staerken.length) { ab.push(ueberschrift("", "Das spricht für den Standort", { vor: 10 })); ab.push(punkte(m.staerken, "2E8B3D")); }
+    if (m.achten.length) { ab.push(ueberschrift("", "Das ist zu beachten", { vor: 10 })); ab.push(punkte(m.achten, FARBE_ROT)); }
+    // Bewertung
+    if (m.bewertung && m.bewertung.gesamt) {
+      var bw = m.bewertung, gn = bw.gesamt;
+      ab.push(p(r("Bewertung des Standorts", { gr: 20, fett: true }), { umbruch: true, nach: 4, rand: 12, zeile: 240 }));
+      ab.push(p([r(z(gn.note, 1), { gr: 40, fett: true, farbe: gn.farbe }), r("   Gesamtnote · " + gn.wort, { gr: 13, fett: true })], { vor: 10, nach: 2, zeile: 240 }));
+      ab.push(p(r("Schulnoten: 1 = sehr gut, 6 = ungenügend. Gewichtet: Mobilität und Versorgung je 25 %, Grün und Umwelt je 15 %, Bebauung und Planung je 10 %.", { gr: 8.5, farbe: FARBE_GRAU }), { nach: 8 }));
+      var wB = [2300, 1500, 2500, BR - 6300], zlB = [];
+      zlB.push(["Kategorie", "Note", "Skala", "Begründung"].map(function (h, i) { return zelle(p(r(h, { gr: 9, fett: true, farbe: FARBE_GRAU }), { nach: 0 }), wB[i], { fuell: "E9E7E2" }); }).join(""));
+      bw.kategorien.forEach(function (k, ki) {
+        var voll = Math.round(k.punkte / 10), balken = "";
+        for (var q = 0; q < 10; q++) { balken += r("■", { gr: 12, farbe: q < voll ? k.farbe : "D9D5CC" }); }
+        var fuell = (ki % 2) ? FARBE_PAPIER : "FFFFFF";
+        zlB.push(zelle(p(r(k.titel, { gr: 10, fett: true }), { nach: 0 }), wB[0], { fuell: fuell, mitte: true }) +
+                 zelle(p([r(z(k.note, 1), { gr: 15, fett: true, farbe: k.farbe }), r("  " + k.wort, { gr: 8.5, farbe: FARBE_GRAU })], { nach: 0 }), wB[1], { fuell: fuell, mitte: true }) +
+                 zelle(p(balken, { nach: 0 }), wB[2], { fuell: fuell, mitte: true }) +
+                 zelle(p(r(k.text, { gr: 8.5 }), { nach: 0 }), wB[3], { fuell: fuell, mitte: true }));
+      });
+      ab.push(tabelle(wB, zlB));
+      ab.push(p(r(bw.hinweis, { gr: 8.5, kursiv: true, farbe: FARBE_GRAU }), { vor: 8 }));
+      bw.kategorien.forEach(function (k) {
+        ab.push(p(r(k.titel + ": die einzelnen Kriterien", { gr: 10, fett: true }), { vor: 10, nach: 2, keep: true }));
+        ab.push(punkte(k.kriterien.map(kritText), k.farbe));
+      });
+    }
+    // Daten
+    ab.push(p(r("Die Daten im Detail", { gr: 20, fett: true }), { umbruch: true, nach: 4, rand: 12, zeile: 240 }));
+    m.gruppen.forEach(function (g, gi) {
+      ab.push(ueberschrift(("0" + (gi + 1)).slice(-2), g.titel));
+      if (g.notiz) { ab.push(p(r(g.notiz, { gr: 8.5, kursiv: true, farbe: FARBE_GRAU }), { keep: true, nach: 4 })); }
+      var w1 = 3200, w2 = BR - w1, zl = [], n = 0;
+      g.zeilen.forEach(function (e) {
+        if (e.note) { zl.push(zelle(p(r(e.note, { gr: 8.5, kursiv: true, farbe: FARBE_GRAU }), { nach: 0, einzug: e.tief ? 300 : 0, haengt: 0 }), BR, { span: 2, fuell: "FFFFFF" })); return; }
+        if (e.kopf) { zl.push(zelle(p(r(e.l, { gr: 9.5, fett: true }), { nach: 0 }), BR, { span: 2, fuell: "E9E7E2" })); n = 0; return; }
+        var fuell = (n++ % 2) ? FARBE_PAPIER : "FFFFFF";
+        zl.push(zelle(p(r((e.tief ? "– " : "") + e.l, { gr: 9.5, fett: true, farbe: "4A4842" }), { nach: 0, einzug: e.tief ? 200 : 0, haengt: 0 }), w1, { fuell: fuell }) + zelle(p(r(e.w, { gr: 9.5 }), { nach: 0 }), w2, { fuell: fuell }));
+      });
+      ab.push(tabelle([w1, w2], zl));
+      ab.push(p("", { nach: 0 }));
+    });
+    if (m.fehlt.length) { ab.push(ueberschrift("", "Nicht vorhanden oder unbekannt", { vor: 14 })); ab.push(punkte(m.fehlt, FARBE_GRAU)); }
+    ab.push(ueberschrift("", "Quellen", { vor: 14 }));
+    m.quellen.forEach(function (q) { ab.push(p(r(q, { gr: 8.5, farbe: FARBE_GRAU }), { nach: 2 })); });
+    ab.push(p(r("Erstellt mit der App „Standortanalyse Oldenburg“ am " + m.datum + ". Alle Zahlen sind Näherungen aus offenen Daten und ersetzen keine amtliche Auskunft, Vermessung oder Genehmigung.", { gr: 8.5, kursiv: true, farbe: FARBE_GRAU }), { vor: 12 }));
+
+    var dokument = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:document xmlns:w=\"" + W + "\" xmlns:r=\"" + R + "\"><w:body>" + ab.join("") +
+      "<w:sectPr><w:footerReference w:type=\"default\" r:id=\"rId2\"/><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1134\" w:header=\"708\" w:footer=\"567\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>";
+    var fuss = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:ftr xmlns:w=\"" + W + "\" xmlns:r=\"" + R + "\"><w:p><w:pPr><w:pBdr><w:top w:val=\"single\" w:sz=\"4\" w:space=\"4\" w:color=\"" + FARBE_LINIE + "\"/></w:pBdr><w:tabs><w:tab w:val=\"right\" w:pos=\"" + BR + "\"/></w:tabs></w:pPr>" +
+      r("Standortanalyse Oldenburg  ·  " + m.adresse, { gr: 8, farbe: FARBE_GRAU }) + "<w:r><w:tab/></w:r>" + r("Seite ", { gr: 8, farbe: FARBE_GRAU }) +
+      "<w:fldSimple w:instr=\"PAGE\"><w:r><w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\" w:cs=\"Arial\"/><w:color w:val=\"" + FARBE_GRAU + "\"/><w:sz w:val=\"16\"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>";
+    var styles = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:styles xmlns:w=\"" + W + "\"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\" w:cs=\"Arial\"/><w:sz w:val=\"21\"/><w:lang w:val=\"de-DE\"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after=\"80\" w:line=\"264\" w:lineRule=\"auto\"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type=\"paragraph\" w:default=\"1\" w:styleId=\"Normal\"><w:name w:val=\"Normal\"/><w:qFormat/></w:style></w:styles>";
+    var typen = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
+      "<Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/><Override PartName=\"/word/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml\"/><Override PartName=\"/word/footer1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml\"/></Types>";
+    var rels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>";
+    var docRels = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer\" Target=\"footer1.xml\"/></Relationships>";
+    var blob = zipBauen([{ name: "[Content_Types].xml", text: typen }, { name: "_rels/.rels", text: rels }, { name: "word/document.xml", text: dokument }, { name: "word/_rels/document.xml.rels", text: docRels }, { name: "word/styles.xml", text: styles }, { name: "word/footer1.xml", text: fuss }]);
+    return new Blob([blob], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+  }
+
+  // -- PDF im gleichen Stil --
+  function pdfProfil(m) {
+    var cv = document.createElement("canvas").getContext("2d");
+    var B = 595.28, H = 841.89, RAND = 52, OBEN = 54, UNTEN = 60, BR = B - 2 * RAND;
+    function rgb(hex) { return [parseInt(hex.substr(0, 2), 16) / 255, parseInt(hex.substr(2, 2), 16) / 255, parseInt(hex.substr(4, 2), 16) / 255]; }
+    function breite(t, fett, gr) { cv.font = (fett ? "bold " : "") + gr + "px Arial, Helvetica, sans-serif"; return cv.measureText(t).width; }
+    function umbrechen(t, fett, gr, maxB) {
+      var worte = String(t).split(" "), zeilen = [], akt = "";
+      worte.forEach(function (w) {
+        var probe = akt ? akt + " " + w : w;
+        if (breite(probe, fett, gr) <= maxB) { akt = probe; return; }
+        if (akt) { zeilen.push(akt); akt = ""; }
+        while (breite(w, fett, gr) > maxB) { var n = w.length; while (n > 1 && breite(w.slice(0, n), fett, gr) > maxB) { n--; } zeilen.push(w.slice(0, n)); w = w.slice(n); }
+        akt = w;
+      });
+      zeilen.push(akt);
+      return zeilen;
+    }
+    var seiten = [[]], y = OBEN;
+    function neueSeite() { seiten.push([]); y = OBEN; }
+    function sp() { return seiten[seiten.length - 1]; }
+    function text(t, x, yy, fett, gr, farbe, mitte) { if (mitte) { x = x - breite(t, fett, gr) / 2; } sp().push({ k: "t", x: x, y: yy, t: t, fett: fett, gr: gr, farbe: rgb(farbe) }); }
+    function rechteck(x, yy, w, h, farbe) { sp().push({ k: "r", x: x, y: yy, w: w, h: h, farbe: rgb(farbe) }); }
+    function linie(x1, y1, x2, y2, farbe, dicke) { sp().push({ k: "l", x1: x1, y1: y1, x2: x2, y2: y2, farbe: rgb(farbe), d: dicke }); }
+    function platz(h) { if (y + h > H - UNTEN) { neueSeite(); } }
+    // Absatz mit Umbruch; gibt die Höhe zurück
+    function absatz(t, x0, gr, fett, farbe, vor, nach, breiteMax) {
+      var zeilen = umbrechen(t, fett, gr, (breiteMax || (BR - (x0 - RAND)))), lh = gr * 1.4;
+      y += vor;
+      zeilen.forEach(function (zl) { platz(lh); y += lh; text(zl, x0, y - gr * 0.28, fett, gr, farbe); });
+      y += nach;
+    }
+    function aufzaehlung(liste, farbe) {
+      liste.forEach(function (t) {
+        var zeilen = umbrechen(t, false, 10, BR - 16), lh = 14;
+        platz(lh * Math.min(2, zeilen.length));
+        zeilen.forEach(function (zl, i) { platz(lh); y += lh; if (i === 0) { text("•", RAND + 2, y - 2.8, true, 10, farbe); } text(zl, RAND + 14, y - 2.8, false, 10, FARBE_TINTE); });
+        y += 2;
+      });
+    }
+    function ueberschrift(nr, titel, vor, mitFolge) {
+      platz(vor + 20 + (mitFolge || 24));
+      y += vor;
+      var x = RAND;
+      if (nr) { text(nr, x, y + 11, true, 13, FARBE_ROT); x += 24; }
+      text(titel, x, y + 11, true, 13, FARBE_TINTE);
+      y += 18;
+    }
+
+    // Deckblatt
+    rechteck(RAND, y, 46, 5, FARBE_ROT); y += 24;
+    text("STANDORTANALYSE OLDENBURG", RAND, y, true, 8.5, FARBE_GRAU); y += 38;
+    text(m.titel, RAND, y, true, 30, FARBE_TINTE); y += 10;
+    linie(RAND, y, RAND + BR, y, FARBE_ROT, 1.4); y += 6;
+    absatz(m.adresse, RAND, 15, true, FARBE_ROT, 10, 2);
+    absatz(m.datum + "   ·   " + m.koord + " (WGS 84)", RAND, 9, false, FARBE_GRAU, 0, 14);
+    if (m.kacheln.length) {
+      var kw = (BR - 20) / 3, kh = 66;
+      for (var i = 0; i < m.kacheln.length; i += 3) {
+        platz(kh + 10);
+        for (var j = 0; j < 3; j++) {
+          var k = m.kacheln[i + j]; if (!k) { continue; }
+          var kx = RAND + j * (kw + 10);
+          rechteck(kx, y, kw, kh, FARBE_PAPIER);
+          linie(kx, y, kx + kw, y, FARBE_LINIE, 0.6); linie(kx, y + kh, kx + kw, y + kh, FARBE_LINIE, 0.6); linie(kx, y, kx, y + kh, FARBE_LINIE, 0.6); linie(kx + kw, y, kx + kw, y + kh, FARBE_LINIE, 0.6);
+          text(k.wert, kx + kw / 2, y + 28, true, 20, FARBE_ROT, true);
+          var tz = umbrechen(k.text, false, 8, kw - 14); tz.slice(0, 2).forEach(function (zl, q) { text(zl, kx + kw / 2, y + 43 + q * 10.5, false, 8, FARBE_GRAU, true); });
+        }
+        y += kh + 10;
+      }
+    }
+    ueberschrift("", "Kurzfassung", 12, 40);
+    absatz(m.kurz, RAND, 10, false, FARBE_TINTE, 2, 4);
+    if (m.staerken.length) { ueberschrift("", "Das spricht für den Standort", 8, 30); aufzaehlung(m.staerken, "2E8B3D"); }
+    if (m.achten.length) { ueberschrift("", "Das ist zu beachten", 8, 30); aufzaehlung(m.achten, FARBE_ROT); }
+
+    // Bewertung (eigene Seite)
+    if (m.bewertung && m.bewertung.gesamt) {
+      var bw = m.bewertung, gn = bw.gesamt;
+      neueSeite();
+      text("Bewertung des Standorts", RAND, y + 16, true, 20, FARBE_TINTE); y += 24; linie(RAND, y, RAND + BR, y, FARBE_ROT, 1); y += 8;
+      text(z(gn.note, 1), RAND, y + 36, true, 38, gn.farbe);
+      text("Gesamtnote · " + gn.wort, RAND + 86, y + 28, true, 13, FARBE_TINTE);
+      y += 48;
+      absatz("Schulnoten: 1 = sehr gut, 6 = ungenügend. Gewichtet: Mobilität und Versorgung je 25 %, Grün und Umwelt je 15 %, Bebauung und Planung je 10 %.", RAND, 8, false, FARBE_GRAU, 0, 8);
+      bw.kategorien.forEach(function (k) {
+        var tz = umbrechen(k.text, false, 8.8, BR), kr = k.kriterien.map(function (c) { return umbrechen("– " + kritText(c), false, 8, BR - 8); });
+        var hk = 22 + 12 + tz.length * 11.5 + kr.reduce(function (s, a) { return s + a.length * 10.3; }, 0) + 12;
+        platz(hk);
+        text(k.titel, RAND, y + 12, true, 11.5, FARBE_TINTE);
+        var nt = z(k.note, 1) + " · " + k.wort; text(nt, RAND + BR - breite(nt, true, 11.5), y + 12, true, 11.5, k.farbe);
+        rechteck(RAND, y + 18, BR, 7, "E4E1DA"); rechteck(RAND, y + 18, BR * k.punkte / 100, 7, k.farbe);
+        y += 36;
+        tz.forEach(function (zl) { text(zl, RAND, y, false, 8.8, FARBE_TINTE); y += 11.5; });
+        kr.forEach(function (zeilen) { zeilen.forEach(function (zl, q) { text(zl, RAND + (q ? 8 : 0), y, false, 8, FARBE_GRAU); y += 10.3; }); });
+        y += 10;
+      });
+      absatz(bw.hinweis, RAND, 8, false, FARBE_GRAU, 4, 0);
+    }
+    // Daten im Detail
+    neueSeite();    text("Die Daten im Detail", RAND, y + 16, true, 20, FARBE_TINTE); y += 24; linie(RAND, y, RAND + BR, y, FARBE_ROT, 1); y += 4;
+    var W1 = 168, W2 = BR - W1, G = 9, LH = 12.2;
+    m.gruppen.forEach(function (g, gi) {
+      ueberschrift(("0" + (gi + 1)).slice(-2), g.titel, 16, 40);
+      if (g.notiz) { var nz = umbrechen(g.notiz, false, 8, BR); nz.forEach(function (zl) { y += 10.5; text(zl, RAND, y - 2, false, 8, FARBE_GRAU); }); y += 3; }
+      var n = 0;
+      g.zeilen.forEach(function (e) {
+        if (e.note) {
+          var nl = umbrechen(e.note, false, 8, BR - 12 - (e.tief ? 14 : 0)), h = nl.length * 10.5 + 5; platz(h);
+          nl.forEach(function (zl, q) { text(zl, RAND + 6 + (e.tief ? 14 : 0), y + 9.5 + q * 10.5, false, 8, FARBE_GRAU); }); y += h; return;
+        }
+        if (e.kopf) { platz(20); rechteck(RAND, y, BR, 16, "E9E7E2"); text(e.l, RAND + 6, y + 11.2, true, G, FARBE_TINTE); y += 16; n = 0; return; }
+        var ll = umbrechen((e.tief ? "– " : "") + e.l, true, G, W1 - 12 - (e.tief ? 8 : 0)), wl = umbrechen(e.w, false, G, W2 - 12);
+        var h2 = Math.max(ll.length, wl.length) * LH + 6; platz(h2);
+        rechteck(RAND, y, BR, h2, (n++ % 2) ? FARBE_PAPIER : "FFFFFF");
+        ll.forEach(function (zl, q) { text(zl, RAND + 6 + (e.tief ? 8 : 0), y + 3 + (q + 1) * LH - 3, true, G, "4A4842"); });
+        wl.forEach(function (zl, q) { text(zl, RAND + W1 + 6, y + 3 + (q + 1) * LH - 3, false, G, FARBE_TINTE); });
+        linie(RAND, y + h2, RAND + BR, y + h2, FARBE_LINIE, 0.4);
+        y += h2;
+      });
+      y += 4;
+    });
+    if (m.fehlt.length) { ueberschrift("", "Nicht vorhanden oder unbekannt", 16, 30); aufzaehlung(m.fehlt, FARBE_GRAU); }
+    ueberschrift("", "Quellen", 16, 24);
+    m.quellen.forEach(function (q) { absatz(q, RAND, 8, false, FARBE_GRAU, 0, 2); });
+    absatz("Erstellt mit der App „Standortanalyse Oldenburg“ am " + m.datum + ". Alle Zahlen sind Näherungen aus offenen Daten und ersetzen keine amtliche Auskunft, Vermessung oder Genehmigung.", RAND, 8, false, FARBE_GRAU, 10, 0);
+
+    // Fußzeile (erst jetzt, wenn die Seitenzahl feststeht)
+    var N = seiten.length;
+    seiten.forEach(function (s, i) {
+      s.push({ k: "l", x1: RAND, y1: H - UNTEN + 14, x2: RAND + BR, y2: H - UNTEN + 14, farbe: rgb(FARBE_LINIE), d: 0.6 });
+      s.push({ k: "t", x: RAND, y: H - UNTEN + 27, t: "Standortanalyse Oldenburg  ·  " + m.adresse, fett: false, gr: 7.5, farbe: rgb(FARBE_GRAU) });
+      var fz = "Seite " + (i + 1) + " von " + N;
+      s.push({ k: "t", x: RAND + BR - breite(fz, false, 7.5), y: H - UNTEN + 27, t: fz, fett: false, gr: 7.5, farbe: rgb(FARBE_GRAU) });
+    });
+    // PDF-Objekte schreiben
+    function f2(v) { return (Math.round(v * 100) / 100).toString(); }
+    function farbe3(c) { return f2(c[0]) + " " + f2(c[1]) + " " + f2(c[2]); }
+    var objs = [];
+    objs[1] = "<< /Type /Catalog /Pages 2 0 R >>";
+    var kids = []; for (var pi = 0; pi < N; pi++) { kids.push((5 + 2 * pi) + " 0 R"); }
+    objs[2] = "<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + N + " >>";
+    objs[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>";
+    objs[4] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>";
+    seiten.forEach(function (s, pi2) {
+      var c = [];
+      s.forEach(function (e) {
+        if (e.k === "r") { c.push(farbe3(e.farbe) + " rg " + f2(e.x) + " " + f2(H - e.y - e.h) + " " + f2(e.w) + " " + f2(e.h) + " re f"); }
+        else if (e.k === "l") { c.push(f2(e.d) + " w " + farbe3(e.farbe) + " RG " + f2(e.x1) + " " + f2(H - e.y1) + " m " + f2(e.x2) + " " + f2(H - e.y2) + " l S"); }
+        else { c.push("BT " + farbe3(e.farbe) + " rg /" + (e.fett ? "F2" : "F1") + " " + f2(e.gr) + " Tf " + f2(e.x) + " " + f2(H - e.y) + " Td (" + pdfText(e.t) + ") Tj ET"); }
+      });
+      var inhalt = c.join("\n");
+      objs[5 + 2 * pi2] = "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + f2(B) + " " + f2(H) + "] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents " + (6 + 2 * pi2) + " 0 R >>";
+      objs[6 + 2 * pi2] = "<< /Length " + inhalt.length + " >>\nstream\n" + inhalt + "\nendstream";
+    });
+    var info = 5 + 2 * N;
+    objs[info] = "<< /Title (" + pdfText("Standortprofil – " + m.adresse) + ") /Producer (Standortanalyse Oldenburg) >>";
+    var out = "%PDF-1.4\n", off = [];
+    for (var o = 1; o <= info; o++) { off[o] = out.length; out += o + " 0 obj\n" + objs[o] + "\nendobj\n"; }
+    var xref = out.length;
+    out += "xref\n0 " + (info + 1) + "\n0000000000 65535 f \n";
+    for (var q2 = 1; q2 <= info; q2++) { out += ("0000000000" + off[q2]).slice(-10) + " 00000 n \n"; }
+    out += "trailer\n<< /Size " + (info + 1) + " /Root 1 0 R /Info " + info + " 0 R >>\nstartxref\n" + xref + "\n%%EOF";
+    var bytes = new Uint8Array(out.length);
+    for (var bi = 0; bi < out.length; bi++) { bytes[bi] = out.charCodeAt(bi) & 255; }
+    return new Blob([bytes], { type: "application/pdf" });
+  }
+
+  // ---------- Bewertung des Standorts (Noten 1 bis 6) ----------
+  // Rein aus den berechneten Zahlen (teile.kenn) mit festen, hier lesbaren Schwellen. Jedes Kriterium bekommt 0 bis 100 Punkte
+  // (linear zwischen "schlecht" und "gut"), die Kategorie ist der gewichtete Mittelwert der vorhandenen Kriterien, die Note ist
+  // 6 - 5 * Punkte / 100 (100 Punkte = 1,0; 0 Punkte = 6,0). Fehlende Daten zählen nicht mit. Es ist eine Orientierung, keine Wertermittlung.
+  function lin(x, schlecht, gut) {
+    if (x === null || x === undefined || !isFinite(x)) { return null; }
+    return Math.max(0, Math.min(1, (x - schlecht) / (gut - schlecht))) * 100;
+  }
+  function gewMittel(liste) {
+    var s = 0, g = 0;
+    liste.forEach(function (e) { if (e.s !== null && e.s !== undefined) { s += e.s * e.g; g += e.g; } });
+    return g ? s / g : null;
+  }
+  function noteVon(punkte) { return Math.round(Math.max(1, Math.min(6, 6 - 5 * punkte / 100)) * 10) / 10; }
+  function noteWort(n) { return n <= 1.5 ? "sehr gut" : n <= 2.5 ? "gut" : n <= 3.5 ? "befriedigend" : n <= 4.5 ? "ausreichend" : n <= 5.5 ? "mangelhaft" : "ungenügend"; }
+  function bewertungFarbe(punkte) { return punkte >= 75 ? "2E8B3D" : punkte >= 55 ? "86A93A" : punkte >= 40 ? "E8A317" : punkte >= 25 ? "E8710A" : "C0392B"; }
+  function meter10(m) { return z(Math.round(m / 10) * 10) + " m"; }
+
+  function bewerten(t) {
+    var K = t.kenn || {}, kat = [];
+    function kategorie(titel, gewicht, kriterien) {
+      var punkte = gewMittel(kriterien);
+      if (punkte === null) { return; }
+      var da = kriterien.filter(function (e) { return e.s !== null && e.s !== undefined; }).sort(function (a, b) { return b.s - a.s; });
+      var text = (da[0].s >= 60 ? "Stärke: " : "Noch am besten: ") + da[0].fakt + ".";
+      var schwach = da[da.length - 1];
+      if (da.length > 1 && schwach.s < 60) { text += (schwach.s < 40 ? " Schwäche: " : " Schwächer: ") + schwach.fakt + "."; }
+      else if (da.length === 1) { text = da[0].fakt.charAt(0).toUpperCase() + da[0].fakt.slice(1) + "."; }
+      var note = noteVon(punkte);
+      kat.push({ titel: titel, gewicht: gewicht, punkte: Math.round(punkte), note: note, wort: noteWort(note), farbe: bewertungFarbe(punkte), text: text,
+                 kriterien: da.map(function (e) { return { name: e.name, punkte: Math.round(e.s), fakt: e.fakt }; }) });
+    }
+
+    // 1. Mobilität
+    var bus = K.busNaechste;
+    var park = K.mob ? Math.min(K.mob.parkplatz ? K.mob.parkplatz.naechste : Infinity, K.mob.parkhaus ? K.mob.parkhaus.naechste : Infinity) : undefined;
+    var lader = K.mob && K.mob.lader ? K.mob.lader.naechste : undefined;
+    var auto = gewMittel([{ s: lin(park, 800, 200), g: 1 }, { s: lin(lader, 1500, 400), g: 1 }]);
+    kategorie("Mobilität", 0.25, [
+      { name: "Haltestelle", g: 0.35, s: bus === undefined ? null : (isFinite(bus) ? lin(bus, 800, 200) : 0), fakt: isFinite(bus) ? "nächste Bushaltestelle in ca. " + meter10(bus) : "keine Bushaltestelle in den Daten" },
+      { name: "Takt", g: 0.25, s: bus === undefined ? null : (K.takt400 === undefined ? 0 : lin(K.takt400, 0, 6)), fakt: K.takt400 === undefined ? "keine Haltestelle mit Fahrplan im 400-m-Umkreis" : "bis zu " + z(K.takt400, 1) + " Abfahrten pro Stunde im 400-m-Umkreis" },
+      { name: "Radwege", g: 0.25, s: K.mob && K.mob.radweg ? lin(K.mob.radweg.l1, 0, 1000) : null, fakt: K.mob && K.mob.radweg ? "etwa " + z(Math.round(K.mob.radweg.l1 / 10) * 10) + " m Radwege im 400-m-Umkreis" : "" },
+      { name: "Parken und Laden", g: 0.15, s: auto, fakt: "Parkplatz in ca. " + (isFinite(park) ? meter10(park) : "?") + ", Ladestation in ca. " + (lader !== undefined && isFinite(lader) ? meter10(lader) : "?") }
+    ]);
+    // 2. Versorgung im Alltag
+    var E = K.einr || {};
+    function nah(id, schlecht, gut, name, g) { return { name: name, g: g, s: E[id] ? lin(E[id].naechste, schlecht, gut) : null, fakt: E[id] && isFinite(E[id].naechste) ? name + ": nächster in ca. " + meter10(E[id].naechste) : name + ": nichts in den Daten" }; }
+    var summe = Object.keys(E).reduce(function (s, id) { return s + E[id].n2; }, 0);
+    kategorie("Versorgung im Alltag", 0.25, [
+      nah("laeden", 800, 150, "Läden", 0.3), nah("schulen", 1000, 200, "Schulen und Kitas", 0.2), nah("aerzte", 1000, 250, "Ärzte und Apotheken", 0.2), nah("freizeit", 800, 150, "Freizeit und Kultur", 0.15),
+      { name: "Vielfalt", g: 0.15, s: Object.keys(E).length ? lin(summe, 0, 60) : null, fakt: z(summe) + " Einrichtungen im 800-m-Umkreis" }
+    ]);
+    // 3. Grün und Freiraum
+    var A = K.anteil || {};
+    kategorie("Grün und Freiraum", 0.15, [
+      { name: "Grünflächen", g: 0.4, s: A.parks ? lin(A.parks.a1, 0, 0.2) : null, fakt: A.parks ? prozent(A.parks.a1) + " Grünflächen im 400-m-Umkreis" : "" },
+      { name: "Spielplatz", g: 0.2, s: K.spiel ? lin(K.spiel.naechste, 700, 150) : null, fakt: K.spiel && isFinite(K.spiel.naechste) ? "Spielplatz in ca. " + meter10(K.spiel.naechste) : "kein Spielplatz in den Daten" },
+      { name: "Wald und Wasser", g: 0.2, s: A.wald && A.wasser ? lin(A.wald.a1 + A.wasser.a1, 0, 0.1) : null, fakt: A.wald && A.wasser ? prozent(A.wald.a1 + A.wasser.a1) + " Wald, Gehölz und Gewässer im 400-m-Umkreis" : "" },
+      { name: "Bäume", g: 0.2, s: K.baeume400 === undefined ? null : lin(K.baeume400, 0, 150), fakt: z(K.baeume400 || 0) + " erfasste Bäume im 400-m-Umkreis" }
+    ]);
+    // 4. Umweltbelastung (hoher Wert = geringe Belastung)
+    var laermP = null, laermF = "";
+    if (K.laermTag !== undefined) {
+      if (K.laermTag.length) {
+        var kl = K.laermTag.join(","), pk = /75/.test(kl) && /ab/.test(kl) ? 0 : /70/.test(kl) ? 15 : /65/.test(kl) ? 35 : /60/.test(kl) ? 55 : 75;
+        laermP = pk; laermF = "Straßenlärm am Standort " + K.laermTag.join(", ");
+      } else if (K.laermAnteil400 > 0.3) { laermP = 85; laermF = "kein kartierter Straßenlärm am Standort, in der Umgebung aber teils ab 55 dB"; }
+      else { laermP = 100; laermF = "kein kartierter Straßenlärm am Standort"; }
+    }
+    var regenP = null, regenF = "";
+    if (K.regen) {
+      var ex = K.regen.extrem, ag = K.regen.agw;
+      if (ex || ag) {
+        regenP = ex ? lin(ex.anteil, 0.5, 0) : 100; regenF = "Starkregen: " + (ex ? prozent(ex.anteil) + " des 100-m-Umfelds bei extremem Ereignis überflutet" : "keine Angabe");
+        if (ex && ex.mitte >= 0) { regenP = Math.min(regenP, 20); regenF = "Starkregen: Standort bei extremem Ereignis überflutet dargestellt"; }
+        if (ag && ag.mitte >= 0) { regenP = Math.min(regenP, 10); regenF = "Starkregen: Standort schon bei außergewöhnlichem Ereignis überflutet dargestellt"; }
+      }
+    }
+    var luftG = K.luftAbstand !== undefined && K.luftAbstand > 1500 ? 0.1 : 0.25;
+    kategorie("Umweltbelastung", 0.15, [
+      { name: "Lärm", g: 0.4, s: laermP, fakt: laermF },
+      { name: "Starkregen", g: 0.35, s: regenP, fakt: regenF },
+      { name: "Luft", g: luftG, s: K.no2 === undefined || K.no2 === null ? null : lin(K.no2, 40, 10), fakt: "NO₂ " + (K.no2 === undefined || K.no2 === null ? "?" : z(K.no2, 1)) + " µg/m³ an der Messstation in ca. " + (K.luftAbstand !== undefined ? meter10(K.luftAbstand) : "?") }
+    ]);
+    // 5. Bebauung und Dichte unter dem Leitbild "Stadt der kurzen Wege": kompakt und dicht (aber nicht überladen), gemischte Nutzung,
+    //    Alltagsziele in 5 Minuten zu Fuß, mehrgeschossig, ebenes Gelände für kurze Fußwege
+    var dichte = K.ueberbaut400 === undefined ? null : (K.ueberbaut400 >= 0.35 && K.ueberbaut400 <= 0.6 ? 100 : K.ueberbaut400 < 0.35 ? lin(K.ueberbaut400, 0.1, 0.35) : 70 + 30 * lin(K.ueberbaut400, 0.75, 0.6) / 100);
+    var mischung = null, mischF = "";
+    if (A.wohnen && A.gewerbe && A.gemeinbedarf) {
+      var wo = A.wohnen.a1, anders = A.gewerbe.a1 + A.gemeinbedarf.a1 + (A.plaetze ? A.plaetze.a1 : 0);
+      mischung = lin(Math.min(wo, anders), 0, 0.25);
+      mischF = "Wohnen " + prozent(wo) + ", Gewerbe, Handel, Gemeinbedarf und Plätze zusammen " + prozent(anders) + " im 400-m-Umkreis";
+    }
+    var ziele5 = Object.keys(E).length ? ["laeden", "schulen", "aerzte", "freizeit"].filter(function (id) { return E[id] && E[id].n1 >= 1; }).length : null;
+    kategorie("Bebauung und Dichte (Stadt der kurzen Wege)", 0.1, [
+      { name: "Kompaktheit", g: 0.3, s: dichte, fakt: K.ueberbaut400 === undefined ? "" : prozent(K.ueberbaut400) + " der Fläche im 400-m-Umkreis überbaut (kompakt ab etwa 35 %)" },
+      { name: "Nutzungsmischung", g: 0.3, s: mischung, fakt: mischF },
+      { name: "Alltagsziele in 5 Minuten", g: 0.2, s: ziele5 === null ? null : ziele5 * 25, fakt: ziele5 === null ? "" : ziele5 + " von 4 Zielgruppen (Läden, Schule/Kita, Arzt, Freizeit) im 400-m-Umkreis" },
+      { name: "Geschossigkeit", g: 0.1, s: K.traufeHaupt === undefined ? null : lin(K.traufeHaupt, 4, 9), fakt: K.traufeHaupt === undefined ? "" : "Traufhöhe der Hauptgebäude (ab 50 m² Grundfläche) im Median " + z(K.traufeHaupt, 1) + " m" },
+      { name: "Gelände", g: 0.1, s: K.hoeheDiff400 === undefined ? null : 30 + 0.7 * lin(K.hoeheDiff400, 15, 2), fakt: K.hoeheDiff400 === undefined ? "" : "Höhenunterschied " + z(K.hoeheDiff400, 1) + " m im 400-m-Umkreis" }
+    ]);    // 6. Planung und Schutz
+    var sg = K.schutz || {}, namen = { nsg: "Naturschutzgebiet", lsg: "Landschaftsschutzgebiet", biotope: "geschütztes Biotop", wallhecken: "Wallhecke" }, schlecht = null, ws = 100;
+    Object.keys(sg).forEach(function (id) {
+      var d = sg[id], p = d === 0 ? 20 : d <= 100 ? 50 : d <= 300 ? 75 : 100;
+      if (p < ws) { ws = p; schlecht = id; }
+    });
+    kategorie("Planung und Schutz", 0.1, [
+      { name: "Schutzgebiete", g: 0.7, s: Object.keys(sg).length ? ws : null, fakt: schlecht ? namen[schlecht] + (sg[schlecht] === 0 ? " am Standort" : " in ca. " + meter10(sg[schlecht])) : "kein Schutzgebiet im 300-m-Umkreis" },
+      { name: "Bebauungsplan", g: 0.3, s: K.bplan === undefined ? null : (K.bplan ? 70 : 100), fakt: K.bplan ? "Bebauungsplan vorhanden, Festsetzungen sind zu prüfen" : "kein Bebauungsplan-Umriss am Standort" }
+    ]);
+    var gesamt = null;
+    var gs = 0, gg = 0;
+    kat.forEach(function (k) { gs += k.punkte * k.gewicht; gg += k.gewicht; });
+    if (gg) { var gp = gs / gg, gn = noteVon(gp); gesamt = { punkte: Math.round(gp), note: gn, wort: noteWort(gn), farbe: bewertungFarbe(gp) }; }
+    return { gesamt: gesamt, kategorien: kat,
+             hinweis: "Die Noten sind eine Orientierung aus offenen Daten und festen Schwellen (100 Punkte = Note 1, 0 Punkte = Note 6), keine Wertermittlung und keine Eignungsaussage. Bebauung und Dichte folgt dem Leitbild der „Stadt der kurzen Wege“ (kompakt, gemischt, Alltagsziele zu Fuß erreichbar). Was die Daten nicht kennen, zählt nicht mit." };
+  }
+  function noteText(n) { return z(n, 1); }
+  function kritText(c) { return (c.fakt.indexOf(c.name) === 0 ? c.fakt : c.name + ": " + c.fakt) + " (" + c.punkte + " von 100 Punkten)"; }
+
+  // Die Bewertung als Block in der App (Noten und Balken)
+  function bewertungAnzeigen(behaelter, b) {
+    behaelter.innerHTML = "";
+    if (!b || !b.gesamt) { behaelter.hidden = true; return; }
+    behaelter.hidden = false;
+    function el(tag, text, css) { var e = document.createElement(tag); if (text) { e.textContent = text; } if (css) { e.style.cssText = css; } return e; }
+    var kopf = el("div", null, "display:flex;align-items:baseline;gap:10px;margin:2px 0 8px");
+    kopf.appendChild(el("span", noteText(b.gesamt.note), "font-size:30px;font-weight:700;color:#" + b.gesamt.farbe + ";line-height:1"));
+    kopf.appendChild(el("span", "Gesamtnote · " + b.gesamt.wort, "font-size:13px;font-weight:700"));
+    behaelter.appendChild(kopf);
+    b.kategorien.forEach(function (k) {
+      var z1 = el("div", null, "margin:0 0 9px");
+      var zeile = el("div", null, "display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:2px");
+      zeile.appendChild(el("strong", k.titel)); zeile.appendChild(el("span", noteText(k.note) + " · " + k.wort, "font-weight:700;color:#" + k.farbe));
+      var rahmen = el("div", null, "height:7px;background:#e4e1da;border:1px solid #cdc9c0");
+      rahmen.appendChild(el("div", null, "height:100%;width:" + k.punkte + "%;background:#" + k.farbe));
+      z1.appendChild(zeile); z1.appendChild(rahmen); z1.appendChild(el("div", k.text, "font-size:11px;color:#77746d;line-height:1.4;margin-top:2px"));
+      behaelter.appendChild(z1);
+    });
+    behaelter.appendChild(el("div", b.hinweis, "font-size:11px;color:#77746d;line-height:1.4"));
+  }
+
   window.entwurf = {
     // format: "txt", "docx" oder "pdf"; gibt eine Datei (Blob) zurück
+    bewertungZeigen: function (behaelter) { bewertungAnzeigen(behaelter, window.entwurf.letztes ? bewerten(window.entwurf.letztes) : null); },
     datei: function (text, format, titel) {
-      if (format === "docx") { return docxBauen(text, titel); }
-      if (format === "pdf") { return pdfBauen(text, titel); }
+      // Word und PDF: das lesbare Standortprofil (aus den Daten der letzten Erstellung); ohne Daten der reine Text
+      if (format === "docx") { return window.entwurf.letztes ? docxProfil(profilModell(window.entwurf.letztes)) : docxBauen(text, titel); }
+      if (format === "pdf") { return window.entwurf.letztes ? pdfProfil(profilModell(window.entwurf.letztes)) : pdfBauen(text, titel); }
       return new Blob([text], { type: "text/plain;charset=utf-8" });
     },
     // opt: { aufgabe, flaeche, nutzer, geschosse, wuensche, hoehen (bool), starkregen (bool) }; melde(text) zeigt den Fortschritt
     erstellen: function (opt, melde) {
       if (!window.marker) { return Promise.reject(new Error("Adresse fehlt")); }
-      return sammeln(opt, melde).then(zusammenbauen);
+      return sammeln(opt, melde).then(function (t) { window.entwurf.letztes = t; return zusammenbauen(t); });
     }
   };
 })();
