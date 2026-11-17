@@ -1,0 +1,36 @@
+# Geheimnisse: niemals hochladen
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.pfx
+*.p12
+id_rsa*
+secrets.*
+*secret*
+*credentials*
+*token*.txt
+
+# Lokale Einstellungen von Claude (enthalten Pfade deines Rechners)
+.claude/
+CLAUDE.local.md
+
+# Windows und Editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Zwischenstände und Abfall
+node_modules/
+*.log
+*.tmp
+*.bak
+~$*
+
+# Große Rohdownloads der Datenpflege (die fertigen *.js-Dateien in Standortanalyse/ bleiben dabei)
+Datenpflege/_download/
+Datenpflege/*.zip
+Datenpflege/*.gtfs

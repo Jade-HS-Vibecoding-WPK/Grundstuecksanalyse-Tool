@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anleitung: Standortanalyse Oldenburg</title>
+  <style>
+    :root {
+      --papier: #f5f3ee;
+      --tinte: #1a1a1a;
+      --grau: #77746d;
+      --rot: #c0392b;
+      --linie: #cdc9c0;
+      --schrift: "Bahnschrift", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px 20px 48px;
+      font-family: var(--schrift);
+      color: var(--tinte);
+      background: var(--papier);
+      line-height: 1.55;
+    }
+    main { max-width: 760px; margin: 0 auto; }
+    h1 {
+      margin: 0;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--tinte);
+      font-size: 24px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .unter { margin: 6px 0 22px; font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--grau); }
+    h2 {
+      margin: 26px 0 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--tinte);
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    h2 .nr { color: var(--rot); margin-right: 8px; }
+    p, li { font-size: 15px; }
+    ol, ul { margin: 6px 0; padding-left: 22px; }
+    li { margin: 0 0 6px; }
+    .kasten { margin: 12px 0; padding: 10px 14px; border: 1px solid var(--tinte); background: #fff; font-size: 14px; }
+    code { font-family: Consolas, "Courier New", monospace; font-size: 13px; background: #fff; border: 1px solid var(--linie); padding: 0 4px; }
+    table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 14px; }
+    th, td { text-align: left; padding: 6px 10px; border: 1px solid var(--linie); vertical-align: top; }
+    th { background: #fff; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .klein { font-size: 12px; color: var(--grau); }
+    @media print {
+      body { background: #fff; padding: 0; }
+      h2 { break-after: avoid; }
+      li, tr { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Standortanalyse Oldenburg</h1>
+  <p class="unter">Kurzanleitung</p>
+
+  <p>Mit der App erstellst du für ein Grundstück in Oldenburg eine Standortanalyse als Grafik: Karte, Umgebungsdaten, dein eigener Plan und deine Zeichnungen, gespeichert als Bild oder PDF mit Legende, Nordpfeil und Maßstab.</p>
+
+  <h2><span class="nr">1</span>So startest du</h2>
+  <ol>
+    <li>Öffne den Ordner <strong>Standortanalyse</strong>.</li>
+    <li>Doppelklick auf <strong>index.html</strong>. Die App öffnet sich im Browser.</li>
+    <li>Du brauchst eine <strong>Internetverbindung</strong> (für die Kartenbibliothek, die Kartenbilder der Hellgrau-Karte und die Adresssuche).</li>
+  </ol>
+  <div class="kasten">Lass alle Dateien und Ordner im Ordner „Standortanalyse“ zusammen. Die Dateien mit den Daten (Gebäude, Haltestellen, Einrichtungen, Flächen) und der Ordner „pdfjs“ (für PDF-Pläne) werden gebraucht.</div>
+
+  <h2><span class="nr">2</span>So gehst du vor</h2>
+  <p class="klein">Die Nummern entsprechen den Abschnitten in der Seitenleiste links. Beim Start ist nur „01 Standort“ aufgeklappt, die anderen öffnest du mit einem Klick.</p>
+  <ol>
+    <li><strong>Adresse (01):</strong> Straße und Hausnummer eingeben, „Adresse suchen“. Die App schlägt bei Tippfehlern Adressen vor. Der rote Punkt ist dein Standort. „02 Zuletzt gesucht“ merkt sich die gesuchten Adressen, solange die Seite offen ist.</li>
+    <li><strong>Karte:</strong> Oben rechts wählst du „Startkarte“ (von der App gezeichnet, ohne Symbole, immer scharf), „Hellgrau“ oder „Schwarzplan“. Der Schwarzplan zeigt nur die Gebäude in Schwarz auf weißem Grund (die Bebauung schaltet sich dabei von selbst ein). Plan, Zeichnung und Analyseebenen lassen sich darüber legen. „Bebauung“ zeigt die Gebäude, sobald du nah genug herangezoomt hast. Ziehen mit der Maus verschiebt die Karte.</li>
+    <li><strong>Analysedaten (04):</strong> Hier schaltest du Ebenen mit Haken ein und aus, oder mit „Alles einschalten“ auf einmal.
+      <table>
+        <tr><th>Gruppe</th><th>Was du siehst</th></tr>
+        <tr><td>Fußweg</td><td>Kreise für 5 und 10 Minuten (400 und 800 m Luftlinie) um deine Adresse</td></tr>
+        <tr><td>Fußweg nach Wegenetz</td><td>Wie weit du in 5 und 10 Minuten wirklich kommst, entlang der echten Wege und Straßen (80 m pro Minute). Ein farbiges Band um die erreichbaren Wege. Zusammen mit den Kreisen siehst du, wo Umwege, Flüsse oder die Bahn den Weg verlängern.</td></tr>
+        <tr><td>Sonnenstand</td><td>Richtung von Sonnenaufgang, Mittag und Sonnenuntergang am 21. Juni und 21. Dezember, mit Uhrzeit</td></tr>
+        <tr><td>ÖPNV</td><td>Haltestellen und Bahnhöfe</td></tr>
+        <tr><td>Einrichtungen</td><td>Läden, Schulen und Kitas, Ärzte und Apotheken, Freizeit und Kultur</td></tr>
+        <tr><td>Grün und Freiräume</td><td>Parks, Wald, Gewässer, Plätze</td></tr>
+        <tr><td>Nutzungsarten</td><td>Wohnen, Gewerbe und Handel, Industrie, Gemeinbedarf und Bildung</td></tr>
+        <tr><td>Lärm (Stadt Oldenburg)</td><td>Straßenlärm nach der EU-Lärmkartierung 2022 in dB-Klassen, einmal über den ganzen Tag (L_DEN) und einmal nachts (L_Night)</td></tr>
+        <tr><td>Planung und Naturschutz (Stadt Oldenburg)</td><td>Rechtsverbindliche Bebauungspläne (Umrisse), Naturschutzgebiete, Landschaftsschutzgebiete, geschützte Biotope, Wallhecken, Naturdenkmale und die Stadtbezirke mit Nummer</td></tr>
+      </table>
+      Lärm, Bebauungspläne, Naturschutz und Stadtbezirke sind offene Daten der Stadt Oldenburg (Datenlizenz Deutschland – Namensnennung 2.0). Die Quelle steht automatisch im Bild. Die Lärmdaten sind groß, beim ersten Zuschalten dauert es einen Moment. Die Bebauungspläne zeigen nur, wo ein Plan gilt. Den Plan selbst findest du im Geoportal der Stadt Oldenburg. Die Daten sind ein Stand vom Tag des Herunterladens und ersetzen keine amtliche Auskunft.
+      <br>
+      Fußweg und Sonnenstand brauchen eine gesuchte Adresse als Mittelpunkt, die anderen zeigen ganz Oldenburg.</li>
+    <li><strong>Eigener Plan (05):</strong> JPG, PNG oder PDF hochladen (bei PDF mit mehreren Seiten die Seite wählen). Mit dem Kreis in der Mitte verschiebst du den Plan, mit dem roten Quadrat an der Ecke drehst und vergrößerst du ihn. Für einen genauen Maßstab: „Zwei Punkte einpassen“. Du klickst zwei bekannte Stellen im Plan und dieselben Stellen auf der Karte, die App passt den Plan an. Mit dem Regler „Deckkraft“ siehst du die Karte durch den Plan.</li>
+    <li><strong>Zeichnen (06):</strong> Werkzeug wählen (Punkt, Linie, Fläche, Pfeil, Text, Baum, Säule) und in die Karte klicken. Bei Linie und Fläche beendet ein Doppelklick oder Enter das Zeichnen. Farbe, Größe und Linienart stellst du in der Seitenleiste ein. Mit „Auswählen“ klickst du ein Objekt an: Griffe ziehen verändert es, der rote Kreis verschiebt es, Entf löscht es, Strg+Z nimmt den letzten Schritt zurück. Objekte mit einem Namen erscheinen in der Legende.
+      <br><strong>Messen:</strong> „Strecke messen“ (Länge in Metern) und „Fläche messen“ (Größe in Quadratmetern, dazu der Umfang in der Seitenleiste). Die Maße stehen an der Linie bzw. in der Fläche, ändern sich beim Verschieben der Punkte und kommen ins gespeicherte Bild. Gemessen wird auf der Erdoberfläche, die Werte sind auf etwa einen Zentimeter genau, soweit deine Klicks es sind.</li>
+    <li><strong>Ausschnitt (07):</strong> Maßstab (zum Beispiel 1:1.000) und Papierformat (A5 bis A1) wählen. Mit „Rahmen auf der Karte zeigen“ siehst du den Bildausschnitt und kannst ihn verschieben.</li>
+    <li><strong>Beschriftung (08):</strong> Titel eingeben, Titelfeld, Nordpfeil, Legende, Maßstabsbalken und Quellenangabe ein- oder ausschalten.</li>
+    <li><strong>Speichern (09):</strong> Format (PNG oder PDF) und Auflösung wählen, dann „Als Bild speichern“ bzw. „Als PDF speichern“. Drucke in 100 % (nicht „An Seite anpassen“), dann stimmt der Maßstab.</li>
+    <li><strong>3D-Ansicht (10):</strong> „3D-Ansicht öffnen“ zeigt die Umgebung um den roten Punkt als Modell mit vereinfachten Dachformen (Sattel-, Walm-, Zelt- und Pultdächer; Gebäudehöhen und Dachformen vom Landesamt LGLN, Ausschnitt von 250 m bis 5 km, bis zu einer Ansicht des größten Teils der Stadt; die Höhen gibt es für das ganze Stadtgebiet). Die Seitenleiste der 3D-Ansicht ist wie die der Karte in nummerierte Abschnitte geteilt: 01 Sonne, 02 Bewegen, 03 Modell, 04 Analysedaten, 05 Sonnenstunden, 06 Bäume, 07 Eigene Baukörper und Bäume, 08 Messen, 09 Speichern, 10 Hilfe (eine Kurzfassung dieser Anleitung). Unter „01 Sonne“ stellst du <em>Datum</em> und <em>Uhrzeit</em> ein, der Schatten der Sonne wandert mit; „Tag abspielen“ lässt die Sonne von morgens bis abends laufen, „Sonnenmittag“ springt zum höchsten Sonnenstand. Mit der Maus ziehen dreht das Modell, Rechtsklick ziehen (oder Umschalt) verschiebt, das Mausrad zoomt; „Von oben“, „Von Süden“ und „Parallel“ (ohne Verkürzung) helfen beim Prüfen. „3D-Ansicht als Bild speichern“ legt ein PNG mit Datum, Uhrzeit und Sonnenstand ab.
+      <br><strong>Sonnenstunden (05):</strong> Der Knopf „Sonnenstunden berechnen“ rechnet für jede Stelle, wie viele Stunden am Tag im <em>Jahresmittel</em> direkte Sonne ankommt. Dafür nimmt die App 12 Monatstage (jeweils den 15.) und prüft alle 10 Minuten zwischen Sonnenauf- und -untergang, ob die Sonne über dem Horizont der Stelle steht. Gebäude, Bäume (mit der Belaubung des Monats) und Wälder werfen Schatten, Bäume nur zum Teil; Wolken sind nicht berücksichtigt. Gefärbt werden der Boden, die Dächer und (bei Ausschnitten bis 800 m) die Fassaden: Rot und Orange bedeuten viel Sonne (bis etwa 12 Stunden), Gelb und Grün mittel, Blau und Violett wenig. Die Auflösung ist 2 m bei kleinen und bis 7,5 m bei großen Ausschnitten (bis 2 km); am Rand des Ausschnitts fehlen Schatten von Gebäuden außerhalb. Die Rechnung läuft in Hintergrundprozessen und dauert bei 400 m etwa 5 bis 10 Sekunden; mit „Abbrechen“ stoppst du sie. Das Ergebnis erscheint auch in der Karte als Ebene „Sonnenstunden“ unter „04 Analysedaten“ (bleibt bis zur nächsten Berechnung stehen, wird nicht im Projekt gespeichert), im gespeicherten Kartenbild (mit Legende) und im gespeicherten 3D-Bild. Mit dem Werkzeug „Sonnenstunden“ unter „08 Messen“ liest du einen Wert ab (Boden, Dach oder Wand). Ändert sich das Modell (Bäume, eigene Baukörper), weist die App darauf hin, dass neu gerechnet werden muss.
+      <br><strong>Starkregen:</strong> Unter „04 Analysedaten“ gibt es die Gruppe <em>Starkregen (Bund, Online-Dienst)</em> mit zwei Ebenen: die größte Überflutungstiefe bei einem <em>außergewöhnlichen</em> Starkregen (etwa 100-jährlich) und bei einem <em>extremen</em> Starkregen (100 mm in einer Stunde). Die Karte stammt aus der „Hinweiskarte Starkregengefahren“ des Bundesamts für Kartographie und Geodäsie (BKG, Stand 2024, Auflösung 1 m, Datenlizenz Deutschland – Namensnennung 2.0). Sie wird <strong>online</strong> geladen, die App braucht dafür Internet, auch beim Speichern des Bildes und beim Zeichnen des Bodens in der 3D-Ansicht. Im Bild stehen eine Legende (Tiefenstufen von 10 cm bis über 400 cm) und die Quelle. Wichtig: Die Karte ist eine <em>Hinweiskarte</em>. Sie rechnet ohne Kanalnetz und Versickerung, zeigt nur eine erste Orientierung und ersetzt keine genaue Planung; kleinräumige Strukturen fehlen. Dauert das Laden lang, ist der Dienst gerade überlastet; dann später noch einmal versuchen.
+      <br><strong>Verkehr und Mobilität:</strong> Die Gruppe <em>Verkehr und Mobilität</em> in „04 Analysedaten“ zeigt Radwege und Fahrradstraßen, Straßen mit Radfahrstreifen, Fahrradabstellanlagen, Parkhäuser, Parkplätze, Carsharing- und Leihrad-Stationen (alle aus OpenStreetMap) sowie Ladestationen für Elektroautos und Schnelllader (Bundesnetzagentur, CC BY 4.0, nur Stationen „in Betrieb“; ein Klick auf eine Ladestation zeigt Betreiber, Adresse und Leistung). Unter <em>ÖPNV</em> zeigt ein <strong>Klick auf eine Haltestelle</strong> ihren Namen, die Linien, die Abfahrten und den ungefähren Takt. Das geht auch in der 3D-Ansicht: Kugel anklicken (kein Messwerkzeug gewählt), dann erscheint ein Fenster mit denselben Angaben; bei Ladestationen mit Betreiber und Leistung, bei den anderen Punkten mit ihrer Art. Die Ebene <em>Haltestellen nach Takt</em> färbt die Haltestellen nach der Zahl der Abfahrten pro Stunde (Fahrplan eines normalen Dienstags zwischen 6 und 20 Uhr, aus den Fahrplandaten von gtfs.de / DELFI, CC BY 4.0; Ferien und Feiertage können abweichen). Alles liegt lokal in den Dateien <code>mobilitaet_oldenburg.js</code> und <code>fahrplan_oldenburg.js</code> und braucht kein Internet. Im Bild stehen Legende und Quellen. Nicht eingebaut: die „Straßenbauprojekte“ der Stadt, denn der Dienst enthält nur 8 Punkte mit dem Stand April 2024. Verkehrsmengen (DTV) gibt es für Oldenburg nicht als offene Daten.
+      <br><strong>Spielen und Bewegen:</strong> Unter „Grün und Freiräume“ in „04 Analysedaten“ steht zusätzlich der Block <em>Spielen und Bewegen</em> (Daten aus OpenStreetMap, Datei <code>spielplaetze_oldenburg.js</code>; die Stadt Oldenburg bietet keine offenen Spielplatzdaten an): <em>Spielplätze</em> als Flächen (316; ein Klick zeigt Namen, falls in OpenStreetMap vorhanden, den Zugang „öffentlich“ oder „eingeschränkt“ und die Fläche), der <em>Spielplatz-Einzugsbereich</em> (200 m um öffentliche Spielplätze in Luftlinie, zu Fuß etwa 3 Minuten; er zeigt, wo Kinder einen Spielplatz in der Nähe haben und wo nicht) sowie Fußball- und Bolzplätze (102), Basketball und Tischtennis (42), Skateanlagen und Fitnessgeräte (30) und Hundewiesen (8). Nur etwa jeder sechste Spielplatz hat in OpenStreetMap einen Namen, Angaben zu Geräten oder Alter fehlen fast überall. Die Daten lassen sich mit <code>21_Spielplaetze_aktualisieren.ps1</code> erneuern.
+      <br><strong>Luftqualität:</strong> Die Gruppe <em>Luftqualität</em> in „04 Analysedaten“ zeigt die amtliche Luftmessstation am Heiligengeistwall (Umweltbundesamt, mit Daten der Messnetze der Länder und des Bundes; die Station misst am Verkehr). Ein Klick darauf (auch in der 3D-Ansicht) zeigt die Jahresmittelwerte der letzten sieben Jahre für Stickstoffdioxid (NO₂), Feinstaub PM10 und PM2,5 sowie die Tage mit mehr als 50 µg/m³ PM10, dazu die gesetzlichen Grenzwerte und die Richtwerte der WHO. Wichtig: Es gibt in Oldenburg nur diese eine amtliche Station, die Werte gelten also genau dort und nicht für die ganze Stadt. Eine Flächenkarte der Luftbelastung gibt es für Oldenburg nicht als offene Daten (die Lärmkarte steht unter „Lärm“). Die Daten liegen in <code>luft_oldenburg.js</code> und lassen sich mit dem Programm <code>20_Luft_aktualisieren.ps1</code> erneuern (nach dem Jahreswechsel).
+      <br><strong>Boden, Geologie, Grundwasser, Versiegelung, Altlasten:</strong> (Alle Themen in „04 Analysedaten“ und in der 3D-Ansicht lassen sich mit einem Klick auf die Überschrift auf- und zuklappen; eine rote Zahl zeigt, wie viele Ebenen davon eingeschaltet sind.) Vier weitere Gruppen in „04 Analysedaten“ (Boden, Geologie und Baugrund, Grundwasser, Versiegelung und Altlasten) zeigen Karten des Landesamts für Bergbau, Energie und Geologie Niedersachsen (LBEG, NIBIS-Kartenserver): Bodentypen (BK50), Bodenfeuchte im Frühjahr, sulfatsaure Böden; Geologische Karte (GK50), ursprüngliche Moore, Ingenieurgeologische Karte und setzungs- und hebungsempfindlicher Baugrund; Grundwasseroberfläche, Schutzpotenzial der Überdeckung, Versalzung und Entwässerungsgräben; Versiegelungsgrad 2024 und Altablagerungen. Auch diese Karten werden <strong>online</strong> geladen (Internet nötig, beim Speichern des Bildes dauert es dann länger, je Karte einige Sekunden). Unter <em>Legende</em> bei jeder Karte siehst du die Farberklärung des Landesamts; im gespeicherten Bild steht je Karte eine Zeile in der Legende und die Quelle. „Alles einschalten“ schaltet diese Karten nicht ein, damit nicht alles übereinander liegt. Wichtig: Wo eine Karte nichts zeigt, hat das Land dort keine Daten (die Bodenkarte ist in der bebauten Innenstadt leer, Altablagerungen erscheinen nur in den Zoomstufen 12 und 13, der Versiegelungsgrad erst ab Zoom 15). Alle Karten sind Hinweiskarten im Maßstab 1:50.000 oder gröber und ersetzen keine Baugrunduntersuchung. Die genauen Nutzungsbedingungen des Landesamts bitte vor einer Veröffentlichung selbst prüfen.
+      <br><strong>Bäume in der Karte:</strong> Unter „04 Analysedaten“ gibt es die Ebene <em>Einzelbäume (OpenStreetMap)</em>: Die erfassten Bäume erscheinen genauso wie deine eigenen Bäume: als Kreis in der Größe der Krone (ohne Angabe in den Daten etwa 8 m, bei einem Baum mit erfasster Höhe etwa 0,65 × Höhe) mit einem Stammpunkt in der Mitte, Laubbäume hellgrün, Nadel- und immergrüne Bäume dunkelgrün. Bei kleinen Maßstäben (weit herausgezoomt) sind die Kreise sehr klein. Sie erscheinen auch im gespeicherten Bild und in der Legende. Die Ebene lässt sich wie die anderen ein- und ausschalten und gehört zu „Alles einschalten“. Deine eigenen Bäume (Werkzeug „Baum“) gehören zur Zeichnung und lassen sich mit „Zeichnung zeigen“ in „06 Zeichnen“ ein- und ausblenden. In der 3D-Ansicht ausgeblendete Bestandsbäume (zum Beispiel geplante Fällungen) zeigt die Ebene in der Karte trotzdem.
+      <br><strong>Bäume in 3D (05):</strong> Das Modell zeigt die Bäume, die OpenStreetMap kennt (rund 12.500 im Stadtgebiet, viele Straßenbäume fehlen), als Stamm mit Krone. Wo keine Höhe erfasst ist, nimmt die App etwa 12 m Höhe und 8 m Kronenbreite an. Die Bäume werfen Schatten; der Regler <em>Belaubung</em> folgt standardmäßig dem Datum (im Winter sind Laubbäume kahl, die Krone ist dann durchscheinend und der Schatten schwach, Nadelbäume bleiben dicht). Mit den Haken schaltest du die Bäume und ihren Schatten ein und aus. <em>Wälder</em> (aus OpenStreetMap, rund 2.600 Waldflächen) erscheinen als grüne Baumblöcke mit einheitlicher Höhe (Standard 18 m, einstellbar), die ebenfalls Schatten werfen; im Winter sind sie lichter, bleiben aber relativ dicht (Mischwald). Auch sie kommen in die Schattenprüfung und in die Vektordateien und, als Ebene WALD, ins DXF. Auch die Schattenprüfung (Messen) und die Vektordateien berücksichtigen die Bäume; im DXF stehen sie in der Ebene BAEUME. <em>Eigene Bäume</em> (zum Beispiel geplante Pflanzungen) kannst du an zwei Stellen hinzufügen. <strong>In der Karte:</strong> unter „06 Zeichnen“ das Werkzeug <em>Baum</em> wählen und in die Karte klicken. Darunter stellst du Höhe, Kronenbreite (0 = automatisch) und Baumart (Laub- oder Nadelbaum) ein, vor dem Klick oder, mit „Auswählen“, nachträglich für einen angeklickten Baum. Der Kreis in der Karte zeigt die Krone in echter Größe; er erscheint auch im gespeicherten Bild und in der Legende. <strong>In der 3D-Ansicht:</strong> unter „06 Eigene Baukörper und Bäume“ Höhe, Krone und Art einstellen, „Baum setzen“ wählen und ins Modell klicken; der Baum steht sofort mit Schatten da und erscheint auch in der Karte. „Verschieben“ (erst den eigenen Baum anklicken, dann den neuen Standort) und „Entfernen“ (eigene Bäume werden gelöscht, Bestandsbäume nur in der 3D-Ansicht ausgeblendet, zum Beispiel für eine geplante Fällung) gibt es auch; ausgeblendete Bestandsbäume holst du unter „05 Bäume“ zurück. Die Liste unter „06“ zeigt alle eigenen Bäume mit Höhe und Krone zum Ändern und mit „✕“ zum Löschen. Alles wird mit dem Projekt gespeichert.
+      <br><strong>Speichern in 3D (08):</strong> Du wählst das Dateiformat. <em>PNG</em> und <em>PDF (Bild)</em> zeigen die Ansicht genau wie am Bildschirm mit Boden, Analysedaten, Schatten, Messungen und Beschriftung (beim PDF mit Papierformat A5 bis A1, quer oder hoch, und Auflösung; der Bildausschnitt passt sich dem Seitenverhältnis an). <em>PDF (Vektorzeichnung)</em> und <em>SVG</em> sind Linienzeichnungen der aktuellen Ansicht mit echten Vektoren (Gebäude, eigene Baukörper, Schatten auf dem Boden, Messungen, Beschriftung), die du in Illustrator, Affinity oder Inkscape weiterbearbeiten kannst; sie haben keinen Kartenboden und keine Analysedaten und gehen bis zu einem Ausschnitt von 1,5 km. <em>DXF</em> ist das 3D-Modell für CAD-Programme (AutoCAD, Rhino, Vectorworks, ArchiCAD): alle Gebäude und eigenen Baukörper als 3D-Flächen in Metern, Nullpunkt = roter Punkt (X Ost, Y Nord, Z oben), Ebenen BESTAND, je eigener Baukörper eine Ebene und MESSUNGEN (Linien und Text). Im Kopf der Datei steht der Nullpunkt in UTM-Koordinaten (EPSG:25832), damit du das Modell passend verschieben kannst. Die DXF-Datei zeigt die Blockhöhe, die du in „03 Modell“ gewählt hast.
+      <br><strong>Analysedaten in 3D:</strong> Unter „04 Analysedaten“ der 3D-Ansicht gibt es dieselben Haken wie in der Karte (Fußweg, Sonnenstrahlen, ÖPNV, Einrichtungen, Grün, Nutzungsarten, Lärm, Planung und Naturschutz, mit „Alles einschalten“ und „Alles ausschalten“). Was du dort schaltest, gilt auch in der Karte und umgekehrt. Flächen (zum Beispiel Parks, Lärm, Wohnen) und Linien (Fußwege, Wegenetz, Sonnenstrahlen) liegen auf dem Boden unter den Gebäuden. Haltestellen, Einrichtungen und Naturdenkmale stehen als Pfähle mit farbiger Kugel im Modell, damit man sie zwischen den Gebäuden sieht. Zwei Regler stellen die Darstellung auf dem Boden ein: <em>Farbstärke der Flächen</em> (wie deckend Parks, Lärm, Wohnen usw. sind; das Bodenbild wird nach dem Loslassen neu gezeichnet) und <em>Helligkeit des Bodens</em> (wirkt sofort; höher = kräftiger und greller, niedriger = ruhiger). „Standardwerte“ stellt beide zurück. Fußweg, Wegenetz und Sonnenstrahlen brauchen eine gesuchte Adresse. Das gespeicherte 3D-Bild nennt die eingeschalteten Daten und die Quellen.
+      <br><strong>Messen in 3D:</strong> Im Abschnitt „Messen“ links ein Werkzeug wählen und ins Modell klicken (die Punkte rasten an Gebäudeecken ein). <em>Entfernung</em>: zwei Punkte, du siehst Luftlinie, waagerechten Abstand und Höhenunterschied. <em>Strecke</em>: mehrere Punkte, Doppelklick oder Enter beendet, angezeigt wird die Gesamtlänge. <em>Gebäudehöhe</em>: ein Gebäude anklicken, du siehst Traufe, First, die Höhe im Modell und die Höhe des Klickpunkts über dem Boden. <em>Schatten prüfen</em>: einen Punkt anklicken, du siehst, ob er jetzt im Schatten liegt, und zu welchen Uhrzeiten an dem gewählten Tag die Sonne ihn trifft (ändert sich mit Datum und Uhrzeit). Die Messungen stehen im Modell und im gespeicherten Bild; mit „✕“ löschst du einzelne, mit „Alle löschen“ alle. Esc beendet die laufende Messung, dann das Werkzeug.
+      <br><strong>Eigene Baukörper:</strong> In „06 Zeichnen“ eine Fläche zeichnen und im Feld „Höhe für die 3D-Ansicht“ eine Höhe in Metern eintragen (oder die Höhe direkt in der 3D-Ansicht unter „Eigene Baukörper“ ändern). Die Fläche erscheint als Baukörper in ihrer Farbe und wirft Schatten. Mit dem Werkzeug <strong>„Säule“</strong> in „06 Zeichnen“ setzt du per Klick eine Säule, also einen Baukörper mit einem Kreis als Grundriss. Höhe und Durchmesser (Standard 10 m und 2 m) stellst du im Block „Säule“ darunter ein, Farbe und Name oben; eine ausgewählte Säule änderst du mit denselben Feldern (der Durchmesser ist auch in der 3D-Ansicht änderbar; in der Karte siehst du den Kreis in echter Größe). Bäume entstehen nur mit dem Werkzeug „Baum“; Bestandsgebäude darunter werden ausgeblendet, wenn du den Haken lässt. So kannst du zum Beispiel einen Neubau mit 12 m und mit 18 m vergleichen.</li>
+  </ol>
+
+  <h2><span class="nr">3</span>Gut zu wissen</h2>
+  <ul>
+    <li><strong>Projekt sichern:</strong> Mit „Projekt speichern“ (Knopf ganz oben in der Seitenleiste) legst du alles in <em>einer</em> Datei ab (Endung .json): Adresse, Karte, eingeschaltete Ebenen, eigener Plan (als Bild eingebettet), Zeichnung und alle Einstellungen. „Projekt öffnen“ holt den Stand wieder zurück. Die Datei kannst du aufheben oder weitergeben, sie ist je nach Plan einige MB groß. Bei einem PDF-Plan wird die gewählte Seite als Bild gespeichert.</li>
+    <li><strong>Automatische Sicherung:</strong> Zusätzlich sichert die App deinen Stand laufend im Browser (nur auf diesem Rechner, nichts geht ins Internet). Schließt du die Seite versehentlich oder lädst sie neu, fragt sie beim nächsten Start: „Möchtest du ihn wiederherstellen?“ Mit „Verwerfen“ beginnst du neu. Verlass dich für wichtige Arbeiten auf die Projektdatei: Räumst du die Browserdaten auf oder wechselst den Browser, ist die automatische Sicherung weg.</li>
+    <li>Mit <strong>Esc</strong> brichst du das Zeichnen und das Einpassen des Plans ab.</li>
+    <li>Die <strong>Quellenangabe</strong> (OpenStreetMap) ist bei den Kartendaten Pflicht. Lass sie nur weg, wenn du sie an anderer Stelle nennst.</li>
+    <li>Die Daten stammen von OpenStreetMap und sind ein Stand vom Tag des Herunterladens. OpenStreetMap ist nicht überall vollständig, zum Beispiel fehlen manche kleinen Läden oder Nutzungsflächen. Prüfe wichtige Angaben.</li>
+    <li>In der <strong>3D-Ansicht</strong> steht der Boden auf dem <strong>Gelände</strong> (Höhenmodell des Landes, LGLN DGM1 im 5-m-Raster, CC BY 4.0; Haken „Gelände“ in „03 Modell“): Gebäude, Bäume, Wälder, eigene Baukörper und die Pfähle der Analysedaten stehen auf dem Relief, und Schatten, Schattenprüfung, Sonnenstunden, SVG, Vektor-PDF und DXF (eigene Ebene GELAENDE) berücksichtigen es. Oldenburg ist flach (im Stadtgebiet etwa −2 bis 31 m über NHN), der Unterschied zeigt sich vor allem an Deichen, Böschungen und am Geestrand; Brücken, Tunnel und Wasserflächen sind nicht eigens modelliert. Außerdem sind die Dächer vereinfacht: Sattel-, Walm-, Zelt- und Pultdächer nach den Landesdaten, ohne Gauben, Krüppelwalme und Mansarden; unregelmäßige Grundrisse und Gebäude mit Innenhof bleiben flach. In „03 Modell“ lässt sich auf flache Klötze umschalten (Höhe = Mitte zwischen Traufe und First, bis First oder bis Traufe). Die Höhen sind amtliche Messwerte mit etwa 1 bis 5 m Genauigkeit. Die Uhrzeit ist die Ortszeit (im Sommer mit Sommerzeit). Die Bäume im Modell sind nur die aus OpenStreetMap (unvollständig) mit geschätzter Höhe; die Schattenwirkung der Kronen ist eine Näherung. Bei den großen Ausschnitten (3 und 5 km) lässt die App sehr kleine Gebäude (Schuppen, Garagen) weg und die Schatten sind gröber; für genaue Schattenstudien einen kleinen Ausschnitt (bis 800 m) wählen. Das Aufbauen dauert bei 5 km einige Sekunden.</li>
+    <li><strong>Mehrere Prozessorkerne:</strong> Schwere Rechnungen der 3D-Ansicht (Modell aufbauen, Sonnenstunden, SVG, PDF und DXF speichern) verteilt die App auf mehrere Kerne deines Rechners, damit die Seite dabei möglichst nicht einfriert. Geht das in deinem Browser nicht, rechnet sie wie früher allein, nur etwas langsamer.</li>
+    <li>Die Fußweg-Kreise zeigen <strong>Luftlinie</strong>. Der echte Fußweg ist wegen Umwegen meist länger.</li>
+    <li>Die Daten erneuern (etwa einmal im Jahr) geht mit den Programmen im Ordner „Datenpflege“. Die Datei <code>LIESMICH.txt</code> dort erklärt jeden Schritt.</li>
+  </ul>
+
+  <h2><span class="nr">4</span>Wenn etwas nicht klappt</h2>
+  <table>
+    <tr><th>Problem</th><th>Was hilft</th></tr>
+    <tr><td>Die Karte ist leer oder grau, oder es steht „Die Karte konnte nicht geladen werden“</td><td>Internetverbindung prüfen, Seite neu laden (F5). Die Kartendienste sind kostenlos und manchmal überlastet, dann später noch einmal versuchen.</td></tr>
+    <tr><td>„Adresse nicht gefunden“</td><td>Straße und Hausnummer prüfen oder einen der Vorschläge anklicken.</td></tr>
+    <tr><td>Eine Ebene bleibt leer oder es steht „Datei fehlt oder ist beschädigt“</td><td>Alle Dateien und Ordner müssen zusammen im Ordner „Standortanalyse“ liegen. Bei einer beschädigten Datei die Daten mit den Programmen in „Datenpflege“ neu erzeugen.</td></tr>
+    <tr><td>Ein PDF-Plan lässt sich nicht laden</td><td>Der Ordner „pdfjs“ muss neben index.html liegen. Hat das PDF einen Passwortschutz, bitte eine Version ohne Passwort verwenden.</td></tr>
+    <tr><td>Die 3D-Ansicht lässt sich nicht öffnen oder ist schwarz</td><td>Der Ordner „three“ sowie die Dateien „hoehen_oldenburg.js“ und „ansicht3d.js“ müssen neben index.html liegen. Bleibt das Bild schwarz, einen kleineren Ausschnitt (250 m) wählen oder die Seite neu laden. Im Browser muss WebGL aktiv sein (bei neuen Browsern der Normalfall).</td></tr>
+    <tr><td>Speichern klappt nicht oder das Bild ist „zu groß“</td><td>Kleinere Auflösung oder ein kleineres Papierformat wählen.</td></tr>
+    <tr><td>Im gespeicherten Bild fehlen graue Stellen oder Kacheln (Hellgrau-Karte)</td><td>Noch einmal speichern. Die Startkarte hat dieses Problem nicht, sie braucht keine Kartenbilder.</td></tr>
+  </table>
+
+  <p class="klein">Kartendaten: © OpenStreetMap-Mitwirkende, Lizenz ODbL. Kartenbibliothek: Leaflet. PDF-Anzeige: pdf.js (Mozilla, Apache 2.0).</p>
+</main>
+</body>
+</html>

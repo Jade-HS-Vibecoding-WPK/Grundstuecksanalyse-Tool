@@ -1,0 +1,98 @@
+DATENPFLEGE
+===========
+
+Diese Programme erneuern die Daten der App. Alle Daten stammen von OpenStreetMap und sind
+ein Stand vom Tag des Herunterladens. Etwa einmal im Jahr zu erneuern genügt.
+
+A) Gebäude (Ebene "Bebauung")  ->  Standortanalyse\gebaeude_oldenburg.js
+   1. Rechtsklick auf "1_Gebaeude_herunterladen.ps1" -> "Mit PowerShell ausführen" (dauert einige Minuten).
+   2. Rechtsklick auf "2_Gebaeude_umwandeln.ps1" -> "Mit PowerShell ausführen".
+   3. Den Ordner "rohdaten" kannst du danach löschen.
+
+B) Karte (Straßen, Bahn, Gewässer, Grün der "Eigenen Karte")  ->  Standortanalyse\karte_oldenburg.js
+   1. Rechtsklick auf "3_Karte_herunterladen.ps1" -> "Mit PowerShell ausführen" (dauert einige Minuten).
+   2. Rechtsklick auf "4_Karte_umwandeln.ps1" -> "Mit PowerShell ausführen".
+   3. Den Ordner "rohdaten_karte" kannst du danach löschen.
+
+C) Haltestellen (Ebene "ÖPNV")  ->  Standortanalyse\oepnv_oldenburg.js
+   1. Rechtsklick auf "5_OePNV_aktualisieren.ps1" -> "Mit PowerShell ausführen" (dauert nur Sekunden bis wenige Minuten).
+   Es ist nur dieser eine Schritt nötig, es gibt keinen Ordner zum Löschen.
+
+D) Einrichtungen (Läden, Schulen, Ärzte/Apotheken, Freizeit/Kultur)  ->  Standortanalyse\einrichtungen_oldenburg.js
+   1. Rechtsklick auf "6_Einrichtungen_aktualisieren.ps1" -> "Mit PowerShell ausführen" (dauert Sekunden bis wenige Minuten).
+   Es ist nur dieser eine Schritt nötig.
+
+E) Flächen (Parks, Wald, Gewässer, Plätze)  ->  Standortanalyse\flaechen_oldenburg.js
+   1. Rechtsklick auf "7_Flaechen_herunterladen.ps1" -> "Mit PowerShell ausführen" (dauert einige Minuten).
+   2. Rechtsklick auf "8_Flaechen_umwandeln.ps1" -> "Mit PowerShell ausführen".
+   3. Den Ordner "rohdaten_flaechen" kannst du danach löschen.
+
+F) Nutzungsarten (Wohnen, Gewerbe und Handel, Industrie, Gemeinbedarf und Bildung)  ->  Standortanalyse\nutzung_oldenburg.js
+   1. Rechtsklick auf "9_Nutzung_herunterladen.ps1" -> "Mit PowerShell ausführen" (dauert einige Minuten).
+   2. Rechtsklick auf "10_Nutzung_umwandeln.ps1" -> "Mit PowerShell ausführen".
+   3. Den Ordner "rohdaten_nutzung" kannst du danach löschen.
+
+G) Offene Daten der Stadt Oldenburg (Lärm, Bebauungspläne, Naturschutz, Stadtbezirke)
+   ->  Standortanalyse\stadt_oldenburg.js und Standortanalyse\laerm_oldenburg.js
+   1. Rechtsklick auf "11_StadtOldenburg_aktualisieren.ps1" -> "Mit PowerShell ausführen" (dauert etwa eine Minute).
+   Es ist nur dieser eine Schritt nötig. Die Daten kommen aus dem Open-Data-Portal der Stadt (opendata.oldenburg.de)
+   und deren ArcGIS-Dienst. Lizenz: Datenlizenz Deutschland - Namensnennung - Version 2.0 (dl-de/by-2-0).
+   Die Quelle "Stadt Oldenburg (Oldb)" muss genannt werden, die App schreibt sie automatisch ins Bild.
+   Nicht dabei: die Starkregengefahrenkarte. Die Daten im Dienst der Stadt sind ein Platzhalter (drei gleiche
+   Flächen, die das ganze Stadtgebiet bedecken) und ohne Lizenzangabe. Sie kann später ergänzt werden, wenn die
+   Stadt echte Daten veröffentlicht.
+
+H) Wegenetz (Ebenen "Fußweg nach Wegenetz")  ->  Standortanalyse\wegenetz_oldenburg.js
+   1. Rechtsklick auf "12_Wegenetz_aktualisieren.ps1" -> "Mit PowerShell ausführen" (dauert einige Minuten).
+   Es ist nur dieser eine Schritt nötig. Der Zwischenordner "rohdaten_wegenetz" wird am Ende vom Programm selbst gelöscht.
+   Bricht der Dienst ab, einfach noch einmal starten: schon geladene Teile werden übernommen.
+
+I) Gebaeudehoehen (3D-Ansicht)  ->  Standortanalyse\hoehen_oldenburg.js
+   1. Rechtsklick auf "13_Gebaeudehoehen_aktualisieren.ps1" -> "Mit PowerShell ausfuehren" (dauert einige Minuten,
+      laedt etwa 250 MB, die Kacheln fuer das Stadtgebiet werden einzeln geholt).
+   Die Datei enthaelt je Gebaeude Traufhoehe, Firsthoehe, Dachform (flach, Sattel, Walm, Zelt, Pult), Firstrichtung und
+   Grundriss (Format "version":2, die 3D-Ansicht baut daraus vereinfachte Dachformen).
+   Es ist nur dieser eine Schritt noetig. Der Zwischenordner "rohdaten_hoehen" wird am Ende vom Programm selbst geloescht.
+   Bricht die Verbindung ab, einfach noch einmal starten: schon geladene Kacheln werden uebernommen.
+   Quelle: Landesamt fuer Geoinformation und Landesvermessung Niedersachsen (LGLN), 3D-Gebaeudemodell LoD2,
+   Open Data, Lizenz CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.de).
+   Der Quellenvermerk "Gebaeudehoehen: LGLN (Jahr), CC BY 4.0" steht in der App und im gespeicherten 3D-Bild.
+   Beim Erneuern das Jahr in "Standortanalyse\ansicht3d.js" (Konstante QUELLE_HOEHEN) anpassen.
+
+J) Baeume (3D-Ansicht)  ->  Standortanalyse\baeume_oldenburg.js
+   1. Rechtsklick auf "14_Baeume_aktualisieren.ps1" -> "Mit PowerShell ausfuehren" (dauert Sekunden bis wenige Minuten).
+   Es ist nur dieser eine Schritt noetig. Die Daten sind alle als Baum erfassten Punkte von OpenStreetMap (natural=tree). Sie sind
+   nicht vollstaendig (vor allem Strassenbaeume fehlen oft); Hoehe, Kronenbreite und "immergruen" werden nur uebernommen, wenn sie erfasst sind.
+
+K) Waelder (3D-Ansicht)  ->  Standortanalyse\waelder_oldenburg.js
+   1. Rechtsklick auf "15_Waelder_aktualisieren.ps1" -> "Mit PowerShell ausfuehren" (dauert einige Minuten).
+   Es ist nur dieser eine Schritt noetig. Der Zwischenordner "rohdaten_waelder" wird am Ende vom Programm selbst geloescht.
+   Bricht der Dienst ab, einfach noch einmal starten: schon geladene Teile werden uebernommen.
+   Mitgenommen werden Flaechen mit landuse=forest und natural=wood (ab 200 Quadratmetern).
+
+Quelle und Lizenz: (c) OpenStreetMap-Mitwirkende, ODbL (https://www.openstreetmap.org/copyright).
+L) Verkehr und Mobilitaet  ->  Standortanalyse\mobilitaet_oldenburg.js und fahrplan_oldenburg.js
+   1. "17_Mobilitaet_aktualisieren_OSM.ps1" (Radwege, Radfahrstreifen, Abstellanlagen, Parken, Sharing aus OpenStreetMap, wenige Minuten).
+   2. "18_Ladestationen_aktualisieren.ps1" (Ladesaeulenregister der Bundesnetzagentur, CSV ca. 55 MB, CC BY 4.0; ergaenzt dieselbe Datei,
+      die OpenStreetMap-Teile bleiben erhalten; zuerst 17, dann 18). Die heruntergeladene Datei wird am Ende geloescht.
+   3. "19_Fahrplan_aktualisieren.ps1" (Fahrplan von gtfs.de, "Local Transit Germany", ca. 250 MB, CC BY 4.0, Daten von DELFI e.V.; zaehlt die
+      Abfahrten je Haltestelle an einem Dienstag, 6 bis 20 Uhr, und die Linien; Dauer ca. 1 bis 5 Minuten, mit -MaxMinuten wird begrenzt).
+   Jedes Programm ist ein einzelner Schritt per Rechtsklick -> "Mit PowerShell ausfuehren".
+
+M) Luftqualitaet  ->  Standortanalyse\luft_oldenburg.js
+   "20_Luft_aktualisieren.ps1" holt die Luftmessstationen im Stadtgebiet und ihre Jahresmittelwerte (NO2, PM10, PM2,5, Tage ueber 50 ug/m3 PM10)
+   der letzten sieben abgeschlossenen Jahre von der Luftdaten-Schnittstelle des Umweltbundesamts (winzige Datenmenge, ein Schritt).
+   Quelle: "Umweltbundesamt mit Daten der Messnetze der Laender und des Bundes". Einmal im Jahr (nach dem Jahreswechsel) erneuern.
+
+N) Spielplaetze und Bewegungsorte  ->  Standortanalyse\spielplaetze_oldenburg.js
+   "21_Spielplaetze_aktualisieren.ps1" holt Spielplaetze (mit Umriss) sowie Fussball-/Bolzplaetze, Basketball, Tischtennis, Skateanlagen,
+   Fitnessgeraete und Hundewiesen von OpenStreetMap (ein Schritt, wenige Minuten, kleine Datei).
+
+O) Gelaende (3D-Ansicht)  ->  Standortanalyse\gelaende_oldenburg.js
+   "22_Gelaende_aktualisieren.ps1" liest aus dem Digitalen Gelaendemodell 1 m des LGLN (Open Data, CC BY 4.0) fuer das Stadtgebiet
+   (ca. 400 Kacheln von 1 x 1 km) nur die grobe Fassung (2 m Raster) per Teilabruf, rechnet auf 5 m um und schreibt eine Datei fuer die
+   ganze Stadt (ca. 9 MB; Hoehen in Dezimetern, gepackt). Es werden etwa 250 MB uebertragen (dauerte 2,5 Minuten), nichts wird gesammelt.
+   Mit -MaxMinuten wird abgebrochen, wenn es zu lange dauert. Das Gelaende aendert sich selten; alle paar Jahre erneuern.
+
+Online-Karten (kein Download noetig, keine Datenpflege): Starkregen (BKG) sowie Boden, Geologie, Grundwasser, Versiegelung und Altlasten (LBEG, NIBIS-Kartenserver) werden beim Zuschalten direkt vom Dienst geladen. Funktionieren die Adressen oder Kartennamen einmal nicht mehr, steht die Liste in "Standortanalyse\index.html" (Suche nach NIBIS_WMS bzw. STARKREGEN_WMS).
+Ausnahme: Gebaeudehoehen (I) kommen vom LGLN (CC BY 4.0), die Daten der Stadt Oldenburg (G) von der Stadt Oldenburg (dl-de/by-2-0).

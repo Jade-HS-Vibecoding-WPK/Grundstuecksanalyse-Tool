@@ -104,10 +104,23 @@ Nach jedem Schritt zeige ich dir das Ergebnis. Der nächste Schritt beginnt erst
 
 ## 7. Später (nicht Teil der ersten Version)
 
-- Mehrere Pläne pro Projekt
-- Projekte speichern und wieder öffnen
-- Offene Daten der Stadt Oldenburg, zum Beispiel Lärm oder Bebauungspläne (wird geprüft, wenn die Grundfunktionen stehen)
-- Echte Fußweg-Zeiten statt Kreise
+### Vom Nutzer ausgewählt (Stand 16.11.2026, nach Schritt 2 und den Etappen A und B von Schritt 3)
+
+Diese fünf Ideen möchte der Nutzer nach den geplanten Schritten umsetzen:
+
+1. **Echte Fußwege statt Kreise (umgesetzt, 17.11.2026, die Kreise bleiben zum Vergleichen):** Die 5- und 10-Minuten-Zonen nach dem tatsächlichen Wegenetz statt als Kreis (braucht einen Dienst im Internet oder das lokal gespeicherte Wegenetz aus `karte_oldenburg.js`).
+2. **Offene Daten der Stadt Oldenburg (umgesetzt, 16.11.2026; ohne Starkregen, siehe CLAUDE.md):** zum Beispiel Lärmkarten, Hochwassergebiete, Bebauungspläne. Zuerst prüfen, was als Daten verfügbar ist.
+3. **Projekt speichern und wieder öffnen (umgesetzt, 16.11.2026):** Adresse, Plan, eingeschaltete Ebenen, Einstellungen und Zeichnungen in einer Datei sichern und laden (bisher ist nach dem Neuladen alles weg).
+4. **Schwarzplan-Modus (umgesetzt, 16.11.2026):** Per Knopfdruck nur Gebäude in Schwarz auf weißem Grund. Die Gebäude liegen schon lokal vor.
+5. **Messen (umgesetzt, 16.11.2026):** Strecken und Flächen auf der Karte messen (zum Beispiel Straßenbreite, Grundstücksgröße in m²).
+
+### Weitere Ideen (noch nicht ausgewählt)
+
+- Mehrere Pläne pro Projekt (Lageplan, Erdgeschoss, Dach als einzeln schaltbare Ebenen), Plan zuschneiden
+- Export als Vektorgrafik (SVG oder DXF) für Rhino, Illustrator, AutoCAD
+- ~~Schattenwurf der Gebäude zu gewählter Uhrzeit und Jahreszeit~~ – umgesetzt als "10 3D-Ansicht" (Klotzmodell mit Sonne, Datum und Uhrzeit, eigene Baukörper aus Zeichnung plus Höhe, Bild speichern; Höhen vom LGLN). Noch offen daraus: Auswertung "Schattenstunden auf dem Boden", Bäume, Dachformen, Geländehöhen
+- Fotos mit Standort und Blickrichtung auf der Karte
+- Höhenlinien und Gelände, Varianten vergleichen (Schieber), Windrose, eigene Legendeneinträge und Logo, Blattvorlagen
 - Weitere Städte
 
 ## 8. Fertig ist die erste Version, wenn
