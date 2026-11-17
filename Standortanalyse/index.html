@@ -230,6 +230,12 @@
     #entwurfText { font-size: 12px; }
     #entwurfMeldung:empty { display: none; }
 
+    /* Fotos: nummerierte Markierung auf der Karte und Nummer in der Liste */
+    .foto-marke { background: transparent; border: none; }
+    .foto-marke span { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; box-sizing: border-box; border-radius: 50%; background: #1f4fa3; color: #fff; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.45); font: 700 13px var(--schrift); cursor: pointer; }
+    .foto-marke.gewaehlt span { box-shadow: 0 0 0 3px var(--rot); }
+    .fotoNr { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #1f4fa3; color: #fff; font: 700 11px var(--schrift); }
+
     /* Liste der Pläne */
     .planListe { display: flex; flex-direction: column; gap: 4px; margin: 4px 0 14px; }
     .planListe[hidden] { display: none; }
@@ -893,6 +899,7 @@
           <label class="haken"><input type="checkbox" id="optLegende" checked> Legende</label>
           <label class="haken"><input type="checkbox" id="optBalken" checked> Maßstabsbalken</label>
           <label class="haken"><input type="checkbox" id="optQuelle" checked> Quellenangabe</label>
+          <label class="haken"><input type="checkbox" id="optFotos" checked> Fotos (Markierungen und Fotoleiste)</label>
           <p class="hinweis">Die Quellenangabe ist bei OpenStreetMap-Daten Pflicht. Lass sie nur weg, wenn du sie an anderer Stelle nennst.</p>
         </div>
       </details>
@@ -985,7 +992,40 @@
       </details>
 
       <details class="abschnitt">
-        <summary><span class="nr">12</span> Hilfe</summary>
+        <summary><span class="nr">12</span> Fotos</summary>
+        <div class="inhalt">
+          <p class="hinweis" style="margin-top:0">Standortfotos erscheinen als nummerierte Markierungen auf der Karte, auf Wunsch mit einem Sichtkegel in Blickrichtung. Ein Klick auf die Markierung zeigt das Foto. Im gespeicherten Bild stehen die Markierungen und unten eine Leiste mit den Fotos und ihren Beschriftungen.</p>
+          <label for="fotoDatei">Foto hinzufügen (JPG oder PNG)</label>
+          <input type="file" id="fotoDatei" accept="image/jpeg,image/png" autocomplete="off">
+          <p class="hinweis" id="fotoAnzahl">0 von 12 Fotos</p>
+          <p class="hinweis" id="fotoInfo">Noch kein Foto geladen.</p>
+
+          <div id="fotoListe" class="planListe" hidden></div>
+
+          <div id="fotoSteuerung" hidden>
+            <img id="fotoVorschau" alt="Vorschau des ausgewählten Fotos" style="display:block;max-width:100%;max-height:150px;margin-bottom:8px;border:1px solid var(--linie)">
+            <label for="fotoName">Beschriftung</label>
+            <input type="text" id="fotoName" maxlength="80" autocomplete="off">
+
+            <label for="fotoRichtung" style="margin-top:12px">Blickrichtung in Grad (0 = Norden, 90 = Osten)</label>
+            <input type="number" id="fotoRichtung" min="0" max="360" step="1" placeholder="leer = keine" autocomplete="off">
+            <label class="haken"><input type="checkbox" id="fotoKegel" autocomplete="off"> Sichtkegel auf der Karte zeigen</label>
+
+            <div class="knopfreihe" style="margin-top:12px">
+              <button type="button" id="fotoRichtungKlick" class="zweit">Richtung per Klick</button>
+              <button type="button" id="fotoOrtNeu" class="zweit">Ort neu setzen</button>
+            </div>
+            <button type="button" id="fotoEntfernen" class="zweit">Foto entfernen</button>
+            <p class="hinweis">Die Markierung lässt sich auf der Karte ziehen. Mit „Richtung per Klick“ klickst du in die Richtung, in die das Foto aufgenommen wurde. Mit Esc brichst du ab.</p>
+          </div>
+
+          <label class="haken"><input type="checkbox" id="fotoZeigen" checked autocomplete="off"> Fotos auf der Karte zeigen</label>
+          <p class="hinweis">Bis zu zwölf Fotos. Sie werden für die App verkleinert und mit dem Projekt gespeichert. Hat das Foto GPS-Daten (Handyfotos), setzt die App die Markierung selbst; sonst klickst du auf den Standort. Für das gespeicherte Bild gibt es in „09 Speichern“ den Haken „Fotos“.</p>
+        </div>
+      </details>
+
+      <details class="abschnitt">
+        <summary><span class="nr">13</span> Hilfe</summary>
         <div class="inhalt hilfe">
           <h3>So gehst du vor</h3>
           <ol>
@@ -999,6 +1039,7 @@
             <li><strong>Speichern</strong> (09): „Als Bild speichern“ (PNG) oder als PDF. Beim Drucken „100 %“ wählen, dann stimmt der Maßstab.</li>
             <li><strong>3D-Ansicht</strong> (10): „3D-Ansicht öffnen“. Datum und Uhrzeit wählen, der Schatten wandert mit. Ziehen dreht das Modell, Rechtsklick ziehen verschiebt, das Mausrad zoomt. Für einen eigenen Baukörper in „06 Zeichnen“ eine Fläche zeichnen, die Höhe eintragen und die 3D-Ansicht öffnen. Die Sonnenstunden (im Jahresmittel, mit Schatten von Gebäuden und Bäumen) berechnest du im Abschnitt „Sonnenstunden“ der 3D-Ansicht; das Ergebnis erscheint danach auch hier in der Karte. Bäume stehen im Abschnitt „Bäume“ der 3D-Ansicht. Eigene Bäume setzt du hier unter „06 Zeichnen“ mit dem Werkzeug „Baum“ (Höhe, Krone und Baumart darunter; der Kreis zeigt die Krone) oder direkt in der 3D-Ansicht. Im Abschnitt „Analysedaten“ der 3D-Ansicht schaltest du dieselben Ebenen wie in der Karte (sie liegen auf dem Boden, Haltestellen und Einrichtungen stehen als Pfähle). Im Abschnitt „Messen“ der 3D-Ansicht misst du Entfernungen, Strecken und Gebäudehöhen und prüfst, ob ein Punkt im Schatten liegt.</li>
           <li><strong>Entwurfsstrategie</strong> (11): Aus deiner Analyse entsteht ein fertiger Text für eine KI, die drei Entwurfsstrategien entwickelt. Adresse suchen, bei Bedarf eine Fläche „Grundstück“ zeichnen, Bauaufgabe eintragen, „Text erstellen“, dann kopieren und in die KI einfügen. Die Zahlen sind Näherungen aus offenen Daten, was die App nicht weiß, steht unter „Nicht vorhanden“.</li>
+          <li><strong>Fotos</strong> (12): Bis zu zwölf Standortfotos (JPG oder PNG) erscheinen als nummerierte Markierungen auf der Karte, auf Wunsch mit Sichtkegel in Blickrichtung. Hat das Foto GPS-Daten, setzt die App den Ort selbst, sonst klickst du auf den Standort. Ein Klick auf die Markierung zeigt das Foto. Im gespeicherten Bild stehen die Markierungen und unten eine Fotoleiste (Haken „Fotos“ in 09).</li>
           </ol>
 
           <h3>Gut zu wissen</h3>
@@ -2762,7 +2803,7 @@
 
     // Klicks auf Punkte sollen kein Fenster öffnen, solange ein Zeichen-, Mess- oder Einpass-Werkzeug aktiv ist
     function popupErlaubt() {
-      return (typeof zeichenWerkzeug === "undefined" || zeichenWerkzeug === "auswahl") && !(typeof planWahl !== "undefined" && planWahl);
+      return (typeof zeichenWerkzeug === "undefined" || zeichenWerkzeug === "auswahl") && !(typeof planWahl !== "undefined" && planWahl) && !(typeof fotoWahl !== "undefined" && fotoWahl);
     }
     function popupZeile(behaelter, text, fett) {
       var z = document.createElement(fett ? "strong" : "div");
@@ -3959,6 +4000,359 @@
 
     planListeBauen();
 
+    // ---------- Fotos (Standortfotos mit Nummer, Beschriftung und Blickrichtung) ----------
+    // Bis zu zwölf Fotos stehen als nummerierte Markierungen auf der Karte, auf Wunsch mit einem Sichtkegel in Blickrichtung.
+    // Ein Klick auf die Markierung zeigt das Foto. Im gespeicherten Bild erscheinen die Markierungen und unten eine Fotoleiste.
+    // Die Fotos werden beim Laden auf höchstens FOTO_MAX_SEITE Bildpunkte verkleinert (Speicher und Projektdatei).
+    var FOTO_MAX = 12;
+    var FOTO_MAX_SEITE = 1600;
+    var FOTO_FARBE = "#1f4fa3";
+    var FOTO_KEGEL_MM = 16;             // Länge des Sichtkegels auf dem Papier (und auf dem Bildschirm, 96 dpi)
+    var FOTO_KEGEL_GRAD = 56;           // Öffnungswinkel des Sichtkegels
+    var fotos = [];                     // { id, name, lat, lng, richtung (Grad von Norden im Uhrzeigersinn) oder null, kegel, bild: Leinwand, w, h, vorschau, format, datenUrl, marke, keg }
+    var fotoAuswahl = null;             // das ausgewählte Foto oder null
+    var fotoWahl = null;                // null oder { art: "ort" | "richtung", foto }: der nächste Klick in die Karte setzt den Ort bzw. die Blickrichtung
+    var fotoNr = 0;                     // zählt Fotos (für die Sicherung im Browser)
+
+    karte.createPane("fotoKegelPane");
+    karte.getPane("fotoKegelPane").style.zIndex = 445;
+    karte.getPane("fotoKegelPane").style.pointerEvents = "none";
+    var fotoEbene = L.layerGroup().addTo(karte);
+
+    var feldFotoDatei = document.getElementById("fotoDatei");
+    var fotoInfo = document.getElementById("fotoInfo");
+    var fotoListeFeld = document.getElementById("fotoListe");
+    var fotoSteuerung = document.getElementById("fotoSteuerung");
+    var feldFotoName = document.getElementById("fotoName");
+    var feldFotoRichtung = document.getElementById("fotoRichtung");
+    var feldFotoKegel = document.getElementById("fotoKegel");
+    var fotoVorschauFeld = document.getElementById("fotoVorschau");
+    var fotoZeigenFeld = document.getElementById("fotoZeigen");
+
+    // ----- EXIF: Aufnahmeort und Blickrichtung aus dem JPEG lesen (nur GPS, falls vorhanden) -----
+    function fotoExif(puffer) {
+      try {
+        var d = new DataView(puffer);
+        if (d.byteLength < 12 || d.getUint16(0) !== 0xFFD8) { return null; }
+        var o = 2;
+        while (o + 4 < d.byteLength) {
+          var m = d.getUint16(o), len = d.getUint16(o + 2);
+          if (m === 0xFFE1 && d.getUint32(o + 4) === 0x45786966) { return fotoTiff(d, o + 10); }
+          if ((m & 0xFF00) !== 0xFF00 || m === 0xFFDA) { break; }
+          o += 2 + len;
+        }
+      } catch (x) { /* kein lesbares EXIF */ }
+      return null;
+    }
+    function fotoTiff(d, t) {
+      var le = d.getUint16(t) === 0x4949;
+      function u16(p) { return d.getUint16(p, le); }
+      function u32(p) { return d.getUint32(p, le); }
+      var ifd0 = t + u32(t + 4), n = u16(ifd0), gps = 0, i;
+      for (i = 0; i < n; i++) { var e0 = ifd0 + 2 + i * 12; if (u16(e0) === 0x8825) { gps = t + u32(e0 + 8); } }
+      if (!gps) { return null; }
+      var tags = {}; n = u16(gps);
+      for (i = 0; i < n; i++) {
+        var e = gps + 2 + i * 12, typ = u16(e + 2), anz = u32(e + 4), groesse = typ === 5 ? 8 : 1;
+        tags[u16(e)] = { off: anz * groesse > 4 ? t + u32(e + 8) : e + 8, anz: anz };
+      }
+      function rat(p) { var nenner = u32(p + 4); return nenner ? u32(p) / nenner : 0; }
+      function grad(tag) { var g = tags[tag]; if (!g || g.anz < 3) { return null; } return rat(g.off) + rat(g.off + 8) / 60 + rat(g.off + 16) / 3600; }
+      var lat = grad(2), lng = grad(4);
+      if (lat === null || lng === null || (lat === 0 && lng === 0)) { return null; }
+      if (tags[1] && String.fromCharCode(d.getUint8(tags[1].off)) === "S") { lat = -lat; }
+      if (tags[3] && String.fromCharCode(d.getUint8(tags[3].off)) === "W") { lng = -lng; }
+      var richtung = null;
+      if (tags[0x11]) { richtung = rat(tags[0x11].off); if (!(richtung >= 0 && richtung <= 360)) { richtung = null; } }
+      return { lat: lat, lng: lng, richtung: richtung === null ? null : Math.round(richtung) % 360 };
+    }
+
+    // ----- Markierung und Sichtkegel auf der Karte -----
+    function fotoMarkeIcon(nr, gewaehlt) {
+      return L.divIcon({ className: "foto-marke" + (gewaehlt ? " gewaehlt" : ""), html: "<span>" + nr + "</span>", iconSize: [26, 26], iconAnchor: [13, 13] });
+    }
+    // Ecken des Sichtkegels: Mittelpunkt und ein Bogen, in Bildschirmpunkten (Länge in Millimetern auf dem Papier, wie die Zeichnung)
+    function fotoKegelEcken(f) {
+      var c = planPunkt(L.latLng(f.lat, f.lng)), r = FOTO_KEGEL_MM * PX_PRO_MM, pts = [L.latLng(f.lat, f.lng)];
+      for (var i = 0; i <= 12; i++) {
+        var a = (f.richtung + (i / 12 - 0.5) * FOTO_KEGEL_GRAD) * Math.PI / 180;
+        pts.push(planLatLng(L.point(c.x + Math.sin(a) * r, c.y - Math.cos(a) * r)));
+      }
+      return pts;
+    }
+    function fotoMarkenNeu() {                   // alle Markierungen und Kegel passend zur Liste (Nummern!) zeichnen
+      fotoEbene.clearLayers();
+      fotos.forEach(function (f, i) {
+        f.marke = null; f.keg = null;
+        if (f.lat === null || !fotoZeigenFeld.checked) { return; }
+        f.keg = (f.kegel && f.richtung !== null)
+          ? L.polygon(fotoKegelEcken(f), { pane: "fotoKegelPane", stroke: true, color: FOTO_FARBE, weight: 1.5, opacity: 0.9, fillColor: FOTO_FARBE, fillOpacity: 0.28, interactive: false }).addTo(fotoEbene)
+          : null;
+        f.marke = L.marker([f.lat, f.lng], { icon: fotoMarkeIcon(i + 1, f === fotoAuswahl), draggable: true, keyboard: false, zIndexOffset: 800, title: "Foto " + (i + 1) + ": " + f.name }).addTo(fotoEbene);
+        f.marke.on("click", function () {
+          if (fotoWahl) { return; }
+          waehleFoto(f);
+          zeigePopup(f.marke, fotoPopup(f, i + 1));
+        });
+        f.marke.on("drag", function () { var ll = f.marke.getLatLng(); f.lat = ll.lat; f.lng = ll.lng; if (f.keg) { f.keg.setLatLngs(fotoKegelEcken(f)); } });
+        f.marke.on("dragend", function () { fotoGeaendert(); });
+      });
+    }
+    karte.on("zoomend viewreset", function () { fotos.forEach(function (f) { if (f.keg) { f.keg.setLatLngs(fotoKegelEcken(f)); } }); });
+
+    function fotoPopup(f, nr) {
+      var d = document.createElement("div");
+      d.style.maxWidth = "260px";
+      var img = document.createElement("img");
+      img.src = f.vorschau; img.alt = f.name; img.style.cssText = "display:block;max-width:240px;max-height:200px;width:auto;height:auto;margin-bottom:4px";
+      d.appendChild(img);
+      popupZeile(d, "Foto " + nr + ": " + f.name, true);
+      if (f.richtung !== null) { popupZeile(d, "Blickrichtung " + f.richtung + "° (" + ["Norden", "Nordosten", "Osten", "Südosten", "Süden", "Südwesten", "Westen", "Nordwesten"][Math.round(f.richtung / 45) % 8] + ")"); }
+      return d;
+    }
+
+    // ----- Liste und Felder in der Seitenleiste -----
+    function fotoListeBauen() {
+      fotoListeFeld.innerHTML = "";
+      fotoListeFeld.hidden = !fotos.length;
+      document.getElementById("fotoAnzahl").textContent = fotos.length + " von " + FOTO_MAX + " Fotos";
+      fotos.forEach(function (f, i) {
+        var zeile = document.createElement("div");
+        zeile.className = "planZeile" + (f === fotoAuswahl ? " gewaehlt" : "");
+        var nr = document.createElement("span");
+        nr.className = "fotoNr"; nr.textContent = String(i + 1);
+        var name = document.createElement("button");
+        name.type = "button"; name.className = "planName"; name.title = "Dieses Foto auswählen";
+        name.textContent = f.name + (f.lat === null ? " (ohne Ort)" : "");
+        name.addEventListener("click", function () { waehleFoto(f); if (f.marke) { karte.panTo([f.lat, f.lng]); } });
+        var hoch = document.createElement("button");
+        hoch.type = "button"; hoch.className = "planPfeil"; hoch.textContent = "▲"; hoch.title = "Nach oben (kleinere Nummer)";
+        hoch.setAttribute("aria-label", "Foto " + (i + 1) + " nach oben"); hoch.disabled = i === 0;
+        hoch.addEventListener("click", function () { verschiebeFoto(f, -1); });
+        var runter = document.createElement("button");
+        runter.type = "button"; runter.className = "planPfeil"; runter.textContent = "▼"; runter.title = "Nach unten (größere Nummer)";
+        runter.setAttribute("aria-label", "Foto " + (i + 1) + " nach unten"); runter.disabled = i === fotos.length - 1;
+        runter.addEventListener("click", function () { verschiebeFoto(f, 1); });
+        zeile.appendChild(nr); zeile.appendChild(name); zeile.appendChild(hoch); zeile.appendChild(runter);
+        fotoListeFeld.appendChild(zeile);
+      });
+    }
+    function verschiebeFoto(f, richtung) {
+      var i = fotos.indexOf(f), j = i + richtung;
+      if (i < 0 || j < 0 || j >= fotos.length) { return; }
+      fotos[i] = fotos[j]; fotos[j] = f;
+      fotoMarkenNeu(); fotoListeBauen(); fotoGeaendert();
+    }
+    function fotoFelderAktualisieren() {
+      fotoSteuerung.hidden = !fotoAuswahl;
+      if (!fotoAuswahl) { fotoInfo.textContent = fotos.length ? "Wähle ein Foto in der Liste aus, um es zu bearbeiten." : "Noch kein Foto geladen."; return; }
+      feldFotoName.value = fotoAuswahl.name;
+      feldFotoRichtung.value = fotoAuswahl.richtung === null ? "" : String(fotoAuswahl.richtung);
+      feldFotoKegel.checked = !!fotoAuswahl.kegel;
+      fotoVorschauFeld.src = fotoAuswahl.vorschau;
+      fotoInfo.textContent = fotoAuswahl.info || "";
+    }
+    function waehleFoto(f) {
+      fotoAuswahl = f || null;
+      fotoFelderAktualisieren();
+      fotoListeBauen();
+      fotos.forEach(function (x, i) { if (x.marke) { x.marke.setIcon(fotoMarkeIcon(i + 1, x === fotoAuswahl)); } });
+    }
+    function fotoGeaendert() {           // nach jeder Änderung: Export-Hinweis und Sicherung (die Sicherung läuft ohnehin alle 4 Sekunden)
+      aktualisiereExportInfo();
+    }
+
+    // ----- Foto hinzufügen -----
+    function fotoWahlStarten(art, f) {
+      zeichenSetzeWerkzeug("auswahl");
+      if (planWahl) { planAbbrechenWahl(); }
+      fotoWahl = { art: art, foto: f };
+      document.getElementById("karte").classList.add("plan-wahl");
+      setzeKartenStatus(art === "ort" ? "Klicke auf den Standort des Fotos in der Karte (Esc bricht ab)." : "Klicke in die Richtung, in die das Foto aufgenommen wurde (Esc bricht ab).");
+    }
+    function fotoWahlBeenden(entfernen) {
+      if (!fotoWahl) { return; }
+      var f = fotoWahl.foto, war = fotoWahl.art;
+      fotoWahl = null;
+      document.getElementById("karte").classList.remove("plan-wahl");
+      setzeKartenStatus("");
+      if (entfernen && war === "ort" && f.lat === null) { entferneFoto(f); }       // neues Foto ohne Ort: Abbruch verwirft es
+    }
+    karte.on("click", function (ereignis) {
+      if (!fotoWahl) { return; }
+      var f = fotoWahl.foto, art = fotoWahl.art;
+      if (art === "ort") {
+        f.lat = ereignis.latlng.lat; f.lng = ereignis.latlng.lng;
+        fotoWahlBeenden(false);
+        fotoMarkenNeu(); waehleFoto(f); fotoGeaendert();
+      } else {
+        var a = planPunkt(L.latLng(f.lat, f.lng)), b = planPunkt(ereignis.latlng);
+        var dx = b.x - a.x, dy = b.y - a.y;
+        if (Math.sqrt(dx * dx + dy * dy) < 6) { return; }
+        f.richtung = Math.round((Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360) % 360;
+        f.kegel = true;
+        fotoWahlBeenden(false);
+        fotoMarkenNeu(); waehleFoto(f); fotoGeaendert();
+      }
+    });
+    document.addEventListener("keydown", function (ereignis) { if (ereignis.key === "Escape" && fotoWahl) { fotoWahlBeenden(true); } });
+
+    function fotoLaden(datei) {
+      if (fotos.length >= FOTO_MAX) { fotoInfo.textContent = "Es sind schon " + FOTO_MAX + " Fotos geladen (mehr gehen nicht). Entferne zuerst ein Foto."; return; }
+      if (!/^image\/(jpeg|png)$/.test(datei.type)) { fotoInfo.textContent = "Diese Datei ist kein JPG oder PNG. Bitte ein Foto in einem dieser Formate wählen."; return; }
+      fotoInfo.textContent = "Foto wird gelesen …";
+      datei.arrayBuffer().then(function (puffer) {
+        var exif = datei.type === "image/jpeg" ? fotoExif(puffer) : null;
+        return new Promise(function (fertig, fehler) {
+          var adresse = URL.createObjectURL(new Blob([puffer], { type: datei.type })), bild = new Image();
+          bild.onload = function () { URL.revokeObjectURL(adresse); fertig({ bild: bild, exif: exif }); };
+          bild.onerror = function () { URL.revokeObjectURL(adresse); fehler(new Error("kein Bild")); };
+          bild.src = adresse;
+        });
+      }).then(function (erg) {
+        var bw = erg.bild.naturalWidth, bh = erg.bild.naturalHeight, s = Math.min(1, FOTO_MAX_SEITE / Math.max(bw, bh));
+        var w = Math.max(1, Math.round(bw * s)), h = Math.max(1, Math.round(bh * s));
+        var leinwand = document.createElement("canvas"); leinwand.width = w; leinwand.height = h;
+        var cx = leinwand.getContext("2d"); cx.imageSmoothingQuality = "high"; cx.drawImage(erg.bild, 0, 0, w, h);
+        var f = fotoNeu(leinwand, datei.name.replace(/\.[^.]+$/, ""), datei.type === "image/png" ? "png" : "jpeg");
+        f.info = "Geladen: " + datei.name + " (" + bw + " × " + bh + " Pixel" + (s < 1 ? ", für die App auf " + w + " × " + h + " verkleinert" : "") + ").";
+        var ex = erg.exif, innen = ex && karte.options.maxBounds ? karte.options.maxBounds.contains([ex.lat, ex.lng]) : !!ex;
+        if (ex && ex.richtung !== null) { f.richtung = ex.richtung; f.kegel = true; }
+        fotos.push(f);
+        if (innen) {
+          f.lat = ex.lat; f.lng = ex.lng;
+          f.info += " Der Ort stammt aus den GPS-Daten des Fotos; du kannst die Markierung verschieben.";
+          fotoMarkenNeu(); waehleFoto(f); karte.panTo([f.lat, f.lng]);
+        } else {
+          waehleFoto(f);
+          f.info += ex ? " Der Aufnahmeort im Foto liegt außerhalb von Oldenburg." : "";
+          fotoWahlStarten("ort", f);
+        }
+        fotoListeBauen(); fotoGeaendert();
+      }).catch(function () { fotoInfo.textContent = "Das Foto konnte nicht gelesen werden. Ist die Datei beschädigt? Bitte eine andere versuchen."; });
+    }
+    function fotoNeu(leinwand, name, format) {
+      var s = Math.min(1, 480 / Math.max(leinwand.width, leinwand.height)), v = document.createElement("canvas");
+      v.width = Math.max(1, Math.round(leinwand.width * s)); v.height = Math.max(1, Math.round(leinwand.height * s));
+      v.getContext("2d").drawImage(leinwand, 0, 0, v.width, v.height);
+      return { id: ++fotoNr, name: name || "Foto", lat: null, lng: null, richtung: null, kegel: false, bild: leinwand, w: leinwand.width, h: leinwand.height,
+               vorschau: v.toDataURL("image/jpeg", 0.8), format: format, datenUrl: null, marke: null, keg: null, info: "" };
+    }
+    function entferneFoto(f) {
+      var i = fotos.indexOf(f);
+      if (i < 0) { return; }
+      fotos.splice(i, 1);
+      if (fotoAuswahl === f) { fotoAuswahl = null; }
+      fotoMarkenNeu();
+      waehleFoto(fotoAuswahl || (fotos.length ? fotos[Math.min(i, fotos.length - 1)] : null));
+      fotoGeaendert();
+    }
+    function entferneAlleFotos() {
+      fotoWahlBeenden(false);
+      fotos = []; fotoAuswahl = null;
+      fotoMarkenNeu(); waehleFoto(null); aktualisiereExportInfo();
+    }
+
+    feldFotoDatei.addEventListener("change", function () {
+      var datei = feldFotoDatei.files && feldFotoDatei.files[0];
+      if (datei) { fotoLaden(datei); }
+      feldFotoDatei.value = "";
+    });
+    feldFotoName.addEventListener("input", function () {
+      if (!fotoAuswahl) { return; }
+      fotoAuswahl.name = feldFotoName.value.trim() || "Foto";
+      fotoListeBauen();
+      if (fotoAuswahl.marke) { fotoAuswahl.marke.options.title = "Foto " + (fotos.indexOf(fotoAuswahl) + 1) + ": " + fotoAuswahl.name; }
+      fotoGeaendert();
+    });
+    feldFotoRichtung.addEventListener("change", function () {
+      if (!fotoAuswahl) { return; }
+      var v = feldFotoRichtung.value.trim();
+      if (v === "" || !isFinite(Number(v))) { fotoAuswahl.richtung = null; fotoAuswahl.kegel = false; }
+      else { fotoAuswahl.richtung = Math.round(((Number(v) % 360) + 360) % 360) % 360; fotoAuswahl.kegel = true; }
+      fotoFelderAktualisieren(); fotoMarkenNeu(); fotoGeaendert();
+    });
+    feldFotoKegel.addEventListener("change", function () {
+      if (!fotoAuswahl) { return; }
+      if (feldFotoKegel.checked && fotoAuswahl.richtung === null) { fotoAuswahl.richtung = 0; }
+      fotoAuswahl.kegel = feldFotoKegel.checked;
+      fotoFelderAktualisieren(); fotoMarkenNeu(); fotoGeaendert();
+    });
+    document.getElementById("fotoRichtungKlick").addEventListener("click", function () { if (fotoAuswahl && fotoAuswahl.lat !== null) { fotoWahlStarten("richtung", fotoAuswahl); } });
+    document.getElementById("fotoOrtNeu").addEventListener("click", function () { if (fotoAuswahl) { fotoWahlStarten("ort", fotoAuswahl); } });
+    document.getElementById("fotoEntfernen").addEventListener("click", function () { if (fotoAuswahl) { entferneFoto(fotoAuswahl); } });
+    fotoZeigenFeld.addEventListener("change", function () { fotoMarkenNeu(); aktualisiereExportInfo(); });
+
+    // ----- Im gespeicherten Bild: Markierungen mit Sichtkegel und die Fotoleiste unten -----
+    function fotosImBild() { return fotoZeigenFeld.checked && document.getElementById("optFotos").checked && fotos.some(function (f) { return f.lat !== null; }); }
+    function fotoLeisteMasse(plan, pxProMm) {     // Höhe der Leiste in Bildpunkten und Anordnung der Fotos
+      var liste = fotos.filter(function (f) { return f.lat !== null; }), n = liste.length;
+      if (!n) { return { h: 0 }; }
+      var rand = 6 * pxProMm, luecke = 2 * pxProMm, innenB = plan.B - 2 * rand;
+      var breite = Math.min(40 * pxProMm, (innenB - (n - 1) * luecke) / n), proZeile = n;
+      if (breite < 22 * pxProMm) { proZeile = Math.max(1, Math.floor((innenB + luecke) / (30 * pxProMm + luecke))); breite = Math.min(40 * pxProMm, (innenB - (proZeile - 1) * luecke) / proZeile); }
+      var zeilen = Math.ceil(n / proZeile), bildH = breite * 0.72, textH = 7.2 * pxProMm;
+      return { h: zeilen * (bildH + textH) + (zeilen - 1) * luecke + 4 * pxProMm + 2 * pxProMm, liste: liste, rand: rand, luecke: luecke, breite: breite, proZeile: proZeile, bildH: bildH, textH: textH };
+    }
+    function zeichneFotosInBild(c, plan, k, pxProMm) {
+      c.save();
+      var r = FOTO_KEGEL_MM * pxProMm, nummer = 0;
+      fotos.forEach(function (f, i) {
+        if (f.lat === null) { return; }
+        var q = zuPixel(f.lat, f.lng, k.z), x = (q.x - k.links) * k.f, y = (q.y - k.oben) * k.f;
+        if (x < -r || x > plan.B + r || y < -r || y > plan.H + r) { return; }
+        if (f.kegel && f.richtung !== null) {
+          c.beginPath(); c.moveTo(x, y);
+          for (var j = 0; j <= 12; j++) { var a = (f.richtung + (j / 12 - 0.5) * FOTO_KEGEL_GRAD) * Math.PI / 180; c.lineTo(x + Math.sin(a) * r, y - Math.cos(a) * r); }
+          c.closePath();
+          c.globalAlpha = 0.28; c.fillStyle = FOTO_FARBE; c.fill();
+          c.globalAlpha = 0.9; c.lineWidth = 0.35 * pxProMm; c.strokeStyle = FOTO_FARBE; c.stroke();
+          c.globalAlpha = 1;
+        }
+      });
+      fotos.forEach(function (f, i) {
+        if (f.lat === null) { return; }
+        var q = zuPixel(f.lat, f.lng, k.z), x = (q.x - k.links) * k.f, y = (q.y - k.oben) * k.f, rm = 3.2 * pxProMm;
+        if (x < -rm || x > plan.B + rm || y < -rm || y > plan.H + rm) { return; }
+        c.beginPath(); c.arc(x, y, rm, 0, 2 * Math.PI);
+        c.fillStyle = FOTO_FARBE; c.fill();
+        c.lineWidth = 0.7 * pxProMm; c.strokeStyle = "#ffffff"; c.stroke();
+        c.fillStyle = "#ffffff"; c.font = "bold " + (3.6 * pxProMm) + "px Segoe UI, Arial, sans-serif";
+        c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(String(i + 1), x, y + 0.15 * pxProMm);
+      });
+      c.restore();
+    }
+    function zeichneFotoLeiste(c, plan, pxProMm, m) {
+      if (!m.h) { return; }
+      c.save();
+      var oben = plan.H - m.h;
+      c.fillStyle = "rgba(255,255,255,0.93)"; c.fillRect(0, oben, plan.B, m.h);
+      c.strokeStyle = "rgba(0,0,0,0.35)"; c.lineWidth = 0.2 * pxProMm; c.beginPath(); c.moveTo(0, oben); c.lineTo(plan.B, oben); c.stroke();
+      m.liste.forEach(function (f, i) {
+        var zeile = Math.floor(i / m.proZeile), spalte = i % m.proZeile, nr = fotos.indexOf(f) + 1;
+        var x = m.rand + spalte * (m.breite + m.luecke), y = oben + 3 * pxProMm + zeile * (m.bildH + m.textH + m.luecke);
+        // Foto im Seitenverhältnis einpassen
+        var s = Math.min(m.breite / f.w, m.bildH / f.h), bw = f.w * s, bh = f.h * s;
+        c.imageSmoothingEnabled = true; c.imageSmoothingQuality = "high";
+        c.drawImage(f.bild, x + (m.breite - bw) / 2, y + (m.bildH - bh) / 2, bw, bh);
+        c.strokeStyle = "#222"; c.lineWidth = 0.2 * pxProMm; c.strokeRect(x + (m.breite - bw) / 2, y + (m.bildH - bh) / 2, bw, bh);
+        // Nummer als Kreis oben links im Foto
+        var rm = 2.6 * pxProMm, nx = x + (m.breite - bw) / 2 + rm + 0.6 * pxProMm, ny = y + (m.bildH - bh) / 2 + rm + 0.6 * pxProMm;
+        c.beginPath(); c.arc(nx, ny, rm, 0, 2 * Math.PI); c.fillStyle = FOTO_FARBE; c.fill();
+        c.lineWidth = 0.5 * pxProMm; c.strokeStyle = "#fff"; c.stroke();
+        c.fillStyle = "#fff"; c.font = "bold " + (2.9 * pxProMm) + "px Segoe UI, Arial, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(String(nr), nx, ny + 0.1 * pxProMm);
+        // Beschriftung (höchstens zwei Zeilen)
+        c.fillStyle = "#222"; c.textAlign = "left"; c.textBaseline = "top";
+        var schrift = 2.4 * pxProMm; c.font = schrift + "px Segoe UI, Arial, sans-serif";
+        var worte = String(f.name).split(" "), zl = [], akt = "";
+        worte.forEach(function (w) { var p = akt ? akt + " " + w : w; if (c.measureText(p).width <= m.breite || !akt) { akt = p; } else { zl.push(akt); akt = w; } });
+        zl.push(akt);
+        zl = zl.slice(0, 2);
+        zl.forEach(function (t, j) { while (c.measureText(t).width > m.breite && t.length > 1) { t = t.slice(0, -1); } c.fillText(t, x, y + m.bildH + 0.8 * pxProMm + j * schrift * 1.25); });
+      });
+      c.restore();
+    }
+
     // ---------- Zeichnen (Punkte, Linien, Flächen, Pfeile, Texte) ----------
     // Jedes gezeichnete Objekt steht in der Liste "zeichnung": { id, art, punkte: [{lat, lng}], farbe, groesse, strich, name, text }.
     // Alle Größen sind in Millimetern auf dem Papier angegeben (auf dem Bildschirm werden sie mit 96 dpi umgerechnet),
@@ -4397,6 +4791,7 @@
       if (name !== "auswahl") { karte.doubleClickZoom.disable(); } else { karte.doubleClickZoom.enable(); }
       if (name !== "auswahl") { zeichenAuswahl = null; zeichenFelderVonAuswahl(); }
       if (planWahl && name !== "auswahl") { planAbbrechenWahl(); }
+      if (fotoWahl && name !== "auswahl") { fotoWahlBeenden(true); }
       zeichneAlles();
     }
     Array.prototype.forEach.call(document.querySelectorAll("[data-werkzeug]"), function (b) {
@@ -5576,7 +5971,7 @@
     }
 
     // Zeichnet den Maßstabsbalken unten links
-    function zeichneMassstabsbalken(c, plan, pxProMm) {
+    function zeichneMassstabsbalken(c, plan, pxProMm, abzug) {
       var meter = runderBalken(plan.breiteM * 0.22);
       var laengePx = meter / plan.meterProPx;
       var rand = 2.5 * pxProMm;
@@ -5586,7 +5981,7 @@
 
       var boxB = laengePx + 2 * rand + 6 * pxProMm;   // Platz für das Beschriftungsende "m"
       var boxH = hoehe + schrift * 1.6 + 2 * rand;
-      var x = randAussen, y = plan.H - randAussen - boxH;
+      var x = randAussen, y = plan.H - randAussen - boxH - (abzug || 0);
 
       c.fillStyle = "rgba(255,255,255,0.88)";
       c.fillRect(x, y, boxB, boxH);
@@ -5887,6 +6282,10 @@
 
         var zeige = e.zeige;
 
+        // Fotos: Markierungen mit Sichtkegel auf der Karte; die Fotoleiste liegt unten, Quelle, Legende und Maßstabsbalken rücken darüber
+        var fotoBild = fotosImBild(), fotoM = fotoBild ? fotoLeisteMasse(plan, pxProMm) : { h: 0 };
+        if (fotoBild) { zeichneFotosInBild(c, plan, k, pxProMm); }
+
         // Titelfeld oben links: Titel, Maßstab, Format und (falls gesucht) die Adresse
         if (zeige.titel) {
           var massstabText = "Maßstab 1 : " + e.massstab.toLocaleString("de-DE");
@@ -5901,7 +6300,7 @@
         if (zeige.nordpfeil) { zeichneNordpfeil(c, plan, pxProMm); }
 
         // unten rechts von unten nach oben: Quellenangabe, darüber die Legende
-        var untenSlot = plan.H - 6 * pxProMm;
+        var untenSlot = plan.H - 6 * pxProMm - fotoM.h;
         if (zeige.quelle) {
           var urheber = quelle.urheber + (gebaeude ? "  ·  Gebäude: © OpenStreetMap-Mitwirkende" : "") +
                         (oepnvImBild ? "  ·  Haltestellen: © OpenStreetMap-Mitwirkende" : "") +
@@ -5921,6 +6320,7 @@
         if (zeige.legende) {
           var eintraege = [];
           if (markerImBild) { eintraege.push({ art: "punkt", farbe: "#c0392b", text: "Standort" }); }
+          if (fotoBild) { eintraege.push({ art: "punkt", farbe: FOTO_FARBE, text: "Fotostandort (Nummer, Sichtkegel = Blickrichtung)" }); }
           if (gebaeude) { eintraege.push({ art: "flaeche", farbe: gebaeudeFarbe(), text: "Gebäude" }); }
           if (kreiseImBild) {
             bildKreise.forEach(function (kreis) {
@@ -5988,7 +6388,8 @@
           zeichneLegende(c, eintraege, plan.B - 6 * pxProMm, untenSlot, pxProMm);
         }
 
-        if (zeige.balken) { zeichneMassstabsbalken(c, plan, pxProMm); }
+        if (zeige.balken) { zeichneMassstabsbalken(c, plan, pxProMm, fotoM.h); }
+        if (fotoBild) { zeichneFotoLeiste(c, plan, pxProMm, fotoM); }
 
         // dünner Rahmen
         c.strokeStyle = "rgba(0,0,0,0.5)";
@@ -6586,9 +6987,9 @@
     // Seitenleiste) und zusätzlich laufend im Browser gesichert (IndexedDB), damit nach einem versehentlichen Schließen
     // oder Neuladen nichts verloren ist. Beim nächsten Start fragt die App, ob der letzte Stand wiederhergestellt werden soll.
     var PROJEKT_FORMAT = "standortanalyse-projekt";
-    var PROJEKT_VERSION = 2;           // 2: mehrere Pläne ("plaene"); Dateien der Version 1 (ein Plan in "plan") lassen sich weiter öffnen
+    var PROJEKT_VERSION = 3;           // 2: mehrere Pläne ("plaene"); Dateien der Version 1 (ein Plan in "plan") lassen sich weiter öffnen
     var PROJEKT_FELDER = ["massstab", "massstabFrei", "papier", "ausrichtung", "titel", "format", "aufloesung", "entwurfAufgabe", "entwurfFlaeche", "entwurfNutzer", "entwurfGeschosse", "entwurfWuensche"];
-    var PROJEKT_HAKEN = ["optTitel", "optNordpfeil", "optLegende", "optBalken", "optQuelle", "rahmenZeigen", "entwurfHoehen", "entwurfRegen"];
+    var PROJEKT_HAKEN = ["optTitel", "optNordpfeil", "optLegende", "optBalken", "optQuelle", "rahmenZeigen", "entwurfHoehen", "entwurfRegen", "optFotos", "fotoZeigen"];
     var projektMeldungFeld = document.getElementById("projektMeldung");
 
     function zeigeProjektMeldung(text, art) {
@@ -6614,6 +7015,10 @@
     }
 
     // Das Bild des Plans als Text (Data-URL). PNG bleibt PNG (Durchsichtigkeit), alles andere wird JPEG. Wird nur einmal berechnet.
+    function projektFotoBild(f) {
+      if (!f.datenUrl) { f.datenUrl = f.bild.toDataURL("image/jpeg", 0.85); }
+      return f.datenUrl;
+    }
     function projektPlanBild(p) {
       if (!p.datenUrl) {
         p.datenUrl = p.bild.toDataURL(p.format === "png" ? "image/png" : "image/jpeg", 0.92);
@@ -6644,8 +7049,15 @@
         zeichnung: zeichnung, zeichenNr: zeichenNr, zeichenZeigen: zeichenZeigen,
         baeumeAus: Object.keys(baumAus),
         plaene: [],                    // Reihenfolge wie im Stapel (zuerst = zuunterst)
-        planGewaehlt: plaene.indexOf(eigenerPlan)
+        planGewaehlt: plaene.indexOf(eigenerPlan),
+        fotos: [],
+        fotoGewaehlt: fotos.indexOf(fotoAuswahl)
       };
+      fotos.forEach(function (f) {
+        var eintrag = { id: f.id, name: f.name, lat: f.lat, lng: f.lng, richtung: f.richtung, kegel: f.kegel, w: f.w, h: f.h };
+        if (mitPlanBild) { eintrag.bild = projektFotoBild(f); }
+        projekt.fotos.push(eintrag);
+      });
       plaene.forEach(function (pl) {
         var eintrag = {
           name: pl.name, w: pl.w, h: pl.h, lat: pl.mitte.lat, lng: pl.mitte.lng,
@@ -6660,13 +7072,14 @@
 
     // Ist das Projekt "leer" (nichts, was sich zu sichern lohnt)?
     function projektIstLeer(p) {
-      return !p.adresse && !p.plan && !(p.plaene && p.plaene.length) && !(p.zeichnung && p.zeichnung.length) && !(p.baeumeAus && p.baeumeAus.length) && !Object.keys(p.analyse || {}).length && !(p.karte && p.karte.bebauung);
+      return !p.adresse && !p.plan && !(p.plaene && p.plaene.length) && !(p.fotos && p.fotos.length) && !(p.zeichnung && p.zeichnung.length) && !(p.baeumeAus && p.baeumeAus.length) && !Object.keys(p.analyse || {}).length && !(p.karte && p.karte.bebauung);
     }
 
     // Stellt einen gesammelten Zustand wieder her. Gibt ein Versprechen zurück (der Plan wird erst geladen).
     function projektAnwenden(p) {
       // 1. alles Bisherige entfernen
       entferneAllePlaene();
+      entferneAlleFotos();
       zeichenSetzeWerkzeug("auswahl");
       zeichenEntwurfAbbrechen();
 
@@ -6762,6 +7175,33 @@
         waehlePlan(gew);
         return planFehler.length ? planFehler.join(" ") : null;
       });
+      planFertig = planFertig.then(function (planFehlerText) {         // danach die Fotos (ebenfalls Bild für Bild)
+        var fotoFehler = [];
+        return (p.fotos || []).reduce(function (kette, eintrag, nr) {
+          return kette.then(function () {
+            return new Promise(function (fertig) {
+              if (!eintrag || !eintrag.bild) { fertig(); return; }
+              var bild = new Image();
+              bild.onload = function () {
+                var l = document.createElement("canvas"); l.width = bild.naturalWidth; l.height = bild.naturalHeight;
+                l.getContext("2d").drawImage(bild, 0, 0);
+                var f = fotoNeu(l, eintrag.name || "Foto", "jpeg");
+                f.lat = eintrag.lat === undefined ? null : eintrag.lat; f.lng = eintrag.lng === undefined ? null : eintrag.lng;
+                f.richtung = eintrag.richtung === undefined ? null : eintrag.richtung; f.kegel = !!eintrag.kegel;
+                f.datenUrl = eintrag.bild;
+                if (fotos.length < FOTO_MAX) { fotos.push(f); }
+                fertig();
+              };
+              bild.onerror = function () { fotoFehler.push("Das Foto „" + (eintrag.name || nr + 1) + "“ in der Projektdatei konnte nicht gelesen werden."); fertig(); };
+              bild.src = eintrag.bild;
+            });
+          });
+        }, Promise.resolve()).then(function () {
+          var gew = (typeof p.fotoGewaehlt === "number" && p.fotoGewaehlt >= 0 && p.fotoGewaehlt < fotos.length) ? fotos[p.fotoGewaehlt] : null;
+          fotoAuswahl = gew; fotoMarkenNeu(); waehleFoto(gew);
+          return [planFehlerText].concat(fotoFehler).filter(Boolean).join(" ") || null;
+        });
+      });
       return planFertig.then(function (fehlerText) {
         karte.setView([p.karte.lat, p.karte.lng], p.karte.zoom, { animate: false });
         gezeichneteGrenzen = null;
@@ -6827,6 +7267,7 @@
     var autoAn = false;                 // erst nach der Frage "Wiederherstellen?" einschalten, sonst würde der alte Stand überschrieben
     var autoLetzterSchluessel = "";
     var autoPlanNr = null;              // Nummern der gesicherten Plan-Bilder, z. B. "3,4"
+    var autoFotoNr = null;              // Nummern der gesicherten Fotos
 
     function idbOeffnen() {
       return new Promise(function (fertig, fehler) {
@@ -6859,7 +7300,15 @@
       if (schluessel === autoLetzterSchluessel) { return; }
       autoLetzterSchluessel = schluessel;
       var planNr = plaene.length ? plaene.map(function (pl) { return pl.nr; }).join(",") : null;
+      var fotoNrn = fotos.length ? fotos.map(function (f) { return f.id; }).join(",") : null;
       idbSchreibe("zustand", z).then(function () {
+        if (fotoNrn === autoFotoNr) { return null; }
+        autoFotoNr = fotoNrn;
+        if (fotoNrn === null) { return idbLoesche("fotobilder"); }
+        var fb = {};
+        fotos.forEach(function (f) { fb[f.id] = projektFotoBild(f); });
+        return idbSchreibe("fotobilder", fb);
+      }).then(function () {
         if (planNr === autoPlanNr) { return null; }
         autoPlanNr = planNr;
         if (planNr === null) { return Promise.all([idbLoesche("planbilder"), idbLoesche("planbild")]); }
@@ -6882,8 +7331,9 @@
         kasten.hidden = false;
         document.getElementById("wiederherstellenJa").onclick = function () {
           kasten.hidden = true;
-          Promise.all([idbLies("planbilder"), idbLies("planbild")]).then(function (b) {
+          Promise.all([idbLies("planbilder"), idbLies("planbild"), idbLies("fotobilder")]).then(function (b) {
             var bilder = b[0] || {};
+            (z.fotos || []).forEach(function (fo) { if (b[2] && b[2][fo.id]) { fo.bild = b[2][fo.id]; } });
             (z.plaene || []).forEach(function (pl) { if (bilder[pl.nr]) { pl.bild = bilder[pl.nr]; } });
             if (z.plan && b[1] && b[1].nr === z.plan.nr) { z.plan.bild = b[1].bild; }      // Sicherung aus der Zeit mit nur einem Plan
             return projektAnwenden(z);
@@ -6895,7 +7345,7 @@
         };
         document.getElementById("wiederherstellenNein").onclick = function () {
           kasten.hidden = true;
-          Promise.all([idbLoesche("zustand"), idbLoesche("planbild"), idbLoesche("planbilder")]).catch(function () {}).then(beginnen);
+          Promise.all([idbLoesche("zustand"), idbLoesche("planbild"), idbLoesche("planbilder"), idbLoesche("fotobilder")]).catch(function () {}).then(beginnen);
         };
       }).catch(beginnen);
     })();
