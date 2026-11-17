@@ -7,7 +7,6 @@
 
   <!-- Schneller Start: Verbindung zum Bibliotheks-Server früh aufbauen und die Kartendaten schon laden, während die Seite noch gelesen wird -->
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="preload" href="karte_oldenburg.js" as="script">
 
   <!-- Karten-Bibliothek Leaflet (zeigt die Karte an) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
@@ -1189,15 +1188,30 @@
             karteDaten = entpackeKarte(KARTE_OLDENBURG);
             window.KARTE_OLDENBURG = null;     // Rohdaten werden nicht mehr gebraucht
             fertig(karteDaten);
-          } catch (e) { karteLadevorgang = null; fehler(e); }
+          } catch (e) { karteLadevorgang = null; e.art = "lesen"; fehler(e); }
         }
         if (typeof KARTE_OLDENBURG !== "undefined" && KARTE_OLDENBURG) { entpacken(); return; }
 
-        var skript = document.createElement("script");
-        skript.src = "karte_oldenburg.js";
-        skript.onload = entpacken;
-        skript.onerror = function () { karteLadevorgang = null; fehler(new Error("Datei karte_oldenburg.js nicht gefunden")); };
-        document.head.appendChild(skript);
+        // Laden mit einem zweiten Versuch (anderer Adressenzusatz umgeht einen kaputten Zwischenspeicher oder einen Verbindungsabbruch)
+        function laden(versuch) {
+          var skript = document.createElement("script");
+          skript.src = versuch === 0 ? "karte_oldenburg.js" : "karte_oldenburg.js?neu=" + Date.now();
+          skript.onload = function () {
+            if (typeof KARTE_OLDENBURG === "undefined" || !KARTE_OLDENBURG) {          // Datei kam an, enthält aber keine Kartendaten (abgeschnitten oder durch eine Sperre ersetzt)
+              if (skript.parentNode) { skript.parentNode.removeChild(skript); }
+              if (versuch === 0) { laden(1); return; }
+              karteLadevorgang = null; var f = new Error("Die Kartendatei kam leer oder unvollständig an"); f.art = "leer"; fehler(f); return;
+            }
+            entpacken();
+          };
+          skript.onerror = function () {
+            if (skript.parentNode) { skript.parentNode.removeChild(skript); }
+            if (versuch === 0) { laden(1); return; }
+            karteLadevorgang = null; var f = new Error("Die Kartendatei konnte nicht geladen werden"); f.art = "netz"; fehler(f);
+          };
+          document.head.appendChild(skript);
+        }
+        laden(0);
       });
       return karteLadevorgang;
     }
@@ -1522,10 +1536,14 @@
           ladeanzeige.classList.add("sichtbar");
           ladeKartenDaten()
             .then(function () { ladeanzeige.classList.remove("sichtbar"); setzeKartenStatus(""); self._neuZeichnen(); })
-            .catch(function () {
+            .catch(function (fehler) {
               ladeanzeige.classList.remove("sichtbar");
-              setzeKartenStatus("Die Kartendatei (karte_oldenburg.js) fehlt oder ist beschädigt. " +
-                "Sie muss im selben Ordner wie index.html liegen.", true);
+              if (window.console) { console.error("Startkarte:", fehler); }
+              var art = fehler && fehler.art;
+              setzeKartenStatus(art === "netz" ? "Die Kartendatei (karte_oldenburg.js) konnte nicht geladen werden. Bitte die Verbindung prüfen und die Seite neu laden (Strg+F5). Fehlt die Datei, muss sie im selben Ordner wie index.html liegen."
+                : art === "leer" ? "Die Kartendatei (karte_oldenburg.js) kam unvollständig an. Bitte die Seite neu laden (Strg+F5). Hilft das nicht, blockiert ein Netzwerk oder ein Browser-Zusatz die große Datei."
+                : art === "lesen" ? "Die Kartendatei (karte_oldenburg.js) konnte nicht gelesen werden (" + (fehler.message || "unbekannter Fehler") + "). Bitte die Seite neu laden (Strg+F5)."
+                : "Die Kartendatei (karte_oldenburg.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
             });
         }
         this._neuZeichnen();
