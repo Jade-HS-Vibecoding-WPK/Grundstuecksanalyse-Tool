@@ -111,6 +111,14 @@
     ".a3d .abschnitt:last-of-type{border-bottom:none}",
     ".a3d .kopf h1{font-size:20px}",
     ".a3d .a3d-flaeche{position:relative;flex:1;min-width:0;background:#e9e7e2}",
+    ".a3d .a3d-leisteknopf{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:6;width:16px;height:52px;margin:0;padding:0;border:1px solid #e6e6e6;border-left:none;background:#fcfcfc;color:transparent;font-size:0;line-height:0;cursor:pointer}",
+    ".a3d .a3d-leisteknopf::before{content:\"\";position:absolute;left:50%;top:50%;width:8px;height:10px;transform:translate(-50%,-50%);background:#8b8b8b;-webkit-mask:url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%208%2010%27%3E%3Cpolygon%20points=%276.6,1.3%206.6,8.7%201.2,5%27%20fill=%27black%27%20stroke=%27black%27%20stroke-width=%271.4%27%20stroke-linejoin=%27round%27/%3E%3C/svg%3E') center/100% 100% no-repeat;mask:url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%208%2010%27%3E%3Cpolygon%20points=%276.6,1.3%206.6,8.7%201.2,5%27%20fill=%27black%27%20stroke=%27black%27%20stroke-width=%271.4%27%20stroke-linejoin=%27round%27/%3E%3C/svg%3E') center/100% 100% no-repeat}",
+    ".a3d .a3d-leisteknopf.zu::before{-webkit-mask-image:url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%208%2010%27%3E%3Cpolygon%20points=%271.4,1.3%201.4,8.7%206.8,5%27%20fill=%27black%27%20stroke=%27black%27%20stroke-width=%271.4%27%20stroke-linejoin=%27round%27/%3E%3C/svg%3E');mask-image:url('data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%208%2010%27%3E%3Cpolygon%20points=%271.4,1.3%201.4,8.7%206.8,5%27%20fill=%27black%27%20stroke=%27black%27%20stroke-width=%271.4%27%20stroke-linejoin=%27round%27/%3E%3C/svg%3E')}",
+    ".a3d .a3d-leisteknopf:hover{background:#ececec;border-color:#e6e6e6;color:transparent}",
+    ".a3d .a3d-leisteknopf:hover::before{background:#505050}",
+    ".a3d .a3d-leisteknopf:active{background:#787878}",
+    ".a3d .a3d-leisteknopf:active::before{background:#fff}",
+    ".a3d.leiste-zu .a3d-leiste{display:none}",
     ".a3d canvas.a3d-bild{display:block;width:100%;height:100%;touch-action:none;cursor:grab}",
     ".a3d canvas.a3d-bild.zieht{cursor:grabbing}",
     ".a3d canvas.a3d-bild.messen{cursor:crosshair}",
@@ -364,6 +372,7 @@
     '  </details>',
     '</div>',
     '<div class="a3d-flaeche" id="a3dFlaeche">',
+    '  <button type="button" id="a3dLeisteKnopf" class="a3d-leisteknopf" aria-label="Seitenleiste einklappen" title="Seitenleiste einklappen"></button>',
     '  <canvas class="a3d-bild" id="a3dBild"></canvas>',
     '  <canvas class="a3d-ueber" id="a3dUeber"></canvas>',
     '  <div class="a3d-nord" id="a3dNord"><b>N</b><span></span></div>',
@@ -460,6 +469,10 @@
 
     // Ereignisse
     el("a3dZu").addEventListener("click", verbergen);
+    el("a3dLeisteKnopf").addEventListener("click", function () {       // Seitenleiste der 3D-Ansicht ein- und ausklappen (die Ansicht passt sich über den ResizeObserver an)
+      var zu = wurzel.classList.toggle("leiste-zu"), k = el("a3dLeisteKnopf"), text = zu ? "Seitenleiste ausklappen" : "Seitenleiste einklappen";
+      k.classList.toggle("zu", zu); k.title = text; k.setAttribute("aria-label", text);
+    });
     z.tasten = function (ev) {
       if (z.versteckt) { return; }                 // die Karte ist gerade vorn: Tasten gehören ihr
       if (ev.key === "Escape") {

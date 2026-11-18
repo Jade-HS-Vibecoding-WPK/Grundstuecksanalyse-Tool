@@ -437,6 +437,27 @@
     }
     button.zweit:hover { color: var(--papier); background: var(--tinte); border-color: var(--tinte); }
 
+    /* Knopf am linken Kartenrand: Seitenleiste ein- und ausklappen (die Karte nimmt dann die ganze Breite) */
+    /* Gestaltet wie der Pfeil am Rollbalken der Seitenleiste (Screenshot Fehlermeldung_07): fast weiße Fläche, kleines graues Dreieck
+       (9 Punkte hoch, 6 breit, leicht gerundet, Farbe #8b8b8b); das Dreieck ist eine Maske, damit sich seine Farbe leicht ändern lässt */
+    .leiste-knopf {
+      position: absolute; left: 0; top: 50%; transform: translateY(-50%); z-index: 1100;
+      width: 16px; height: 52px; margin: 0; padding: 0;
+      border: 1px solid #e6e6e6; border-left: none; background: #fcfcfc; color: transparent;
+      font-size: 0; line-height: 0; cursor: pointer;
+    }
+    .leiste-knopf::before {
+      content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 10px; transform: translate(-50%, -50%);
+      background: #8b8b8b;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 10'%3E%3Cpolygon points='6.6,1.3 6.6,8.7 1.2,5' fill='black' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 10'%3E%3Cpolygon points='6.6,1.3 6.6,8.7 1.2,5' fill='black' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+    }
+    .leiste-knopf.zu::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 10'%3E%3Cpolygon points='1.4,1.3 1.4,8.7 6.8,5' fill='black' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 10'%3E%3Cpolygon points='1.4,1.3 1.4,8.7 6.8,5' fill='black' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+    .leiste-knopf:hover { background: #ececec; border-color: #e6e6e6; color: transparent; }
+    .leiste-knopf:hover::before { background: #505050; }
+    .leiste-knopf:active { background: #787878; }
+    .leiste-knopf:active::before { background: #ffffff; }
+    .app.leiste-zu .seitenleiste { display: none; }
+
     /* Abschnitt "Grundstück": Zeilen mit Name und Wert, Beschriftung der Grundstücke auf der Karte */
     .grundZeile { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px dotted var(--linie); font-size: 13px; line-height: 1.35; }
     .grundZeile span { flex: 1 1 auto; }
@@ -1153,6 +1174,7 @@
 
           <h3>Gut zu wissen</h3>
           <ul>
+            <li><strong>Seitenleiste einklappen:</strong> Der kleine Knopf mit dem Pfeil am linken Kartenrand blendet die Seitenleiste aus, dann nimmt die Karte die ganze Breite ein. Ein Klick auf den Knopf (der Pfeil zeigt dann nach rechts) holt sie zurück. Das geht genauso in der 3D-Ansicht.</li>
             <li><strong>Projekt sichern:</strong> Mit „Projekt speichern“ (ganz oben) legst du alles in einer Datei ab: Adresse, Karte, Ebenen, Plan, Zeichnung und Einstellungen. „Projekt öffnen“ holt es wieder. Zusätzlich sichert die App laufend im Browser und fragt beim nächsten Start, ob sie den letzten Stand wiederherstellen soll. Für Weitergeben und Aufheben ist die Projektdatei der sichere Weg.</li>
             <li>Mit Esc brichst du das Zeichnen und das Einpassen ab.</li>
             <li>Die Quellenangabe (OpenStreetMap) ist Pflicht. Lass sie nur weg, wenn du sie anders nennst.</li>
@@ -1173,6 +1195,7 @@
 
     <!-- ===== Karte ===== -->
     <main class="karte-bereich">
+      <button type="button" id="leisteKnopf" class="leiste-knopf" aria-label="Seitenleiste einklappen" title="Seitenleiste einklappen"></button>
       <div id="karte"></div>
       <div id="ladeanzeige" class="ladeanzeige">Karte lädt …</div>
       <div id="kartenStatus" class="kartenstatus" aria-live="polite"></div>
@@ -7718,6 +7741,20 @@
       if (abschnitt) { abschnitt.addEventListener("toggle", function () { if (abschnitt.open) { vorladeAnsicht3d(); } }); }
       ["pointerenter", "focus", "touchstart"].forEach(function (e) { knopf.addEventListener(e, vorladeAnsicht3d, { passive: true }); });
     })();
+    // ---------- Seitenleiste einklappen ----------
+    // Der Knopf am linken Kartenrand blendet die Seitenleiste aus (die Karte nimmt dann die ganze Breite) und wieder ein.
+    (function () {
+      var app = document.querySelector(".app"), knopf = document.getElementById("leisteKnopf");
+      function setze(zu) {
+        app.classList.toggle("leiste-zu", zu);
+        knopf.classList.toggle("zu", zu);
+        var text = zu ? "Seitenleiste ausklappen" : "Seitenleiste einklappen";
+        knopf.title = text; knopf.setAttribute("aria-label", text);
+        setTimeout(function () { karte.invalidateSize(); }, 60);
+      }
+      knopf.addEventListener("click", function () { setze(!app.classList.contains("leiste-zu")); });
+    })();
+
     // ---------- Reiter "Karte" | "3D-Ansicht" ----------
     // Die 3D-Ansicht liegt unter der Reiterleiste über der Karte. Ein Wechsel auf "Karte" versteckt sie nur (Kamera, Datum, Messungen bleiben);
     // beim Zurückwechseln baut sie das Modell neu auf, falls sich Adresse, Zeichnung oder Ebenen geändert haben. Das Kreuz am Reiter schließt sie ganz.
