@@ -3953,26 +3953,31 @@
 
     // Das nächste Wegstück zu einem Punkt (Lot auf das Stück). Gibt null zurück, wenn nichts in Reichweite liegt.
     function wegenetzAnschluss(netz, lat, lng) {
-      var ci0 = Math.floor(lat / netz.zelleLa), cj0 = Math.floor(lng / netz.zelleLo), beste = null;
-      for (var ring = 1; ring <= 3 && !beste; ring++) {     // erst die Nachbarzellen, dann weiter außen
+      // (Ohne neue Objekte in der Schleife und mit dem Abstand im Quadrat verglichen: dieser Aufruf läuft in manchen Rechnungen Hunderttausende Mal.)
+      var ci0 = Math.floor(lat / netz.zelleLa), cj0 = Math.floor(lng / netz.zelleLo);
+      var bk = -1, bt = 0, bd2 = Infinity, kx = WEGE_M_PRO_GRAD * WEGE_COS, ky = WEGE_M_PRO_GRAD;
+      var NA = netz.a, NB = netz.b, NLO = netz.lo, NLA = netz.la;
+      for (var ring = 1; ring <= 3 && bk < 0; ring++) {     // erst die Nachbarzellen, dann weiter außen
         for (var ci = ci0 - ring; ci <= ci0 + ring; ci++) {
           for (var cj = cj0 - ring; cj <= cj0 + ring; cj++) {
             var liste = netz.raster.get(ci * 100000 + cj);
             if (!liste) { continue; }
             for (var i = 0; i < liste.length; i++) {
-              var k = liste[i], ka = netz.a[k], kb = netz.b[k];
+              var k = liste[i], ka = NA[k], kb = NB[k];
               // Lot des Punktes auf die Strecke ka-kb (in Metern gerechnet)
-              var ax = (netz.lo[ka] - lng) * WEGE_M_PRO_GRAD * WEGE_COS, ay = (netz.la[ka] - lat) * WEGE_M_PRO_GRAD;
-              var bx = (netz.lo[kb] - lng) * WEGE_M_PRO_GRAD * WEGE_COS, by = (netz.la[kb] - lat) * WEGE_M_PRO_GRAD;
-              var dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
-              var t = l2 > 0 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2)) : 0;
-              var px = ax + t * dx, py = ay + t * dy, d = Math.sqrt(px * px + py * py);
-              if (!beste || d < beste.abstand) { beste = { kante: k, t: t, abstand: d }; }
+              var ax = (NLO[ka] - lng) * kx, ay = (NLA[ka] - lat) * ky;
+              var dx = (NLO[kb] - lng) * kx - ax, dy = (NLA[kb] - lat) * ky - ay, l2 = dx * dx + dy * dy;
+              var t = 0;
+              if (l2 > 0) { t = -(ax * dx + ay * dy) / l2; if (t < 0) { t = 0; } else if (t > 1) { t = 1; } }
+              var px = ax + t * dx, py = ay + t * dy, d2 = px * px + py * py;
+              if (d2 < bd2) { bk = k; bt = t; bd2 = d2; }
             }
           }
         }
       }
-      return beste && beste.abstand <= WEGENETZ_ANSCHLUSS_MAX_M ? beste : null;
+      if (bk < 0) { return null; }
+      var bd = Math.sqrt(bd2);
+      return bd <= WEGENETZ_ANSCHLUSS_MAX_M ? { kante: bk, t: bt, abstand: bd } : null;
     }
 
     // Kürzeste Wege von der Adresse aus bis maxM Meter. Gibt für jeden Radius (in Metern) die erreichbaren Wegstücke
@@ -4203,7 +4208,7 @@
         }
         for (var u0 = 0; u0 < netz.n; u0++) { if (imGruen(netz.la[u0], netz.lo[u0])) { dist[u0] = 0; hinein(0, u0); } }
         var RAND_SCHRITT_M = 20, RAND_ANSCHLUSS_M = 40;
-        gruen.forEach(function (g) {
+        return new Promise(function (bereit) { inScheiben(gruen, function (g) {
           var ring = g.ring, rest = 0;
           for (var i = 0; i < ring.length; i += 2) {
             var j = (i + 2) % ring.length, la1 = ring[i], lo1 = ring[i + 1], la2 = ring[j], lo2 = ring[j + 1];
@@ -4220,7 +4225,7 @@
             }
             rest = pos - laenge;      // Rest der Schrittweite in die nächste Kante mitnehmen
           }
-        });
+        }, null, bereit); }).then(function () {
         while (hKey.length) {
           var ds = heraus(), d = ds[0], u = ds[1];
           if (d > dist[u] || d > MAXM) { continue; }
@@ -4234,28 +4239,34 @@
         var aus = document.createElement("canvas"); aus.width = B; aus.height = H;
         var ac = aus.getContext("2d"), bild = ac.createImageData(B, H), px = bild.data, zaehl = [0, 0, 0];
         var farben = VERSORGUNG_KLASSEN.map(function (k) { return [parseInt(k.farbe.substr(1, 2), 16), parseInt(k.farbe.substr(3, 2), 16), parseInt(k.farbe.substr(5, 2), 16)]; });
-        for (var y = 0; y < H; y++) {
-          var lat = n - (y + 0.5) * dLat;
-          for (var x = 0; x < B; x++) {
-            var idx = (y * B + x) * 4;
-            if (mask[idx + 3] < 128) { continue; }
-            var lng = w + (x + 0.5) * dLng, klasse;
-            if (imGruen(lat, lng)) { klasse = 0; }
-            else {
-              var an2 = wegenetzAnschluss(netz, lat, lng), best = Infinity;
-              if (an2) {
-                var l2 = netz.laenge[an2.kante];
-                best = an2.abstand + Math.min(dist[netz.a[an2.kante]] + an2.t * l2, dist[netz.b[an2.kante]] + (1 - an2.t) * l2);
+        // Zeilenweise in Portionen (ca. 24 ms), damit die Seite während der Rechnung bedienbar bleibt
+        var zeilen = []; for (var yy = 0; yy < H; yy++) { zeilen.push(yy); }
+        return new Promise(function (fertig) {
+          inScheiben(zeilen, function (y) {
+            var lat = n - (y + 0.5) * dLat;
+            for (var x = 0; x < B; x++) {
+              var idx = (y * B + x) * 4;
+              if (mask[idx + 3] < 128) { continue; }
+              var lng = w + (x + 0.5) * dLng, klasse;
+              if (imGruen(lat, lng)) { klasse = 0; }
+              else {
+                var an2 = wegenetzAnschluss(netz, lat, lng), best = Infinity;
+                if (an2) {
+                  var l2 = netz.laenge[an2.kante];
+                  best = an2.abstand + Math.min(dist[netz.a[an2.kante]] + an2.t * l2, dist[netz.b[an2.kante]] + (1 - an2.t) * l2);
+                }
+                klasse = best <= VERSORGUNG_MAX_M ? 0 : (best <= MAXM ? 1 : 2);
               }
-              klasse = best <= VERSORGUNG_MAX_M ? 0 : (best <= MAXM ? 1 : 2);
+              zaehl[klasse]++;
+              px[idx] = farben[klasse][0]; px[idx + 1] = farben[klasse][1]; px[idx + 2] = farben[klasse][2]; px[idx + 3] = 255;
             }
-            zaehl[klasse]++;
-            px[idx] = farben[klasse][0]; px[idx + 1] = farben[klasse][1]; px[idx + 2] = farben[klasse][2]; px[idx + 3] = 255;
-          }
-        }
-        ac.putImageData(bild, 0, 0);
-        var summe = Math.max(1, zaehl[0] + zaehl[1] + zaehl[2]);
-        return { canvas: aus, s: n - H * dLat, w: w, n: n, o: w + B * dLng, anteile: zaehl.map(function (z) { return Math.round(z * 100 / summe); }), flaecheHa: Math.round(summe * VERSORGUNG_ZELLE_M * VERSORGUNG_ZELLE_M / 10000) };
+          }, null, function () {
+            ac.putImageData(bild, 0, 0);
+            var summe = Math.max(1, zaehl[0] + zaehl[1] + zaehl[2]);
+            fertig({ canvas: aus, s: n - H * dLat, w: w, n: n, o: w + B * dLng, anteile: zaehl.map(function (z) { return Math.round(z * 100 / summe); }), flaecheHa: Math.round(summe * VERSORGUNG_ZELLE_M * VERSORGUNG_ZELLE_M / 10000) });
+          });
+        });
+        });      // Ende des Schritts nach der Randsuche
       });
     }
     // ---------- Ebene "Nutzungsmischung" (Wärmebild) ----------
@@ -4971,8 +4982,25 @@
     // Zeichnet die zugeschalteten Gruppen als durchscheinende Farbflächen. Jede Fläche einzeln, damit sich
     // überlappende nicht gegenseitig löschen. Sie liegen ganz unten, also unter den Gebäuden und allen Punkten und Linien.
     // Spätere Gruppen in der Liste liegen unter früheren (Nutzungsarten also unter Grün und Wasser).
+    // Arbeitet eine lange Liste in Portionen von ca. 24 ms ab und gibt der Seite dazwischen Luft (sonst friert sie bei vielen
+    // Flächen für Sekundenbruchteile ein). weiter() fragt vor jeder Portion, ob noch weitergemacht werden soll; fertig() läuft am Ende
+    // (auch beim Abbruch).
+    var SCHEIBE_MS = 24;
+    function inScheiben(liste, tun, weiter, fertig) {
+      var i = 0;
+      (function lauf() {
+        if (weiter && !weiter()) { if (fertig) { fertig(); } return; }
+        var ende = performance.now() + SCHEIBE_MS;
+        while (i < liste.length) {
+          tun(liste[i++]);
+          if (i < liste.length && performance.now() > ende) { setTimeout(lauf, 0); return; }
+        }
+        if (fertig) { fertig(); }
+      })();
+    }
+
     function aktualisiereFlaechen() {
-      FLAECHEN.forEach(function (gruppe) { gruppe.ebene.clearLayers(); });
+      FLAECHEN.forEach(function (gruppe) { gruppe.ebene.clearLayers(); gruppe.zeichenNr = (gruppe.zeichenNr || 0) + 1; });   // laufende Zeichenvorgänge abbrechen
       if (!sichtbareFlaechen().length) { return; }
 
       var ladeText = "Flächen werden geladen …";
@@ -4982,9 +5010,12 @@
       var gewaehlt = sichtbareFlaechen();
       ladeFlaechenDaten(gewaehlt).then(function (daten) {
         if (kartenStatus.textContent === ladeText) { setzeKartenStatus(""); }   // andere Meldungen nicht wegwischen
-        gewaehlt.forEach(function (gruppe) {
-          if (!karte.hasLayer(gruppe.ebene) || !daten[gruppe.id]) { return; }
+        var reihe = gewaehlt.filter(function (g) { return karte.hasLayer(g.ebene) && daten[g.id]; });
+        // Die Gruppen nacheinander in der Reihenfolge der Liste zeichnen (jede Fläche kommt per bringToBack nach hinten, also liegen
+        // spätere Gruppen unter früheren); die vielen Einzelflächen einer Gruppe in Portionen.
+        function zeichneGruppe(gruppe, weiter) {
           gruppe.ebene.clearLayers();
+          var token = gruppe.zeichenNr = (gruppe.zeichenNr || 0) + 1;
           var eintraege = daten[gruppe.id];
 
           function ringeVon(f) {
@@ -5008,6 +5039,7 @@
               L.circleMarker([p.lat, p.lng], { radius: 5, color: "#ffffff", weight: 1.5, fillColor: gruppe.farbe, fillOpacity: 1, interactive: false })
                 .addTo(gruppe.ebene);
             });
+            weiter();
           } else if (gruppe.gebuendelt) {
             // Viele kleine Teile: alle Flächen einer Klasse als ein Mehrfach-Vieleck (ein Zeichenvorgang statt tausende Ebenen)
             var proKlasse = {};
@@ -5016,9 +5048,10 @@
               var farbe = gruppe.klassen && gruppe.klassen[klasse] ? gruppe.klassen[klasse][0] : gruppe.farbe;
               nachHinten(L.polygon(proKlasse[klasse], stil(farbe)).addTo(gruppe.ebene));
             });
+            weiter();
           } else {
             // Jede Fläche einzeln, damit sich überlappende nicht gegenseitig löschen
-            eintraege.forEach(function (f) {
+            inScheiben(eintraege, function (f) {
               nachHinten(L.polygon(ringeVon(f), stil(flaechenFarbe(gruppe, f))).addTo(gruppe.ebene));
               var beschriftungText = flaechenText(gruppe, f);
               if (beschriftungText) {
@@ -5029,9 +5062,11 @@
                 }).on("add", function () { var s = this.getElement() && this.getElement().querySelector("span"); if (s) { s.textContent = beschriftungText; } })
                   .addTo(gruppe.ebene);
               }
-            });
+            }, function () { return gruppe.zeichenNr === token && karte.hasLayer(gruppe.ebene); },
+            function () { if (gruppe.zeichenNr === token) { weiter(); } });     // ein neuer Durchgang hat übernommen: diesen nicht weiterführen
           }
-        });
+        }
+        (function naechste(k) { if (k < reihe.length) { zeichneGruppe(reihe[k], function () { naechste(k + 1); }); } })(0);
       }).catch(function (fehler) {
         if (window.console) { console.error("Flächen konnten nicht gezeichnet werden:", fehler); }   // Hilfe bei der Fehlersuche
         setzeKartenStatus("Eine Flächendatei (flaechen_oldenburg.js, nutzung_oldenburg.js, stadt_oldenburg.js oder laerm_oldenburg.js) fehlt oder ist beschädigt. " +
