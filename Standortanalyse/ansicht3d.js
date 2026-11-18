@@ -1682,7 +1682,7 @@
     var breiteMm = 2 * R * 1000 / massstab;
     var dpi = pixel * 25.4 / breiteMm;
     var e = {
-      massstab: massstab, papier: "A4", quer: true, breiteMm: breiteMm, hoeheMm: breiteMm, dpi: dpi, format: "png", titel: "", ohnePunkte: true, ohneKoerper: true, ohneSonnenstunden: true, ohneSichtfeld: true,
+      massstab: massstab, papier: "A4", quer: true, breiteMm: breiteMm, hoeheMm: breiteMm, dpi: dpi, format: "png", titel: "", ohnePunkte: true, ohneKoerper: true, ohneSonnenstunden: true, ohneSichtfeld: true, ohneHoehenkarte: true, ohneVersorgung: true,
       kraeftig: Math.max(0.001, +z.el("a3dFarbstaerke").value),
       zeige: { titel: false, nordpfeil: false, legende: false, balken: false, quelle: false }
     };
