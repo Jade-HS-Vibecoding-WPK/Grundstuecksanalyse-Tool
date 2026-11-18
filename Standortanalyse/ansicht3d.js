@@ -122,15 +122,15 @@
     ".a3d .a3d-gruppe{margin-top:14px;border-top:1px solid var(--linie);padding-top:10px}",
     ".a3d .a3d-gruppe>.gruppentitel{margin-bottom:6px}",
     ".a3d input[type=range]{width:100%}",
-    ".a3d .a3d-punktinfo{position:absolute;z-index:5;background:rgba(255,255,255,.97);border:1px solid var(--tinte);box-shadow:0 2px 8px rgba(0,0,0,.25);padding:8px 24px 8px 10px;font-size:12px;line-height:1.45;max-width:270px;pointer-events:auto}",
+    ".a3d .a3d-punktinfo{position:absolute;z-index:5;background:rgba(245,243,238,.97);border:1px solid var(--tinte);box-shadow:0 2px 8px rgba(0,0,0,.25);padding:8px 24px 8px 10px;font-size:12px;line-height:1.45;max-width:270px;pointer-events:auto}",
     ".a3d .a3d-punktinfo[hidden]{display:none}",
     ".a3d .a3d-punktinfo .zu{position:absolute;top:2px;right:4px;border:0;background:none;width:auto;padding:0 4px;font-size:14px;cursor:pointer;color:var(--grau)}",
-    ".a3d .a3d-info{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.92);border:1px solid var(--tinte);padding:6px 10px;font-size:13px;line-height:1.45;max-width:70%}",
-    ".a3d .a3d-nord{position:absolute;right:14px;top:14px;width:46px;height:46px;border:1px solid var(--tinte);border-radius:50%;background:rgba(255,255,255,.92)}",
+    ".a3d .a3d-info{position:absolute;left:12px;bottom:12px;background:rgba(245,243,238,.92);border:1px solid var(--tinte);padding:6px 10px;font-size:13px;line-height:1.45;max-width:70%}",
+    ".a3d .a3d-nord{position:absolute;right:14px;top:14px;width:46px;height:46px;border:1px solid var(--tinte);border-radius:50%;background:rgba(245,243,238,.92)}",
     ".a3d .a3d-nord span{position:absolute;left:50%;top:50%;width:0;height:0;margin:-17px 0 0 -6px;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:34px solid var(--rot);transform-origin:50% 17px}",
     ".a3d .a3d-nord b{position:absolute;left:0;right:0;top:-1px;text-align:center;font-size:11px;color:var(--tinte)}",
-    ".a3d .a3d-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.95);border:1px solid var(--tinte);padding:10px 16px;font-size:14px}",
-    ".a3d .a3d-legende{position:absolute;right:12px;bottom:12px;background:rgba(255,255,255,.94);border:1px solid var(--tinte);padding:8px 10px;font-size:12px;line-height:1.5}",
+    ".a3d .a3d-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(245,243,238,.95);border:1px solid var(--tinte);padding:10px 16px;font-size:14px}",
+    ".a3d .a3d-legende{position:absolute;right:12px;bottom:12px;background:rgba(245,243,238,.94);border:1px solid var(--tinte);padding:8px 10px;font-size:12px;line-height:1.5}",
     ".a3d .a3d-legende[hidden]{display:none}",
     ".a3d .a3d-legende .a3d-leg-titel{font-weight:700;margin-bottom:4px}",
     ".a3d .a3d-legende i{display:inline-block;width:16px;height:11px;margin-right:7px;border:1px solid rgba(0,0,0,.3);vertical-align:-1px}",
@@ -3570,7 +3570,7 @@
     var kastenB = breite + 2 * abstand, kastenH = 2 * abstand;
     zeilen.forEach(function (l) { kastenH += l.klein ? kleinZeile : zeile; });
     var kx = 10 * u, ky = H - kastenH - 10 * u;
-    c.fillStyle = "rgba(255,255,255,0.93)"; c.fillRect(kx, ky, kastenB, kastenH);
+    c.fillStyle = "rgba(245,243,238,0.93)"; c.fillRect(kx, ky, kastenB, kastenH);
     c.strokeStyle = "#1a1a1a"; c.lineWidth = Math.max(1, u); c.strokeRect(kx, ky, kastenB, kastenH);
     c.fillStyle = "#1a1a1a"; c.textBaseline = "top";
     var yy = ky + abstand;
@@ -3582,7 +3582,7 @@
     });
     // Nordpfeil
     var nx = B - 40 * u, ny = 40 * u, nr = 24 * u;
-    c.fillStyle = "rgba(255,255,255,0.93)"; c.strokeStyle = "#1a1a1a"; c.lineWidth = Math.max(1, u);
+    c.fillStyle = "rgba(245,243,238,0.93)"; c.strokeStyle = "#1a1a1a"; c.lineWidth = Math.max(1, u);
     c.beginPath(); c.arc(nx, ny, nr, 0, 2 * Math.PI); c.fill(); c.stroke();
     c.save(); c.translate(nx, ny); c.rotate(z.theta);
     c.fillStyle = "#c0392b"; c.beginPath(); c.moveTo(0, -nr * 0.75); c.lineTo(nr * 0.28, nr * 0.35); c.lineTo(-nr * 0.28, nr * 0.35); c.closePath(); c.fill();
@@ -3598,7 +3598,7 @@
     var schrift = "px Bahnschrift, 'Segoe UI', Arial, sans-serif", zeile = 17 * u, pad = 8 * u;
     var eintraege = SONNE_STUFEN.slice().reverse();
     var bw = 168 * u, bh = pad * 2 + zeile * (eintraege.length + 1.4), x = B - bw - 10 * u, y = H - bh - 10 * u;
-    c.fillStyle = "rgba(255,255,255,0.94)"; c.fillRect(x, y, bw, bh);
+    c.fillStyle = "rgba(245,243,238,0.94)"; c.fillRect(x, y, bw, bh);
     c.strokeStyle = "#1a1a1a"; c.lineWidth = Math.max(1, u); c.strokeRect(x, y, bw, bh);
     c.fillStyle = "#1a1a1a"; c.textBaseline = "top"; c.textAlign = "left";
     c.font = "bold " + 12 * u + schrift;
