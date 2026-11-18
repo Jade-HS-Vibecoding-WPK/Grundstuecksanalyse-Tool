@@ -559,7 +559,7 @@
   function standSignatur() {
     try {
       var p = projektSammeln(false);
-      delete p.gespeichert; delete p.einstellungen; delete p.exportMitte; delete p.fotos;
+      delete p.gespeichert; delete p.einstellungen; delete p.exportMitte; delete p.fotos; delete p.schnitt;
       p.karte = { hintergrund: p.karte.hintergrund, bebauung: p.karte.bebauung, kontrast: p.karte.kontrast };
       return JSON.stringify(p);
     } catch (x) { return ""; }
@@ -4734,5 +4734,5 @@
   }
 
   // daten: für entwurf.js (Entwurfsstrategie): Gebäude mit Höhen, Gelände und die Umrechnung nach UTM
-  window.ansicht3d = { oeffnen: oeffnen, schliessen: schliessen, verbergen: verbergen, zeigen: zeigen, offen: offen, sonnenstand: sonnenstand, daten: { gebaeude: function () { return gelaendeLaden().then(function (G) { hoehenKorrigieren(G); return entpacke(); }); }, gelaende: gelaendeLaden, utm32: utm32 } };
+  window.ansicht3d = { oeffnen: oeffnen, schliessen: schliessen, verbergen: verbergen, zeigen: zeigen, offen: offen, sonnenstand: sonnenstand, daten: { gebaeude: function () { return gelaendeLaden().then(function (G) { hoehenKorrigieren(G); return entpacke(); }); }, gelaende: gelaendeLaden, utm32: utm32, waelder: waldLaden, dach: dachErzeugen } };
 })();

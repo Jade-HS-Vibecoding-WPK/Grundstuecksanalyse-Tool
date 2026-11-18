@@ -1212,8 +1212,21 @@
           </div>
         </div>
       </details>
+      <details class="abschnitt" id="schnittAbschnitt">
+        <summary><span class="nr">14</span> Schnitt</summary>
+        <div class="inhalt">
+          <p class="hinweis" style="margin-top:0">Zeichne eine Linie über die Karte (A–A′): darunter erscheint der Schnitt durch die Umgebung mit Gelände, Gebäuden samt Dachform, Bäumen, Wäldern und deinen eigenen Baukörpern. Geschnittene Teile sind dunkel, was dahinter liegt, ist heller. Du kannst ihn als PNG, PDF oder SVG speichern. Beim ersten Mal werden ca. 13 MB geladen (Gebäudehöhen und Gelände).</p>
+          <button type="button" id="schnittZeichnen">Schnittlinie zeichnen</button>
+          <div class="gitter" style="margin-top:6px">
+            <button type="button" id="schnittAnzeigen" class="zweit">Schnitt anzeigen</button>
+            <button type="button" id="schnittLoeschen" class="zweit">Linie entfernen</button>
+          </div>
+          <p class="hinweis" id="schnittInfo">Noch keine Schnittlinie.</p>
+          <p class="hinweis">Klicke die Punkte der Linie nacheinander in die Karte (Doppelklick oder Enter beendet, Esc bricht ab). Die roten Griffe lassen sich verschieben, ein Rechtsklick auf einen Knickpunkt entfernt ihn. Der Pfeil neben der Linie zeigt die Blickrichtung. Eine neue Linie ersetzt die alte. Die Linie wird mit dem Projekt gespeichert.</p>
+        </div>
+      </details>
       <details class="abschnitt">
-        <summary><span class="nr">14</span> Hilfe</summary>
+        <summary><span class="nr">15</span> Hilfe</summary>
         <div class="inhalt hilfe">
           <h3>So gehst du vor</h3>
           <ol>
@@ -1222,6 +1235,7 @@
             <li><strong>Analysedaten</strong> (04): Haken setzen oder „Alles einschalten“. Fußweg und Sonnenstand brauchen die Adresse.</li>
             <li><strong>Neue Analyse-Ebenen</strong> (alle in 04, nicht bei „Alles einschalten“): „Gebäudehöhen“ färbt die Gebäude nach Traufhöhe (lädt einmalig ca. 13 MB). „Straßen nach Höchstgeschwindigkeit“ und „nach Straßenart“ stehen in „Verkehr und Mobilität“ (grau = in OpenStreetMap kein Tempo eingetragen). „Grünversorgung (Fußweg)“ färbt Wohngebiete rot, wenn Park, Spielplatz oder Wald mehr als 300 m Fußweg entfernt sind (braucht die Adresse nicht). „Nutzungsmischung (Wärmebild)“ zeigt auf einem 100-m-Raster, wie gut Wohnen, Arbeiten, Läden und Gastronomie sowie Gemeinbedarf gemischt sind (grün = gut gemischt, rot = einseitig). Alle vier sind Orientierung aus OpenStreetMap-Daten und nur so vollständig wie diese. Die Gruppe „Durchlässigkeit des Wegenetzes“ zeigt, wie gut man zu Fuß durch das Quartier kommt: <em>Kreuzungsdichte</em> (Kreuzungen je km², rot = weitmaschig), <em>Blockgrößen</em> (Blöcke zwischen Wegen, Bahn und Gewässern), <em>Umwegfaktor</em> (wie viel länger der Fußweg ab dem roten Punkt ist als die Luftlinie, braucht die Adresse) und <em>Barrieren und Querungen</em> (Bahn, Flüsse, Hauptstraßen; weiße Kreise = Brücke, Unterführung oder Bahnübergang). Unter den Haken stehen die wichtigsten Zahlen.</li>
              <li><strong>Wer wohnt dort? (Zensus 2022)</strong> (Gruppe in 04, bei „Alles einschalten“ aus): acht Ebenen aus dem Zensus 2022 auf einem Raster von 100 × 100 m (Einwohnerdichte, Durchschnittsalter, Anteil unter 18 und ab 65 Jahren, Haushaltsgröße, Nettokaltmiete, Leerstand, Eigentümerquote). Ein Klick auf eine Zelle zeigt alle Werte. Leere Zellen: zu wenige Fälle, es werden keine Zahlen veröffentlicht. Die Zahlen sind leicht verändert. Quelle: © Statistische Ämter des Bundes und der Länder, 2024; sie steht in Karte und gespeichertem Bild. Die Zahlen für die Umgebung stehen auch im Text der Entwurfsstrategie (Abschnitt 11).</li>
+            <li><strong>Schnitt</strong> (14): „Schnittlinie zeichnen“, dann die Punkte der Linie in die Karte klicken (Doppelklick beendet). Unter der Karte erscheint der Schnitt A–A′ mit Gelände, Gebäuden samt Dachform, Bäumen, Wäldern und deinen eigenen Baukörpern; geschnitten = dunkel, dahinter liegende Ansicht = hell. Blickrichtung, Tiefe der Ansicht und Überhöhung lassen sich oben im Schnitt einstellen, die roten Griffe auf der Karte verschieben die Linie. Speichern als PNG, PDF oder SVG. Beim ersten Mal werden ca. 13 MB geladen.</li>
             <li><strong>Eigene Pläne</strong> (05): Bis zu fünf JPG, PNG oder PDF hochladen. In der Liste wählst du einen Plan aus, blendest ihn mit dem Haken aus oder ein und änderst mit ▲ und ▼ die Reihenfolge. Mit dem Kreis in der Mitte verschieben, mit dem roten Quadrat drehen und vergrößern, oder „Zwei Punkte einpassen“ für den genauen Maßstab. „Plan sperren“ schützt vor Verschieben.</li>
             <li><strong>Zeichnen</strong> (06): Werkzeug wählen und in die Karte klicken. Objekte anklicken zum Ändern, Entf löscht, Strg+Z nimmt zurück. Mit „Strecke messen“ und „Fläche messen“ liest du Längen in Metern und Flächen in Quadratmetern ab, sie stehen auf der Karte und im gespeicherten Bild.</li>
             <li><strong>Ausschnitt</strong> (07): Maßstab und Papierformat wählen. Mit „Rahmen auf der Karte zeigen“ siehst du, was ins Bild kommt.</li>
@@ -3612,7 +3626,7 @@
 
     // Klicks auf Punkte sollen kein Fenster öffnen, solange ein Zeichen-, Mess- oder Einpass-Werkzeug aktiv ist
     function popupErlaubt() {
-      return (typeof zeichenWerkzeug === "undefined" || zeichenWerkzeug === "auswahl") && !(typeof planWahl !== "undefined" && planWahl) && !(typeof fotoWahl !== "undefined" && fotoWahl) && !(typeof grundWahl !== "undefined" && grundWahl);
+      return (typeof zeichenWerkzeug === "undefined" || zeichenWerkzeug === "auswahl") && !(typeof planWahl !== "undefined" && planWahl) && !(typeof fotoWahl !== "undefined" && fotoWahl) && !(typeof grundWahl !== "undefined" && grundWahl) && !(window.schnitt && window.schnitt.zeichnet());
     }
     function popupZeile(behaelter, text, fett) {
       var z = document.createElement(fett ? "strong" : "div");
@@ -6418,6 +6432,7 @@
       if (name !== "auswahl") { zeichenAuswahl = null; zeichenFelderVonAuswahl(); }
       if (planWahl && name !== "auswahl") { planAbbrechenWahl(); }
       if (fotoWahl && name !== "auswahl") { fotoWahlBeenden(true); }
+      if (window.schnitt && window.schnitt.zeichnet()) { window.schnitt.zeichnenBeenden(); }
       if (grundWahl && name !== "auswahl" && window.grundstueck) { window.grundstueck.klickBeenden(); }
       zeichneAlles();
     }
@@ -8901,6 +8916,7 @@
         zeichnung: zeichnung, zeichenNr: zeichenNr, zeichenZeigen: zeichenZeigen,
         baeumeAus: Object.keys(baumAus),
         grundstueck: window.grundstueck ? window.grundstueck.zustand() : null,     // gewähltes Grundstück samt Eingaben (Abschnitt 13)
+        schnitt: window.schnitt ? window.schnitt.zustand() : null,                 // Schnittlinie samt Einstellungen (Abschnitt 14)
         plaene: [],                    // Reihenfolge wie im Stapel (zuerst = zuunterst)
         planGewaehlt: plaene.indexOf(eigenerPlan),
         fotos: [],
@@ -8925,7 +8941,7 @@
 
     // Ist das Projekt "leer" (nichts, was sich zu sichern lohnt)?
     function projektIstLeer(p) {
-      return !p.adresse && !p.plan && !(p.plaene && p.plaene.length) && !(p.fotos && p.fotos.length) && !(p.zeichnung && p.zeichnung.length) && !(p.baeumeAus && p.baeumeAus.length) && !Object.keys(p.analyse || {}).length && !(p.karte && p.karte.bebauung);
+      return !p.adresse && !p.plan && !(p.plaene && p.plaene.length) && !(p.fotos && p.fotos.length) && !(p.zeichnung && p.zeichnung.length) && !p.schnitt && !(p.baeumeAus && p.baeumeAus.length) && !Object.keys(p.analyse || {}).length && !(p.karte && p.karte.bebauung);
     }
 
     // Stellt einen gesammelten Zustand wieder her. Gibt ein Versprechen zurück (der Plan wird erst geladen).
@@ -8988,6 +9004,10 @@
       // 5b. Grundstück (Abschnitt 13): nur laden, wenn die Datei eines hatte
       if (p.grundstueck) { ladeGrundstueck().then(function (g) { g.stelleWiederHer(p.grundstueck); }).catch(function () {}); }
       else if (window.grundstueck) { window.grundstueck.loesche(); }
+
+      // 5c. Schnittlinie (Abschnitt 14)
+      if (p.schnitt) { ladeSchnitt().then(function (s) { s.stelleWiederHer(p.schnitt); }).catch(function () {}); }
+      else if (window.schnitt) { window.schnitt.loesche(); }
 
       // 6. Zeichnung
       zeichnung = Array.isArray(p.zeichnung) ? p.zeichnung : [];
@@ -9299,6 +9319,27 @@
         .catch(function (fehler) { ansicht3dLadevorgang = null; throw fehler; });
       return ansicht3dLadevorgang;
     }
+    // ---------- Schnitt (Abschnitt 14) ----------
+    // Der Programmteil schnitt.js wird erst beim ersten Knopfdruck (oder beim Öffnen eines Projekts mit Schnittlinie) geladen.
+    var schnittLadevorgang = null;
+    function ladeSchnitt() {
+      if (window.schnitt) { return Promise.resolve(window.schnitt); }
+      if (!schnittLadevorgang) {
+        schnittLadevorgang = ladeSkriptReihe([{ adresse: "schnitt.js", pruefung: function () { return !!window.schnitt; } }])
+          .then(function () { return window.schnitt; })
+          .catch(function (x) { schnittLadevorgang = null; throw x; });
+      }
+      return schnittLadevorgang;
+    }
+    (function () {
+      var info = document.getElementById("schnittInfo");
+      function mitSchnitt(f) {
+        ladeSchnitt().then(f).catch(function () { info.textContent = "Die Datei schnitt.js fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen."; info.style.color = "var(--fehler)"; });
+      }
+      document.getElementById("schnittZeichnen").addEventListener("click", function () { mitSchnitt(function (s) { info.style.color = ""; s.zeichnen(); }); });
+      document.getElementById("schnittAnzeigen").addEventListener("click", function () { mitSchnitt(function (s) { info.style.color = ""; s.anzeigen(); }); });
+      document.getElementById("schnittLoeschen").addEventListener("click", function () { if (window.schnitt) { window.schnitt.loesche(); } info.textContent = "Noch keine Schnittlinie."; info.style.color = ""; });
+    })();
     // Schon im Hintergrund laden, wenn jemand den Abschnitt aufklappt oder mit der Maus zum Knopf geht (der Browser merkt sich die Dateien)
     var ansicht3dVorgeladen = false;
     function vorladeAnsicht3d() {
