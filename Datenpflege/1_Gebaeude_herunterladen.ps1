@@ -20,6 +20,7 @@ for ($i = 0; $i -lt $anzahl; $i++) {
     $w = [Math]::Round($west + $j * $dLon, 5); $o = [Math]::Round($west + ($j + 1) * $dLon, 5)
     $ziel = Join-Path $basis ("teil_{0}_{1}.json" -f $i, $j)
     if ((Test-Path $ziel) -and ((Get-Item $ziel).Length -gt 1000)) { "teil_${i}_${j}: schon vorhanden" | Add-Content $log; continue }
+    if ((Get-ChildItem $basis -Filter ("teil_{0}_{1}_*.json" -f $i, $j) | Where-Object { $_.Length -gt 1000 }).Count -ge 4) { "teil_${i}_${j}: schon in vier kleinen Teilen vorhanden" | Add-Content $log; continue }
 
     $box = "$s,$w,$n,$o"
     $q = "[out:json][timeout:180][maxsize:1073741824];(way[""building""]($box);relation[""building""]($box););out skel geom qt;"
@@ -41,7 +42,37 @@ for ($i = 0; $i -lt $anzahl; $i++) {
         Start-Sleep -Seconds (10 * $versuch)
       }
     }
-    if (-not $ok) { "teil_${i}_${j}: AUFGEGEBEN" | Add-Content $log }
+    if (-not $ok) {
+      # Zu viele Daten fuer eine Anfrage (typisch in dichten Innenstaedten): in vier kleinere Teile zerlegen
+      "teil_${i}_${j}: zu gross oder Dienst ueberlastet, versuche vier kleinere Teile" | Add-Content $log
+      $sm = ($s + $n) / 2; $wm = ($w + $o) / 2
+      $viertel = @(@($s, $w, $sm, $wm), @($s, $wm, $sm, $o), @($sm, $w, $n, $wm), @($sm, $wm, $n, $o))
+      for ($k = 0; $k -lt 4; $k++) {
+        $v = $viertel[$k]
+        $box2 = (($v | ForEach-Object { [Math]::Round($_, 5).ToString([Globalization.CultureInfo]::InvariantCulture) }) -join ',')
+        $q2 = $q.Replace($box, $box2)
+        $ziel2 = Join-Path $basis ("teil_{0}_{1}_{2}.json" -f $i, $j, $k)
+        $ok2 = $false
+        for ($versuch = 1; $versuch -le 4 -and -not $ok2; $versuch++) {
+          try {
+            $sw = [Diagnostics.Stopwatch]::StartNew()
+            $r = Invoke-WebRequest -Uri $dienst -Method Post -Body ("data=" + [uri]::EscapeDataString($q2)) `
+                 -ContentType 'application/x-www-form-urlencoded' -Headers @{ Accept = '*/*' } -UseBasicParsing -UserAgent $kennung -TimeoutSec 240
+            $bytes = $r.RawContentStream.ToArray()
+            $anfang = [System.Text.Encoding]::UTF8.GetString($bytes, 0, [Math]::Min(300, $bytes.Length))
+            if ($anfang -notmatch '"elements"') { throw "unbrauchbare Antwort" }
+            [System.IO.File]::WriteAllBytes($ziel2, $bytes)
+            "teil_${i}_${j}_${k}: OK, {0} KB, {1} s, Versuch {2}" -f [int]($bytes.Length / 1024), [int]($sw.Elapsed.TotalSeconds), $versuch | Add-Content $log
+            $ok2 = $true
+          } catch {
+            "teil_${i}_${j}_${k}: Versuch $versuch fehlgeschlagen: " + $_.Exception.Message | Add-Content $log
+            Start-Sleep -Seconds (10 * $versuch)
+          }
+        }
+        if (-not $ok2) { "teil_${i}_${j}_${k}: AUFGEGEBEN" | Add-Content $log }
+        Start-Sleep -Seconds 4
+      }
+    }
     Start-Sleep -Seconds 4   # Pause, damit wir den Dienst nicht bedrängen
   }
 }
