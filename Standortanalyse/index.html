@@ -402,7 +402,11 @@
     .abschnitt details.legendeBox > summary::after { content: none; }
     details.legendeBox { margin: -2px 0 6px 28px; }
     details.legendeBox > summary { cursor: pointer; font-size: 11px; color: var(--grau, #666); letter-spacing: 0.04em; }
-    details.legendeBox > img { display: block; max-width: 100%; max-height: 320px; overflow: auto; margin-top: 4px; background: #fff; border: 1px solid #bbb; }
+    details.legendeBox > img { display: block; max-width: 100%; max-height: 320px; overflow: auto; margin-top: 4px; background: #fff; border: 1px solid #bbb; cursor: zoom-in; }
+    /* Nach einem Klick steht die Legende in Originalgröße oder größer (ohne Höhenbegrenzung, die Seitenleiste wird dafür breiter) */
+    details.legendeBox.gross { margin-left: 0; overflow-x: auto; }
+    details.legendeBox.gross > img { max-width: none; max-height: none; cursor: zoom-in; }
+    details.legendeBox[data-stufe="2"] > img { cursor: zoom-out; }
     .farbflaeche {
       display: inline-block;
       width: 22px;
@@ -745,7 +749,7 @@
           <details class="analyseGruppe"><summary><span class="titel">Planung und Naturschutz (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseStadt"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Grundstücke (Kataster, LGLN, Online-Dienst)</span><span class="anzahl"></span></summary><div id="analyseGrund"></div><p class="hinweis" style="margin:4px 0 0">Grundstücksgrenzen (Flurstücke) mit Fläche und Einfärbung nach der vorhandenen Überbauung (GRZ der Gebäude), aus dem Liegenschaftskataster des Landesamts LGLN (CC BY 4.0, ohne Eigentümerdaten). Sichtbar ab Zoomstufe 16, braucht Internet. Dazu gibt es die amtliche Liegenschaftskarte (mit Flurstücksnummern und Hausnummern, ab Zoomstufe 17), schwarz-weiß durchsichtig oder in Farbe. Die Analyse eines einzelnen Grundstücks steht in „13 Grundstück“. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Flächennutzungsplan (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseFnp"></div><p class="hinweis" style="margin:4px 0 0">Geplante Nutzung der Flächen nach dem Flächennutzungsplan der Stadt (Stand Änderungen bis 05.07.2024). Er ist nur eine grobe Vorgabe und nicht grundstücksscharf; die Festsetzungen im Bebauungsplan gehen vor. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
-          <p class="hinweis">Bei „ÖPNV“ zeigt ein Klick auf eine Haltestelle ihren Namen, die Linien und die Abfahrten; „Haltestellen nach Takt“ färbt sie nach der Häufigkeit (Fahrplan eines normalen Dienstags). Unter „Grün und Freiräume“ gibt es zusätzlich „Spielen und Bewegen“: Spielplätze (Klick zeigt Name und Zugang), der Einzugsbereich von 200 m um öffentliche Spielplätze sowie Fußball-, Basketball-, Skate-, Fitness- und Hundewiesen-Orte aus OpenStreetMap. Unter „Luftqualität“ steht die Messstation des Umweltbundesamts am Heiligengeistwall; ein Klick zeigt die Jahresmittelwerte der letzten Jahre. Unter „Verkehr und Mobilität“ stehen Radwege, Fahrradabstellanlagen, Parken, Carsharing und Ladestationen (ein Klick auf eine Ladestation zeigt Betreiber und Leistung). Die Themen (Fußweg, Boden, Grundwasser …) lassen sich mit einem Klick auf die Überschrift auf- und zuklappen; die rote Zahl daneben zeigt, wie viele Ebenen davon eingeschaltet sind. Fußweg und Sonnenstand brauchen eine gesuchte Adresse (der rote Punkt ist der Mittelpunkt). Die anderen Ebenen zeigen alle Orte in Oldenburg. „Einzelbäume“ zeigt die in OpenStreetMap erfassten Bäume (unvollständig); eigene Bäume zeichnest du mit dem Werkzeug „Baum“ in 06. „Starkregen“ ist die Hinweiskarte des Bundes (BKG) für Niedersachsen. „Boden“, „Geologie und Baugrund“, „Grundwasser“ sowie „Versiegelung und Altlasten“ sind Karten des Landesamts für Bergbau, Energie und Geologie (LBEG, NIBIS-Kartenserver). Alle diese Karten werden online geladen und brauchen Internet (auch beim Speichern des Bildes, das dann einen Moment länger dauert); sie sind eine Orientierung und keine Planungsgrundlage. Wo eine Karte nichts zeigt, hat das Land dort keine Daten (zum Beispiel ist die Bodenkarte in der bebauten Innenstadt leer). Unter „Legende“ siehst du die Farberklärung des Landesamts. „Alles einschalten“ schaltet diese Karten nicht ein, „Alles ausschalten“ schaltet sie aus. Lärm, Bebauungspläne, Naturschutz und Stadtbezirke sind offene Daten der Stadt Oldenburg (Datenlizenz Deutschland – Namensnennung 2.0), die Quelle steht automatisch im Bild. Die Lärmdaten sind groß und brauchen beim ersten Mal einen Moment. Alles Eingeschaltete erscheint auch im gespeicherten Bild und in der Legende.</p>
+          <p class="hinweis">Bei „ÖPNV“ zeigt ein Klick auf eine Haltestelle ihren Namen, die Linien und die Abfahrten; „Haltestellen nach Takt“ färbt sie nach der Häufigkeit (Fahrplan eines normalen Dienstags). Unter „Grün und Freiräume“ gibt es zusätzlich „Spielen und Bewegen“: Spielplätze (Klick zeigt Name und Zugang), der Einzugsbereich von 200 m um öffentliche Spielplätze sowie Fußball-, Basketball-, Skate-, Fitness- und Hundewiesen-Orte aus OpenStreetMap. Unter „Luftqualität“ steht die Messstation des Umweltbundesamts am Heiligengeistwall; ein Klick zeigt die Jahresmittelwerte der letzten Jahre. Unter „Verkehr und Mobilität“ stehen Radwege, Fahrradabstellanlagen, Parken, Carsharing und Ladestationen (ein Klick auf eine Ladestation zeigt Betreiber und Leistung). Die Themen (Fußweg, Boden, Grundwasser …) lassen sich mit einem Klick auf die Überschrift auf- und zuklappen; die rote Zahl daneben zeigt, wie viele Ebenen davon eingeschaltet sind. Fußweg und Sonnenstand brauchen eine gesuchte Adresse (der rote Punkt ist der Mittelpunkt). Die anderen Ebenen zeigen alle Orte in Oldenburg. „Einzelbäume“ zeigt die in OpenStreetMap erfassten Bäume (unvollständig); eigene Bäume zeichnest du mit dem Werkzeug „Baum“ in 06. „Starkregen“ ist die Hinweiskarte des Bundes (BKG) für Niedersachsen. „Boden“, „Geologie und Baugrund“, „Grundwasser“ sowie „Versiegelung und Altlasten“ sind Karten des Landesamts für Bergbau, Energie und Geologie (LBEG, NIBIS-Kartenserver). Alle diese Karten werden online geladen und brauchen Internet (auch beim Speichern des Bildes, das dann einen Moment länger dauert); sie sind eine Orientierung und keine Planungsgrundlage. Wo eine Karte nichts zeigt, hat das Land dort keine Daten (zum Beispiel ist die Bodenkarte in der bebauten Innenstadt leer). Unter „Legende“ siehst du die Farberklärung des Landesamts; ein Klick auf das Legendenbild zeigt es in Originalgröße (die Seitenleiste wird dafür breiter und die Schrift gut lesbar), ein zweiter Klick noch größer, ein dritter macht es wieder klein. „Alles einschalten“ schaltet diese Karten nicht ein, „Alles ausschalten“ schaltet sie aus. Lärm, Bebauungspläne, Naturschutz und Stadtbezirke sind offene Daten der Stadt Oldenburg (Datenlizenz Deutschland – Namensnennung 2.0), die Quelle steht automatisch im Bild. Die Lärmdaten sind groß und brauchen beim ersten Mal einen Moment. Alles Eingeschaltete erscheint auch im gespeicherten Bild und in der Legende.</p>
         </div>
       </details>
 
@@ -2234,6 +2238,29 @@
     // Abschnitt "Analysedaten" in der Seitenleiste: hier werden Fußweg und Sonnenstand geschaltet.
     // Die Haken folgen immer dem tatsächlichen Zustand der Ebenen (Abgleich über die Ereignisse der Karte).
     var analyseHaken = [];
+    // Legendenbilder der Online-Karten: Der Dienst liefert nur ein festes Bild (z. B. 532 Punkte breit), die Schrift darin ist klein. Ein Klick vergrößert:
+    // Stufe 1 zeigt es in Originalgröße (die Seitenleiste wird dafür breiter), Stufe 2 noch größer, Stufe 0 ist wieder klein. In die schmale Spalte
+    // gequetscht (verkleinert) wäre es unscharf.
+    var LEGENDE_STUFEN = [0, 1, 1.6];
+    var LEGENDE_TITEL = ["Anklicken: Legende in Originalgröße (Seitenleiste wird breiter)", "Anklicken: noch größer", "Anklicken: wieder klein"];
+    function legendeStufe(box, bild, stufe) {
+      box.dataset.stufe = stufe;
+      box.classList.toggle("gross", stufe > 0);
+      bild.title = LEGENDE_TITEL[stufe];
+      bild.style.width = stufe > 0 ? Math.round(bild.naturalWidth * LEGENDE_STUFEN[stufe]) + "px" : "";
+      legendenBreiteAnpassen();
+      if (stufe > 0) { setTimeout(function () { box.scrollIntoView({ block: "nearest" }); }, 0); }
+    }
+    // Die Seitenleiste wird so breit wie das größte vergrößerte Legendenbild (höchstens drei Viertel des Fensters); ohne vergrößerte Legende normal
+    function legendenBreiteAnpassen() {
+      var leiste = document.querySelector(".seitenleiste"), noetig = 0;
+      Array.prototype.forEach.call(document.querySelectorAll("details.legendeBox.gross > img"), function (b) { noetig = Math.max(noetig, parseFloat(b.style.width) || 0); });
+      if (noetig > 0 && window.innerWidth > 760) {
+        var breite = Math.min(noetig + 22 * 2 + 28 + 18, Math.round(window.innerWidth * 0.75));    // Innenabstand der Leiste, Einzug der Gruppe und Rollbalken
+        leiste.style.width = breite + "px"; leiste.style.flexBasis = breite + "px";
+      } else { leiste.style.width = ""; leiste.style.flexBasis = ""; }
+      setTimeout(function () { karte.invalidateSize(); }, 50);
+    }
     function baueAnalyseHaken(behaelterId, eintraege, beschriftung) {
       var behaelter = document.getElementById(behaelterId);
       eintraege.forEach(function (eintrag) {
@@ -2266,9 +2293,14 @@
           legendeTitel.textContent = "Legende";
           var legendeBild = document.createElement("img");
           legendeBild.alt = "Legende: " + beschriftung(eintrag);
+          legendeBild.title = LEGENDE_TITEL[0];
+          legendeBild.addEventListener("click", function () { legendeStufe(legendeBox, legendeBild, ((+legendeBox.dataset.stufe || 0) + 1) % LEGENDE_STUFEN.length); });
           legendeBox.appendChild(legendeTitel);
           legendeBox.appendChild(legendeBild);
-          legendeBox.addEventListener("toggle", function () { if (legendeBox.open && !legendeBild.getAttribute("src")) { legendeBild.src = eintrag.legendeUrl; } });
+          legendeBox.addEventListener("toggle", function () {
+            if (legendeBox.open && !legendeBild.getAttribute("src")) { legendeBild.src = eintrag.legendeUrl; }
+            if (!legendeBox.open && +legendeBox.dataset.stufe > 0) { legendeStufe(legendeBox, legendeBild, 0); }      // zugeklappt: Seitenleiste wieder normal breit
+          });
           behaelter.appendChild(legendeBox);
         }
 
