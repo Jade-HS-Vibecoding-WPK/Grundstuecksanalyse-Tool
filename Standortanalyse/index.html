@@ -463,6 +463,9 @@
     .grundZeile span { flex: 1 1 auto; }
     .grundZeile strong { flex: 0 1 auto; text-align: right; font-weight: 600; }
     .grundZeile.hervor strong { color: var(--rot); }
+    .grundZeile.lang { display: block; }                       /* lange Werte stehen unter dem Namen */
+    .grundZeile.lang span { display: block; color: #555; font-size: 12px; }
+    .grundZeile.lang strong { display: block; text-align: left; }
     .grundLabel { background: none; border: none; }
     .grundLabel span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 600 11px var(--schrift); color: #4a3470; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; pointer-events: none; }
     .grundAbschnitt select, .grundAbschnitt input[type="text"] { width: 100%; }
@@ -810,6 +813,7 @@
           <details class="analyseGruppe"><summary><span class="titel">Planung und Naturschutz (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseStadt"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Grundstücke (Kataster, LGLN, Online-Dienst)</span><span class="anzahl"></span></summary><div id="analyseGrund"></div><p class="hinweis" style="margin:4px 0 0">Grundstücksgrenzen (Flurstücke) mit Fläche und Einfärbung nach der vorhandenen Überbauung (GRZ der Gebäude), aus dem Liegenschaftskataster des Landesamts LGLN (CC BY 4.0, ohne Eigentümerdaten). Sichtbar ab Zoomstufe 16, braucht Internet. Dazu gibt es die amtliche Liegenschaftskarte (mit Flurstücksnummern und Hausnummern, ab Zoomstufe 17), schwarz-weiß durchsichtig oder in Farbe. Die Analyse eines einzelnen Grundstücks steht in „13 Grundstück“. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Flächennutzungsplan (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseFnp"></div><p class="hinweis" style="margin:4px 0 0">Geplante Nutzung der Flächen nach dem Flächennutzungsplan der Stadt (Stand Änderungen bis 05.07.2024). Er ist nur eine grobe Vorgabe und nicht grundstücksscharf; die Festsetzungen im Bebauungsplan gehen vor. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
+          <details class="analyseGruppe"><summary><span class="titel">Bodenrichtwerte (Gutachterausschuss, LGLN)</span><span class="anzahl"></span></summary><div id="analyseBrw"></div><p class="hinweis" style="margin:4px 0 0">Bodenrichtwerte für Bauland (Stichtag 01.01.2026) in Euro je Quadratmeter Boden, aus BORIS Niedersachsen (Datenlizenz Deutschland – Namensnennung 2.0). Sie gelten für ein typisches Grundstück der Zone, nur für den Boden ohne Gebäude, und sind kein Verkehrswert. Der Wert steht als Zahl in jeder Zone. Zonen mit unterschiedlicher Nutzung können sich überlappen. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <p class="hinweis">Bei „ÖPNV“ zeigt ein Klick auf eine Haltestelle ihren Namen, die Linien und die Abfahrten; „Haltestellen nach Takt“ färbt sie nach der Häufigkeit (Fahrplan eines normalen Dienstags). Unter „Grün und Freiräume“ gibt es zusätzlich „Spielen und Bewegen“: Spielplätze (Klick zeigt Name und Zugang), der Einzugsbereich von 200 m um öffentliche Spielplätze sowie Fußball-, Basketball-, Skate-, Fitness- und Hundewiesen-Orte aus OpenStreetMap. Unter „Luftqualität“ steht die Messstation des Umweltbundesamts am Heiligengeistwall; ein Klick zeigt die Jahresmittelwerte der letzten Jahre. Unter „Verkehr und Mobilität“ stehen Radwege, Fahrradabstellanlagen, Parken, Carsharing und Ladestationen (ein Klick auf eine Ladestation zeigt Betreiber und Leistung). Die Themen (Fußweg, Boden, Grundwasser …) lassen sich mit einem Klick auf die Überschrift auf- und zuklappen; die rote Zahl daneben zeigt, wie viele Ebenen davon eingeschaltet sind. Fußweg und Sonnenstand brauchen eine gesuchte Adresse (der rote Punkt ist der Mittelpunkt). Die anderen Ebenen zeigen alle Orte in Oldenburg. „Einzelbäume“ zeigt die in OpenStreetMap erfassten Bäume (unvollständig); eigene Bäume zeichnest du mit dem Werkzeug „Baum“ in 06. „Starkregen“ ist die Hinweiskarte des Bundes (BKG) für Niedersachsen. „Boden“, „Geologie und Baugrund“, „Grundwasser“ sowie „Versiegelung und Altlasten“ sind Karten des Landesamts für Bergbau, Energie und Geologie (LBEG, NIBIS-Kartenserver). Alle diese Karten werden online geladen und brauchen Internet (auch beim Speichern des Bildes, das dann einen Moment länger dauert); sie sind eine Orientierung und keine Planungsgrundlage. Wo eine Karte nichts zeigt, hat das Land dort keine Daten (zum Beispiel ist die Bodenkarte in der bebauten Innenstadt leer). Unter „Legende“ siehst du die Farberklärung des Landesamts; ein Klick auf das Legendenbild zeigt es in Originalgröße (die Seitenleiste wird dafür breiter und die Schrift gut lesbar), ein zweiter Klick noch größer, ein dritter macht es wieder klein. „Alles einschalten“ schaltet diese Karten nicht ein, „Alles ausschalten“ schaltet sie aus. Lärm, Bebauungspläne, Naturschutz und Stadtbezirke sind offene Daten der Stadt Oldenburg (Datenlizenz Deutschland – Namensnennung 2.0), die Quelle steht automatisch im Bild. Die Lärmdaten sind groß und brauchen beim ersten Mal einen Moment. Alles Eingeschaltete erscheint auch im gespeicherten Bild und in der Legende.</p>
         </div>
       </details>
@@ -1150,7 +1154,7 @@
       <details class="abschnitt grundAbschnitt" id="grundAbschnitt">
         <summary><span class="nr">13</span> Grundstück</summary>
         <div class="inhalt">
-          <p class="hinweis" style="margin-top:0">Wähle ein Grundstück und sieh dir Fläche, vorhandene Überbauung (GRZ), geschätzte Geschossfläche (GFZ) und das mögliche Baufeld an. Die Grundstücksdaten kommen online vom Landesamt LGLN (Kataster).</p>
+          <p class="hinweis" style="margin-top:0">Wähle ein Grundstück und sieh dir Fläche, vorhandene Überbauung (GRZ), geschätzte Geschossfläche (GFZ) und das mögliche Baufeld an. Die Grundstücksdaten kommen online vom Landesamt LGLN (Kataster). Unten steht „Potenzial und Einschränkungen“: Was darf gebaut werden, was ginge zusätzlich, wie intensiv ist die Nutzung, Bodenrichtwert und Faustrechnung, was steht im Weg.</p>
           <div class="knopfreihe">
             <button type="button" id="grundAmPunkt" class="zweit">Am roten Punkt</button>
             <button type="button" id="grundKlick" class="zweit">In der Karte anklicken</button>
@@ -1189,6 +1193,14 @@
               <button type="button" id="grundDatenblatt" class="zweit">Zahlen kopieren</button>
               <button type="button" id="grundLoeschen" class="zweit">Auswahl aufheben</button>
             </div>
+            <div class="gruppentitel" style="margin-top:14px">Potenzial und Einschränkungen</div>
+            <p class="hinweis" style="margin-top:4px">Antworten auf: Was darf gebaut werden, was ginge zusätzlich oder alternativ, wie intensiv ist die Nutzung, was ist wirtschaftlich drin, was steht im Weg? Alles ist aus den Zahlen oben und den Daten der Stadt abgeleitet und ändert sich, wenn du die Werte oben änderst.</p>
+            <div class="gitter">
+              <div><label for="grundBaukosten">Baukosten (€ je m² Geschossfläche)</label><input type="text" id="grundBaukosten" inputmode="decimal" value="3000" autocomplete="off"></div>
+              <div><label for="grundMiete">Miete (€ je m² Wohnfläche und Monat)</label><input type="text" id="grundMiete" inputmode="decimal" value="12" autocomplete="off"></div>
+            </div>
+            <p class="hinweis">Baukosten und Miete sind Annahmen für die Faustrechnung; trage deine eigenen Werte ein.</p>
+            <div id="grundPotenzial"></div>
             <p class="hinweis">Orientierung für den Entwurf, keine amtliche Auskunft. Nicht berücksichtigt sind Baugrenzen und Festsetzungen des Bebauungsplans, Baulasten, Abstände zur Straße, Grenzbebauung und Sonderregeln der Bauordnung. Die GFZ ist eine Schätzung aus den Gebäudehöhen (Dachgeschosse zählen nicht mit). Versiegelte Flächen wie Zufahrten und Terrassen fehlen, die tatsächliche GRZ mit Nebenanlagen liegt deshalb höher.</p>
           </div>
         </div>
@@ -1208,7 +1220,7 @@
             <li><strong>Speichern</strong> (09): „Als Bild speichern“ (PNG) oder als PDF. Beim Drucken „100 %“ wählen, dann stimmt der Maßstab.</li>
             <li><strong>3D-Ansicht</strong> (10): „3D-Ansicht öffnen“. Datum und Uhrzeit wählen, der Schatten wandert mit. Ziehen dreht das Modell, Rechtsklick ziehen verschiebt, das Mausrad zoomt. Für einen eigenen Baukörper in „06 Zeichnen“ eine Fläche zeichnen, die Höhe eintragen und die 3D-Ansicht öffnen. Die Sonnenstunden (im Jahresmittel, mit Schatten von Gebäuden und Bäumen) berechnest du im Abschnitt „Sonnenstunden“ der 3D-Ansicht; das Ergebnis erscheint danach auch hier in der Karte. Bäume stehen im Abschnitt „Bäume“ der 3D-Ansicht. Eigene Bäume setzt du hier unter „06 Zeichnen“ mit dem Werkzeug „Baum“ (Höhe, Krone und Baumart darunter; der Kreis zeigt die Krone) oder direkt in der 3D-Ansicht. Im Abschnitt „Analysedaten“ der 3D-Ansicht schaltest du dieselben Ebenen wie in der Karte (sie liegen auf dem Boden, Haltestellen und Einrichtungen stehen als Pfähle). Im Abschnitt „Messen“ der 3D-Ansicht misst du Entfernungen, Strecken und Gebäudehöhen und prüfst, ob ein Punkt im Schatten liegt.</li>
           <li><strong>Entwurfsstrategie</strong> (11): Aus deiner Analyse entsteht ein fertiger Text für eine KI, die drei Entwurfsstrategien entwickelt. Adresse suchen, bei Bedarf eine Fläche „Grundstück“ zeichnen, Bauaufgabe eintragen, „Text erstellen“, dann kopieren und in die KI einfügen. Die Zahlen sind Näherungen aus offenen Daten, was die App nicht weiß, steht unter „Nicht vorhanden“.</li>
-          <li><strong>Grundstück</strong> (13): „Am roten Punkt“ wählt das Grundstück an der gesuchten Adresse, „In der Karte anklicken“ jedes andere (oder in der Karte auf ein Grundstück klicken, wenn die Ebene „Grundstücksgrenzen“ an ist). Du siehst Fläche, Nutzung, die vorhandene Überbauung (GRZ von Hauptgebäuden, Garagen und Nebengebäuden) und, sobald du die Gebäudehöhen lädst (einmalig ca. 13 MB), die geschätzte GFZ. Die Vergleichswerte der Umgebung (80 m) helfen, wenn kein Bebauungsplan gilt. Unter „Zulässige Werte“ wählst du die Gebietsart (die App schlägt die Obergrenzen der Baunutzungsverordnung vor) oder trägst GRZ, GFZ, Geschosse und Abstand aus dem Bebauungsplan ein. Daraus entstehen die zulässige Grund- und Geschossfläche, das Baufeld (Grundstück minus Abstand zur Grenze, begrenzt durch die GRZ) und eine Baukörper-Studie. „Baufeld als Baukörper übernehmen“ legt sie in „06 Zeichnen“ an, dann erscheint sie auch im Bild und in 3D. In „04 Analysedaten“ gibt es dazu die Ebenen „Grundstücksgrenzen mit Fläche“ und „nach Überbauung eingefärbt“ (ab Zoomstufe 16) sowie die amtliche Liegenschaftskarte mit Flurstücksnummern und Hausnummern (ab Zoomstufe 17, schwarz-weiß durchsichtig oder in Farbe). Das gewählte Grundstück steht auch in „11 Entwurfsstrategie“ (Text, Word und PDF); „Geschossfläche in die Entwurfsstrategie übernehmen“ trägt die Werte der Studie in die Felder dort ein. Die Daten kommen online vom Landesamt LGLN (Kataster, ohne Eigentümer) und brauchen Internet. Das ist eine Orientierung, keine amtliche Auskunft: Baugrenzen und Festsetzungen des Bebauungsplans, Baulasten und Abstände zur Straße sind nicht berücksichtigt.</li>
+          <li><strong>Grundstück</strong> (13): „Am roten Punkt“ wählt das Grundstück an der gesuchten Adresse, „In der Karte anklicken“ jedes andere (oder in der Karte auf ein Grundstück klicken, wenn die Ebene „Grundstücksgrenzen“ an ist). Du siehst Fläche, Nutzung, die vorhandene Überbauung (GRZ von Hauptgebäuden, Garagen und Nebengebäuden) und, sobald du die Gebäudehöhen lädst (einmalig ca. 13 MB), die geschätzte GFZ. Die Vergleichswerte der Umgebung (80 m) helfen, wenn kein Bebauungsplan gilt. Unter „Potenzial und Einschränkungen“ beantwortet die App regelbasiert aus den Zahlen und Daten: Was darf gebaut werden (zulässige Nutzungen nach Gebietsart), was ginge zusätzlich oder alternativ (Anbau, Aufstockung, zweites Haus, Nutzungsalternativen), wie intensiv wird das Grundstück genutzt, wirtschaftliche Potenziale (Bodenrichtwert, Bodenwert, Faustrechnung mit deinen Baukosten und Mieten) und Einschränkungen (Zuschnitt, Lärm, Schutzgebiete, Bebauungsplan). Das ist eine Orientierung und keine Rechtsauskunft oder Wertermittlung. Unter „Zulässige Werte“ wählst du die Gebietsart (die App schlägt die Obergrenzen der Baunutzungsverordnung vor) oder trägst GRZ, GFZ, Geschosse und Abstand aus dem Bebauungsplan ein. Daraus entstehen die zulässige Grund- und Geschossfläche, das Baufeld (Grundstück minus Abstand zur Grenze, begrenzt durch die GRZ) und eine Baukörper-Studie. „Baufeld als Baukörper übernehmen“ legt sie in „06 Zeichnen“ an, dann erscheint sie auch im Bild und in 3D. In „04 Analysedaten“ gibt es dazu die Ebenen „Grundstücksgrenzen mit Fläche“ und „nach Überbauung eingefärbt“ (ab Zoomstufe 16) sowie die amtliche Liegenschaftskarte mit Flurstücksnummern und Hausnummern (ab Zoomstufe 17, schwarz-weiß durchsichtig oder in Farbe). Das gewählte Grundstück steht auch in „11 Entwurfsstrategie“ (Text, Word und PDF); „Geschossfläche in die Entwurfsstrategie übernehmen“ trägt die Werte der Studie in die Felder dort ein. Die Daten kommen online vom Landesamt LGLN (Kataster, ohne Eigentümer) und brauchen Internet. Das ist eine Orientierung, keine amtliche Auskunft: Baugrenzen und Festsetzungen des Bebauungsplans, Baulasten und Abstände zur Straße sind nicht berücksichtigt.</li>
           <li><strong>Fotos</strong> (12): Bis zu zwölf Standortfotos (JPG oder PNG) erscheinen als nummerierte Markierungen auf der Karte, auf Wunsch mit Sichtkegel in Blickrichtung. Hat das Foto GPS-Daten, setzt die App den Ort selbst, sonst klickst du auf den Standort. Ein Klick auf die Markierung zeigt das Foto. Im gespeicherten Bild stehen die Markierungen und unten eine Fotoleiste (Haken „Fotos“ in 09).</li>
           </ol>
 
@@ -2204,8 +2216,10 @@
       nutzung:  { datei: "nutzung_oldenburg.js",  variable: "NUTZUNG_OLDENBURG",  daten: null, vorgang: null },
       stadt:    { datei: "stadt_oldenburg.js",    variable: "STADT_OLDENBURG",    daten: null, vorgang: null },
       laerm:    { datei: "laerm_oldenburg.js",    variable: "LAERM_OLDENBURG",    daten: null, vorgang: null },
-      fnp:      { datei: "fnp_oldenburg.js",      variable: "FNP_OLDENBURG",      daten: null, vorgang: null }
+      fnp:      { datei: "fnp_oldenburg.js",      variable: "FNP_OLDENBURG",      daten: null, vorgang: null },
+      brw:      { datei: "bodenrichtwerte_oldenburg.js", variable: "BODENRICHTWERTE_OLDENBURG", daten: null, vorgang: null }
     };
+    var BRW_QUELLE_TEXT = "Bodenrichtwerte: © LGLN / Gutachterausschuss (BORIS Niedersachsen), Datenlizenz Deutschland – Namensnennung 2.0";
     var STADT_QUELLE_TEXT = "Stadt Oldenburg (Oldb), Datenlizenz Deutschland – Namensnennung 2.0";
     var FNP_QUELLE_TEXT = "Flächennutzungsplan: Stadt Oldenburg (Oldb), Stand Änderungen bis 05.07.2024, Datenlizenz Deutschland – Zero 2.0";
     // Weitere Eigenschaften einer Gruppe (alle freiwillig):
@@ -2220,6 +2234,8 @@
                        Lden7074: ["#b02a3a", "70–74 dB"], LdenAb75: ["#6a1f6e", "ab 75 dB"] };
     var LAERM_NACHT = { Lnight5054: ["#f6d776", "50–54 dB"], Lnight5559: ["#f0a54a", "55–59 dB"], Lnight6064: ["#e0603a", "60–64 dB"],
                         Lnight6569: ["#b02a3a", "65–69 dB"], Lnightab70: ["#6a1f6e", "ab 70 dB"] };
+    var BRW_KLASSEN = { brw1: ["#f3e5f5", "bis 150 €/m²"], brw2: ["#ce93d8", "150 bis 250 €/m²"], brw3: ["#ab47bc", "250 bis 350 €/m²"],
+                        brw4: ["#8e24aa", "350 bis 500 €/m²"], brw5: ["#6a1b9a", "500 bis 700 €/m²"], brw6: ["#38006b", "ab 700 €/m²"] };
     var FLAECHEN = [
       { quelle: "flaechen", id: "parks",   name: "Parks und Grünflächen", farbe: "#46b04e", legende: "Parks, Wiesen, Friedhöfe, Gärten" },
       { quelle: "flaechen", id: "wald",    name: "Wald und Gehölz",       farbe: "#1f6e3c", legende: "Wald, Gehölz, Feuchtgebiet" },
@@ -2249,6 +2265,9 @@
       { quelle: "fnp", id: "fnp_wald",         name: "Wald",                  legende: "FNP: Wald",                  farbe: "#388e3c", deckkraft: 0.5, fnp: true, nichtAlle: true },
       { quelle: "fnp", id: "fnp_wasser",       name: "Wasserflächen",         legende: "FNP: Wasserflächen",         farbe: "#64b5f6", deckkraft: 0.55, fnp: true, nichtAlle: true },
       { quelle: "fnp", id: "fnp_landwirtschaft", name: "Landwirtschaft",      legende: "FNP: Landwirtschaft",        farbe: "#dce775", deckkraft: 0.5, fnp: true, nichtAlle: true },
+      // Bodenrichtwerte (Bauland, Stichtag 01.01.2026): Farbe nach Höhe, Wert in €/m² als Beschriftung; Eigenschaften je Zone in f.z
+      { quelle: "brw", id: "bodenrichtwerte", name: "Bodenrichtwerte (Bauland)", legende: "Bodenrichtwert", farbe: "#8e5ea2",
+        klassen: BRW_KLASSEN, deckkraft: 0.4, kontur: 1, beschriftungWert: true, brw: true, nichtAlle: true },
       { quelle: "laerm", id: "laerm_lden", name: "Straßenlärm, ganzer Tag", legende: "Straßenlärm ganzer Tag (L_DEN)", farbe: "#e0603a",
         klassen: LAERM_LDEN, gebuendelt: true, deckkraft: 0.6, stadt: true },
       { quelle: "laerm", id: "laerm_nacht", name: "Straßenlärm, nachts", legende: "Straßenlärm nachts (L_Night)", farbe: "#e0603a",
@@ -2258,13 +2277,18 @@
       if (gruppe.deckkraft === undefined) { gruppe.deckkraft = FLAECHEN_DECKKRAFT; }
       gruppe.ebene = L.layerGroup();
       gruppe.ebene.getAttribution = function () {
-        return gruppe.fnp ? FNP_QUELLE_TEXT : (gruppe.stadt ? "Daten: " + STADT_QUELLE_TEXT : "Flächen: &copy; OpenStreetMap-Mitwirkende");
+        return gruppe.brw ? BRW_QUELLE_TEXT : gruppe.fnp ? FNP_QUELLE_TEXT : (gruppe.stadt ? "Daten: " + STADT_QUELLE_TEXT : "Flächen: &copy; OpenStreetMap-Mitwirkende");
       };
       return gruppe;
     });
     // Farbe einer einzelnen Fläche: nach Klasse (Attribut "a"), sonst die der Gruppe
     function flaechenFarbe(gruppe, f) {
       return (gruppe.klassen && f && f.a && gruppe.klassen[f.a]) ? gruppe.klassen[f.a][0] : gruppe.farbe;
+    }
+    // Text in der Mitte einer Fläche: bei Bodenrichtwerten der Wert (z[2] in €/m²), sonst das Attribut "a" (Stadtbezirke)
+    function flaechenText(gruppe, f) {
+      if (gruppe.beschriftungWert) { return f.z ? String(Math.round(f.z[2])) : ""; }
+      return gruppe.beschriftung ? (f.a || "") : "";
     }
     function sichtbareFlaechen() { return FLAECHEN.filter(function (g) { return karte.hasLayer(g.ebene); }); }
     function istFlaechenEbene(ebene) { return FLAECHEN.some(function (g) { return g.ebene === ebene; }); }
@@ -2455,6 +2479,7 @@
     baueAnalyseHaken("analyseLaerm", FLAECHEN.filter(function (g) { return g.quelle === "laerm"; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseStadt", FLAECHEN.filter(function (g) { return g.quelle === "stadt"; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseFnp", FLAECHEN.filter(function (g) { return g.quelle === "fnp"; }), function (gruppe) { return gruppe.name; });
+    baueAnalyseHaken("analyseBrw", FLAECHEN.filter(function (g) { return g.quelle === "brw"; }), function (gruppe) { return gruppe.name; });
 
     // Maßstabsbalken unten links
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(karte);
@@ -3675,6 +3700,7 @@
               var liste = Array.isArray(g) ? g : g.f;
               var flaechen = entpackeGebaeude({ einheit: roh.einheit, gebaeude: liste });
               if (!Array.isArray(g) && g.a) { flaechen.forEach(function (f, i) { f.a = g.a[i]; }); }   // Klasse bzw. Beschriftung
+              if (!Array.isArray(g) && g.z) { flaechen.forEach(function (f, i) { f.z = g.z[i]; }); }   // weitere Eigenschaften je Fläche (Bodenrichtwerte)
               ergebnis[gruppe.id] = flaechen;
             });
             q.daten = ergebnis;
@@ -3762,12 +3788,13 @@
             // Jede Fläche einzeln, damit sich überlappende nicht gegenseitig löschen
             eintraege.forEach(function (f) {
               nachHinten(L.polygon(ringeVon(f), stil(flaechenFarbe(gruppe, f))).addTo(gruppe.ebene));
-              if (gruppe.beschriftung && f.a) {
+              var beschriftungText = flaechenText(gruppe, f);
+              if (beschriftungText) {
                 // Text in die Mitte des umschließenden Rechtecks der Fläche
                 L.marker([(f.s + f.n) / 2, (f.w + f.o) / 2], {
-                  icon: L.divIcon({ className: "zeichen-text", iconSize: [0, 0], html: "<span style=\"font-size:13px;color:#1a1a1a\"></span>" }),
+                  icon: L.divIcon({ className: "zeichen-text", iconSize: [0, 0], html: "<span style=\"font-size:" + (gruppe.beschriftungWert ? 11 : 13) + "px;color:#1a1a1a\"></span>" }),
                   interactive: false, keyboard: false
-                }).on("add", function () { var s = this.getElement() && this.getElement().querySelector("span"); if (s) { s.textContent = f.a; } })
+                }).on("add", function () { var s = this.getElement() && this.getElement().querySelector("span"); if (s) { s.textContent = beschriftungText; } })
                   .addTo(gruppe.ebene);
               }
             });
@@ -6803,7 +6830,8 @@
                         (spielImBild ? "  ·  " + SPIEL_QUELLE_TEXT : "") +
                         (grundG ? grundG.quelle() : "") +
                         (bildWegenetz.length ? "  ·  Wegenetz: © OpenStreetMap-Mitwirkende" : "") +
-                        (bildFlaechen.some(function (g) { return !g.stadt && !g.fnp; }) ? "  ·  Flächen: © OpenStreetMap-Mitwirkende" : "") +
+                        (bildFlaechen.some(function (g) { return !g.stadt && !g.fnp && !g.brw; }) ? "  ·  Flächen: © OpenStreetMap-Mitwirkende" : "") +
+                        (bildFlaechen.some(function (g) { return g.brw; }) ? "  ·  " + BRW_QUELLE_TEXT : "") +
                         (bildFlaechen.some(function (g) { return g.stadt; }) ? "  ·  Daten: " + STADT_QUELLE_TEXT : "") +
                         (bildFlaechen.some(function (g) { return g.fnp; }) ? "  ·  " + FNP_QUELLE_TEXT : "");
           var hQuelle = zeichneTextfeld(c, [{ text: urheber, klein: true }], plan.B - 6 * pxProMm, 0, pxProMm, true, untenSlot);
@@ -7000,17 +7028,18 @@
           if (pfad(f)) { fuellen(flaechenFarbe(gruppe, f), gruppe.deckkraft, gruppe.kontur); }
         });
 
-        if (gruppe.beschriftung) {
-          // Text in der Mitte jeder Fläche (Stadtbezirke), mit hellem Rand
-          var px = 3.4 * pxProMm;
+        if (gruppe.beschriftung || gruppe.beschriftungWert) {
+          // Text in der Mitte jeder Fläche (Stadtbezirke, Bodenrichtwerte), mit hellem Rand
+          var px = (gruppe.beschriftungWert ? 2.8 : 3.4) * pxProMm;
           c.font = "bold " + px + "px Segoe UI, Arial, sans-serif";
           c.textAlign = "center"; c.textBaseline = "middle"; c.globalAlpha = 1;
           eintraege.forEach(function (f) {
-            if (!f.a) { return; }
+            var text = flaechenText(gruppe, f);
+            if (!text) { return; }
             var q = zuPixel((f.s + f.n) / 2, (f.w + f.o) / 2, k.z), x = (q.x - k.links) * k.f, y = (q.y - k.oben) * k.f;
             if (x < 0 || x > plan.B || y < 0 || y > plan.H) { return; }
-            c.lineWidth = px * 0.28; c.strokeStyle = "rgba(255,255,255,0.92)"; c.strokeText(f.a, x, y);
-            c.fillStyle = "#1a1a1a"; c.fillText(f.a, x, y);
+            c.lineWidth = px * 0.28; c.strokeStyle = "rgba(255,255,255,0.92)"; c.strokeText(text, x, y);
+            c.fillStyle = "#1a1a1a"; c.fillText(text, x, y);
           });
         }
       });

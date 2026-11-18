@@ -615,7 +615,7 @@
   function setzeMeldung(text, fehler) { var m = el("grundMeldung"); m.textContent = text || ""; m.className = "meldung" + (fehler ? " fehler" : ""); }
 
   function zeile(behaelter, name, wert, hervor) {
-    var z = document.createElement("div"); z.className = "grundZeile" + (hervor ? " hervor" : "");
+    var z = document.createElement("div"); z.className = "grundZeile" + (hervor ? " hervor" : "") + (String(wert).length > 34 ? " lang" : "");
     var a = document.createElement("span"); a.textContent = name;
     var b = document.createElement("strong"); b.textContent = wert;
     z.appendChild(a); z.appendChild(b); behaelter.appendChild(z);
@@ -639,7 +639,8 @@
   function waehleGrundstueck(f, optionen) {
     optionen = optionen || {};
     var token = ++S.token;
-    S.f = f; S.ber = null; S.umg = null; S.bau = null; S.g = null; S.feld = null;
+    S.f = f; S.ber = null; S.umg = null; S.bau = null; S.g = null; S.feld = null; S.pot = null;
+    S.eigeneWerte = !!optionen.behalteWerte;      // true: Werte kommen vom Nutzer (zum Beispiel aus einem Projekt), nicht überschreiben
     el("grundDaten").hidden = false;
     if (!optionen.behalteWerte) {
       var g = gebietVorschlag(f);
@@ -659,7 +660,7 @@
       umgebungRechnen(token);
     }).catch(function (x) { if (token === S.token) { setzeMeldung("Die Gebäude des Katasters konnten nicht geladen werden (kein Internet oder der Dienst ist gerade nicht erreichbar).", true); if (window.console) { console.error(x); } } });
     aktualisiereAnzeige();
-
+    potenzialLaden(token);
   }
   function umgebungRechnen(token) {
     var f = S.f; if (!f) { return; }
@@ -681,6 +682,107 @@
     if (token !== S.token) { return; }
     S.umg = { n: n, grz: grz, grzH: grzH, ges: ges };
     aktualisiereAnzeige();
+  }
+
+  // ---------- Bodenrichtwert, Planung, Lärm und Schutzgebiete am Grundstück ----------
+  var POT_IDS = ["bodenrichtwerte", "bplan", "nsg", "lsg", "biotope", "wallhecken", "laerm_lden", "laerm_nacht"];
+  // Nutzungskürzel der Bodenrichtwertzonen -> Gebietsart der App (nur wo eindeutig) und Klartext
+  var BRW_NUTZUNG = {
+    W: ["WA", "Wohnbaufläche"], WEFH: ["WA", "Wohnbaufläche (Ein- und Zweifamilienhäuser)"], WMFH: ["WA", "Wohnbaufläche (Mehrfamilienhäuser)"],
+    WA: ["WA", "Allgemeines Wohngebiet"], WAEFH: ["WA", "Allgemeines Wohngebiet (Ein- und Zweifamilienhäuser)"], WASB: ["WA", "Allgemeines Wohngebiet"],
+    WR: ["WR", "Reines Wohngebiet"], WREFH: ["WR", "Reines Wohngebiet (Ein- und Zweifamilienhäuser)"], WS: ["WS", "Kleinsiedlungsgebiet"], WB: ["WB", "Besonderes Wohngebiet"],
+    M: ["MI", "gemischte Baufläche"], MI: ["MI", "Mischgebiet"], MD: ["MD", "Dorfgebiet"], MU: ["MU", "Urbanes Gebiet"], MK: ["MK", "Kerngebiet"],
+    G: ["GE", "gewerbliche Baufläche"], GE: ["GE", "Gewerbegebiet"], GI: ["GI", "Industriegebiet"],
+    SO: ["SO", "Sondergebiet"], SOEKZ: ["SO", "Sondergebiet (Einkaufszentrum)"], GB: [null, "Fläche für den Gemeinbedarf"]
+  };
+  // Was die Baunutzungsverordnung je Gebietsart allgemein zulässt (verkürzt) und was nur ausnahmsweise geht
+  var NUTZUNG_ZULAESSIG = {
+    WS:  ["Kleinsiedlungen mit Gärten, Wohngebäude, Läden und nicht störende Handwerksbetriebe zur Versorgung", "Betriebe des Beherbergungsgewerbes, sonstige nicht störende Gewerbebetriebe, Gartenbau"],
+    WR:  ["Wohngebäude, Anlagen zur Kinderbetreuung für den Bedarf des Gebiets", "kleine Beherbergungsbetriebe, Anlagen für soziale, kulturelle, gesundheitliche und sportliche Zwecke"],
+    WA:  ["Wohngebäude, der Versorgung dienende Läden, Schank- und Speisewirtschaften, nicht störende Handwerksbetriebe, Anlagen für kirchliche, kulturelle, soziale, gesundheitliche und sportliche Zwecke", "Beherbergungsbetriebe, sonstige nicht störende Gewerbebetriebe, Verwaltungen, Gartenbaubetriebe, Tankstellen"],
+    WB:  ["Wohngebäude, Läden, Betriebe des Beherbergungsgewerbes, sonstige Gewerbebetriebe, Verwaltungen, Anlagen für kirchliche, kulturelle, soziale, gesundheitliche und sportliche Zwecke", "Vergnügungsstätten, Tankstellen"],
+    MD:  ["Wohngebäude, land- und forstwirtschaftliche Betriebe, Einzelhandel, Gastronomie, Beherbergung, sonstige Gewerbebetriebe, Verwaltungen, Anlagen für soziale und kulturelle Zwecke", "Gartenbaubetriebe, Tankstellen, Vergnügungsstätten"],
+    MI:  ["Wohngebäude, Geschäfts- und Bürogebäude, Einzelhandel, Gastronomie, Beherbergung, sonstige nicht wesentlich störende Gewerbebetriebe, Verwaltungen, Anlagen für kirchliche, kulturelle, soziale, gesundheitliche und sportliche Zwecke, Gartenbaubetriebe, Tankstellen", "Vergnügungsstätten (nur in überwiegend gewerblich geprägten Teilen)"],
+    MU:  ["Wohnen, Geschäfts- und Bürogebäude, Einzelhandel, Gastronomie, Beherbergung, sonstige Gewerbebetriebe, Verwaltungen, Anlagen für soziale, kulturelle, gesundheitliche und sportliche Zwecke", "Vergnügungsstätten, Tankstellen"],
+    MK:  ["Geschäfts-, Verwaltungs- und Bürogebäude, Einzelhandel, Gastronomie, Beherbergung, Vergnügungsstätten, Anlagen für kirchliche, kulturelle, soziale, gesundheitliche und sportliche Zwecke, Tankstellen", "Wohnungen (nur wie im Bebauungsplan festgesetzt oder ab einem bestimmten Geschoss)"],
+    GE:  ["Gewerbebetriebe aller Art (nicht erheblich belästigend), Lagerhäuser, öffentliche Betriebe, Geschäfts-, Büro- und Verwaltungsgebäude, Tankstellen, Anlagen für sportliche Zwecke", "Wohnungen für Aufsichts- und Bereitschaftspersonen, Anlagen für soziale, kirchliche, kulturelle und gesundheitliche Zwecke"],
+    GI:  ["Gewerbebetriebe aller Art, besonders erheblich belästigende Betriebe, Lagerhäuser, Tankstellen", "Wohnungen für Aufsichts- und Bereitschaftspersonen"],
+    SO:  ["nur, was im Bebauungsplan für das Sondergebiet festgesetzt ist (zum Beispiel Handel, Hochschule, Hafen, Erholung)", ""],
+    FREI: ["nach den Festsetzungen im Bebauungsplan", ""]
+  };
+  function imRing(lat, lng, ring) {          // Strahlverfahren für einen Ring [Breite, Länge, Breite, Länge, ...]
+    var c = false;
+    for (var i = 0, j = ring.length - 2; i < ring.length; j = i, i += 2) {
+      var yi = ring[i], xi = ring[i + 1], yj = ring[j], xj = ring[j + 1];
+      if (((yi > lat) !== (yj > lat)) && (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi)) { c = !c; }
+    }
+    return c;
+  }
+  function imFlaeche(fl, lat, lng) {         // Außenring und Löcher: ungerade Zahl von Ringen = innen
+    if (lat < fl.s || lat > fl.n || lng < fl.w || lng > fl.o) { return false; }
+    var n = 0; fl.ringe.forEach(function (r) { if (imRing(lat, lng, r)) { n++; } });
+    return n % 2 === 1;
+  }
+  // Einige Punkte innerhalb des Grundstücks (Mitte zuerst), für die Abfragen "liegt auf dem Grundstück"
+  function probePunkte(f) {
+    var L0 = lok(f), pts = [], bb = f.bb, N = 6;
+    var mx = (f.mitte[1] - L0.lo0) * L0.kx, my = (f.mitte[0] - L0.la0) * M_LA;
+    if (imGrundstueck(mx, my, L0)) { pts.push([f.mitte[0], f.mitte[1]]); }
+    for (var i = 0; i < N; i++) {
+      for (var j = 0; j < N; j++) {
+        var la = bb[0] + (bb[2] - bb[0]) * (i + 0.5) / N, lo = bb[1] + (bb[3] - bb[1]) * (j + 0.5) / N;
+        if (imGrundstueck((lo - L0.lo0) * L0.kx, (la - L0.la0) * M_LA, L0)) { pts.push([la, lo]); }
+      }
+    }
+    if (!pts.length) { pts.push([f.mitte[0], f.mitte[1]]); }
+    return pts;
+  }
+  var potVorgang = null;
+  function potenzialLaden(token) {
+    var f = S.f; if (!f) { return Promise.resolve(); }
+    var gruppen = FLAECHEN.filter(function (g) { return POT_IDS.indexOf(g.id) >= 0 || g.fnp; });
+    S.pot = null;
+    return ladeFlaechenDaten(gruppen).then(function (daten) {
+      if (token !== S.token) { return; }
+      var P = probePunkte(f), pot = { fnp: [], laerm: {}, schutz: {}, bplan: false, brw: null, brwAndere: 0 };
+      function trifft(id, punkte) { return (daten[id] || []).some(function (fl) { return punkte.some(function (p) { return imFlaeche(fl, p[0], p[1]); }); }); }
+      // Bodenrichtwertzone: die kleinste Zone, die die Grundstücksmitte enthält (sonst irgendeinen Probepunkt)
+      var zonen = [];
+      for (var k = 0; k < P.length && !zonen.length; k++) { zonen = (daten.bodenrichtwerte || []).filter(function (fl) { return imFlaeche(fl, P[k][0], P[k][1]); }); }
+      if (zonen.length) {
+        zonen.sort(function (a, b) { return (a.n - a.s) * (a.o - a.w) - (b.n - b.s) * (b.o - b.w); });
+        pot.brw = zonen[0].z; pot.brwAndere = zonen.length - 1;
+      }
+      pot.bplan = trifft("bplan", P.slice(0, 1));
+      FLAECHEN.forEach(function (g) { if (g.fnp && trifft(g.id, P.slice(0, 1))) { pot.fnp.push(g.name); } });
+      ["nsg", "lsg", "biotope", "wallhecken"].forEach(function (id) { pot.schutz[id] = trifft(id, P); });
+      // Lärm: höchste Klasse auf einem der Probepunkte (höchstens 12 Punkte, die Dateien sind groß)
+      ["laerm_lden", "laerm_nacht"].forEach(function (id) {
+        var gr = FLAECHEN.filter(function (g) { return g.id === id; })[0], keys = Object.keys(gr.klassen), best = -1, pp = P.length > 12 ? P.filter(function (p, i) { return i % Math.ceil(P.length / 12) === 0; }) : P;
+        (daten[id] || []).forEach(function (fl) {
+          var ix = keys.indexOf(fl.a); if (ix <= best) { return; }
+          if (pp.some(function (p) { return imFlaeche(fl, p[0], p[1]); })) { best = ix; }
+        });
+        pot.laerm[id] = best >= 0 ? { text: gr.klassen[keys[best]][1], stufe: best } : null;
+      });
+      S.pot = pot;
+      brwGebietUebernehmen();
+      aktualisiereAnzeige();
+    }).catch(function (x) { if (token === S.token) { S.pot = { fehler: true }; aktualisiereAnzeige(); } if (window.console) { console.error(x); } });
+  }
+  // Die Gebietsart aus der Bodenrichtwertzone vorschlagen, solange der Nutzer nichts selbst eingestellt hat
+  function brwGebiet(pot) {
+    if (!pot || !pot.brw) { return null; }
+    var e = BRW_NUTZUNG[pot.brw[3]]; return e && e[0] ? e[0] : null;
+  }
+  function brwGebietUebernehmen() {
+    if (S.eigeneWerte || !S.pot) { return; }
+    var g = brwGebiet(S.pot);
+    if (g && GEBIETE[g] && el("grundGebiet").value !== g) {
+      el("grundGebiet").value = g;
+      el("grundGrz").value = String(GEBIETE[g].grz).replace(".", ","); el("grundGfz").value = String(GEBIETE[g].gfz).replace(".", ",");
+      el("grundGeschosse").value = ""; el("grundAbstand").value = "";
+    }
   }
 
   function amPunkt(still) {
@@ -764,6 +866,151 @@
     }
     return g;
   }
+  // ---------- Potenzial und Einschränkungen (regelbasiert aus den Zahlen der App, Orientierung) ----------
+  var WF_FAKTOR = 0.75, WE_GROESSE = 70;          // Wohnfläche = 75 % der Geschossfläche (Faustzahl), eine Wohnung = 70 m² Wohnfläche
+  var WOHNGEBIETE = ["WS", "WR", "WA", "WB", "MD", "MI", "MU"];
+  function eur(n) { return zahlDe(Math.abs(n) >= 20000 ? Math.round(n / 1000) * 1000 : Math.round(n), 0) + " €"; }
+  function prozentDe(a, b) { return b > 0 ? zahlDe(Math.round(100 * a / b), 0) + " %" : "–"; }
+  function potenzialBerechnen() {
+    var f = S.f, g = S.g, ber = S.ber, pot = S.pot;
+    if (!f || !g) { return null; }
+    var A = g.A, gk = el("grundGebiet").value, gebiet = GEBIETE[gk] || GEBIETE.FREI, wohn = WOHNGEBIETE.indexOf(gk) >= 0 || gk === "MK";
+    var gfBekannt = !!(ber && (hoehenIdx || lesenZahl("grundBestandGeschosse") > 0));
+    var zulGrund = g.grz !== null ? g.grz * A : null, zulGF = g.gfz !== null ? g.gfz * A : null;
+    var restGrund = (zulGrund !== null && ber) ? zulGrund - g.bestHaupt : null;
+    var restGF = (zulGF !== null && gfBekannt) ? zulGF - g.gfHaupt : null;
+    var zone = pot && pot.brw ? pot.brw : null;      // [Nummer, Name, Wert, Nutzung, GFZ, Geschosse, Bauweise, Verfahren, Richtfläche, Zustand]
+    var miete = lesenZahl("grundMiete"), bauk = lesenZahl("grundBaukosten");
+    var medGes = S.umg && S.umg.ges && S.umg.ges.length ? median(S.umg.ges) : null, medGrz = S.umg && S.umg.n ? median(S.umg.grz) : null;
+    var bestGes = (gfBekannt && g.bestHaupt > 0) ? g.gfHaupt / g.bestHaupt : null;
+    var abs = [], staerken = [], achten = [], kenn = {};
+    var wePot = restGF !== null && restGF > 0 ? Math.floor(restGF * WF_FAKTOR / WE_GROESSE) : null;
+
+    // 1. Was darf gebaut werden
+    var a1 = { titel: "Was darf gebaut werden?", zeilen: [], liste: [] };
+    var herkunft = brwGebiet(pot) === gk ? " (passt zur Bodenrichtwertzone: " + (BRW_NUTZUNG[zone[3]] || [0, zone[3]])[1] + ")" : (pot && pot.brw ? "" : " (nach der Katasternutzung vermutet)");
+    a1.zeilen.push(["Gebietsart (Annahme)", gebiet.n + herkunft]);
+    var zul = NUTZUNG_ZULAESSIG[gk];
+    if (zul) {
+      a1.liste.push("Allgemein zulässig (Baunutzungsverordnung, verkürzt): " + zul[0] + ".");
+      if (zul[1]) { a1.liste.push("Ausnahmsweise möglich: " + zul[1] + "."); }
+    }
+    if (g.grz !== null) { a1.zeilen.push(["Maß der Nutzung (Annahme)", "GRZ " + zahlDe(g.grz, 2) + " (mit Nebenanlagen bis " + zahlDe(g.grz2, 2) + ")" + (g.gfz !== null ? ", GFZ " + zahlDe(g.gfz, 2) : "")]); }
+    if (zone) {
+      var zt = [];
+      var roemisch = { I: "1", II: "2", III: "3", IV: "4", V: "5", VI: "6", VII: "7", VIII: "8" };
+      if (zone[5]) { zt.push((roemisch[zone[5]] || zone[5]) + (zone[5] === "I" ? " Geschoss" : " Geschosse")); }
+      if (zone[4] > 0) { zt.push("GFZ " + zahlDe(zone[4], 2)); }
+      var bw = { o: "offene Bauweise", g: "geschlossene Bauweise", a: "abweichende Bauweise", rh: "Reihenhäuser" }[zone[6]];
+      if (zone[6]) { zt.push(bw || "Bauweise " + zone[6]); }
+      if (zt.length) { a1.zeilen.push(["Typische Bebauung der Bodenrichtwertzone", zt.join(", ")]); }
+    }
+    if (!pot) { a1.zeilen.push(["Planungsrecht", "wird geprüft …"]); }
+    else if (pot.fehler) { a1.zeilen.push(["Planungsrecht", "konnte nicht geprüft werden (Datei fehlt oder ist beschädigt)"]); }
+    else {
+      a1.zeilen.push(["Bebauungsplan", pot.bplan ? "Das Grundstück liegt im Umriss eines Bebauungsplans. Seine Festsetzungen (Art, Maß, Baugrenzen) gehen den Annahmen hier vor." : "Kein Bebauungsplan-Umriss in den Daten: dann gilt meist § 34 BauGB (Einfügen in die Umgebung) oder, außerhalb der Bebauung, § 35."]);
+      a1.zeilen.push(["Flächennutzungsplan", pot.fnp.length ? pot.fnp.join(", ") : "keine Darstellung in den Daten"]);
+    }
+    if (pot && !pot.bplan && !pot.fehler && S.umg && S.umg.n) {
+      a1.liste.push("Ohne Bebauungsplan muss sich ein Vorhaben nach Art, Maß, Bauweise und überbauter Fläche in die Umgebung einfügen: Dort liegt die GRZ der Gebäude im Median bei " + zahlDe(medGrz, 2) + (medGes !== null ? " und die Zahl der Geschosse bei " + zahlDe(medGes, 0) : "") + ".");
+    }
+    abs.push(a1);
+
+    // 2. Zusätzlich oder alternativ
+    var a2 = { titel: "Was könnte zusätzlich oder alternativ gebaut werden?", zeilen: [], liste: [] }, o = a2.liste;
+    if (ber && ber.haupt <= 0) { o.push("Das Grundstück ist (nach dem Kataster) unbebaut: ein Neubau bis zur zulässigen Grundfläche von " + (zulGrund !== null ? qm(zulGrund) : "–") + " ist denkbar" + (g.baufeldVoll ? ", das Baufeld nach Abstand ist " + qm(g.baufeldVoll) + " groß" : "") + "."); }
+    if (restGrund !== null && restGrund < 0) { o.push("Die Hauptgebäude liegen schon über der angenommenen Grundfläche: weitere Verdichtung ist nach diesen Annahmen nicht möglich. Bleiben Umbau, Modernisierung oder Dachausbau im Bestand (Bestandsschutz klären)."); }
+    if (g.frei !== null && g.frei !== undefined && g.frei >= 60 && (restGrund === null || restGrund > 20)) { o.push("Anbau oder Nebengebäude: Im Baufeld sind etwa " + qm(g.frei) + " frei vom Bestand (Garage, Carport, Anbau, Gartenhaus)."); }
+    if (g.frei >= 150 && A >= 500 && wohn && restGrund !== null && restGrund > 60) { o.push("Zweites Gebäude im Hinterland (zweite Reihe): Platz wäre da; Erschließung, Feuerwehrzufahrt, Abstandsflächen und Stellplätze müssten gelöst werden."); }
+    if (restGF !== null && restGF > 40 && ber && ber.haupt > 0 && (restGrund === null || restGrund >= -5)) {
+      o.push("Aufstockung oder Dachausbau: bis zu etwa " + qm(Math.min(restGF, g.bestHaupt)) + " zusätzliche Geschossfläche pro Geschoss, insgesamt höchstens " + qm(restGF) + "" + (medGes !== null && bestGes !== null && bestGes < medGes ? " (die Nachbarn haben im Median mehr Geschosse: " + zahlDe(medGes, 0) + " gegenüber etwa " + zahlDe(bestGes, 1) + " hier)" : "") + ".");
+    }
+    if (restGF !== null && restGF > 150 && wohn && wePot > 1) { o.push("Mehrfamilienhaus oder Ersatzneubau: rechnerisch Platz für etwa " + zahlDe(wePot, 0) + " zusätzliche Wohnungen (bei " + zahlDe(WE_GROESSE, 0) + " m² Wohnfläche je Wohnung und 75 % Wohnfläche an der Geschossfläche)."); }
+    if (!gfBekannt && ber && ber.haupt > 0) { o.push("Für Aufstockung und zusätzliche Geschossfläche fehlen die Gebäudehöhen: „Gebäudehöhen laden“ in „Bestand“ klicken."); }
+    var alt = { WS: "Einfamilienhaus, Doppelhaus oder Kleinsiedlung mit Garten", WR: "Einfamilienhaus, Doppelhaus, Mehrfamilienhaus oder eine Kita", WA: "Einfamilienhaus, Doppel- oder Reihenhaus, Mehrfamilienhaus, Wohngruppe oder Kita; im Erdgeschoss Praxis oder Laden",
+      WB: "Wohnen mit Läden und Büros im Erdgeschoss", MD: "Wohnen mit Handwerk, Gastronomie oder Hofladen", MI: "Wohnen mit Büro, Praxis, Laden oder Gastronomie im Erdgeschoss", MU: "Wohnen, Büro, Praxis und Handel in einem Haus",
+      MK: "Büro, Praxis, Handel und Gastronomie; Wohnen nur, wenn der Plan es zulässt", GE: "Büro- und Verwaltungsgebäude, Lager, Handwerksbetriebe oder Werkstätten", GI: "Produktion, Lager, Logistik", SO: "was der Bebauungsplan für das Sondergebiet festlegt" };
+    if (alt[gk]) { o.push("Alternative Nutzungen in diesem Gebiet: " + alt[gk] + "."); }
+    if (!o.length) { o.push("Mit den angenommenen Werten sind keine zusätzlichen Möglichkeiten erkennbar."); }
+    abs.push(a2);
+
+    // 3. Wie intensiv
+    var a3 = { titel: "Wie intensiv kann das Grundstück genutzt werden?", zeilen: [], liste: [] };
+    if (zulGrund !== null && ber) { a3.zeilen.push(["Grundfläche ausgenutzt", prozentDe(g.bestHaupt, zulGrund) + " (" + qm(g.bestHaupt) + " von " + qm(zulGrund) + ")"]); }
+    if (zulGF !== null && gfBekannt) { a3.zeilen.push(["Geschossfläche ausgenutzt (Schätzung)", prozentDe(g.gfHaupt, zulGF) + " (" + qm(g.gfHaupt) + " von " + qm(zulGF) + ")"]); }
+    if (zulGF !== null) { a3.zeilen.push(["Insgesamt zulässige Geschossfläche", qm(zulGF) + (wohn ? ", etwa " + zahlDe(Math.floor(zulGF * WF_FAKTOR / WE_GROESSE), 0) + " Wohnungen" : "")]); }
+    if (restGF !== null) { a3.zeilen.push(["Noch möglich", restGF > 0 ? qm(restGF) + " Geschossfläche" + (wePot ? ", etwa " + zahlDe(wePot, 0) + " Wohnungen" : "") : "nichts mehr, der Bestand liegt " + qm(-restGF) + " darüber"]); }
+    if (medGrz !== null && ber) { a3.zeilen.push(["Umgebung (GRZ der Gebäude)", "Median " + zahlDe(medGrz, 2) + ", hier " + zahlDe(g.grzGeb, 2)]); }
+    if (medGes !== null) { a3.zeilen.push(["Umgebung (Geschosse)", "Median " + zahlDe(medGes, 0) + (bestGes !== null ? ", hier etwa " + zahlDe(bestGes, 1) : "")]); }
+    if (zulGF !== null && gfBekannt) {
+      var u = g.gfHaupt / zulGF;
+      a3.liste.push(u < 0.5 ? "Die Geschossfläche ist erst zu weniger als der Hälfte ausgenutzt: es gibt deutlichen Spielraum." : u < 0.9 ? "Die Ausnutzung ist mittel: ein Teil des Baurechts ist noch frei." : u <= 1.05 ? "Das Baurecht ist weitgehend ausgeschöpft." : "Der Bestand liegt über den angenommenen Obergrenzen (vermutlich älterer Bestand oder abweichende Festsetzungen).");
+    }
+    abs.push(a3);
+
+    // 4. Wirtschaftliche Potenziale
+    var a4 = { titel: "Wirtschaftliche Potenziale (grobe Faustrechnung)", zeilen: [], liste: [] };
+    var bodenwert = null;
+    if (zone) {
+      bodenwert = zone[2] * A;
+      a4.zeilen.push(["Bodenrichtwert", zahlDe(zone[2], 0) + " €/m² (Zone " + zone[0] + ", " + zone[1] + ", Stichtag 01.01.2026)"]);
+      a4.zeilen.push(["Bodenwert des Grundstücks", "ca. " + eur(bodenwert) + " (Richtwert mal Fläche, nur Boden ohne Gebäude)"]);
+      if (zone[4] > 0) { a4.zeilen.push(["Bodenrichtwert je m² Geschossfläche", zahlDe(zone[2] / zone[4], 0) + " €/m² (Richtwert geteilt durch die Zonen-GFZ " + zahlDe(zone[4], 2) + ")"]); }
+      if (zulGF) { a4.zeilen.push(["Bodenwert je m² zulässiger Geschossfläche", zahlDe(bodenwert / zulGF, 0) + " €/m²"]); }
+      if (restGF !== null && restGF > 0 && zulGF) { a4.zeilen.push(["Wert des ungenutzten Baurechts (anteilig)", "ca. " + eur(bodenwert * restGF / zulGF) + " (Bodenwert mal ungenutzter Anteil der Geschossfläche)"]); }
+      if (pot.brwAndere > 0) { a4.liste.push("An dieser Stelle überlagern sich " + (pot.brwAndere + 1) + " Bodenrichtwertzonen; angezeigt ist die kleinste."); }
+      if (zone[8] > 0 && Math.abs(A - zone[8]) / zone[8] > 0.4) { a4.liste.push("Das Richtgrundstück der Zone hat " + qm(zone[8]) + ", dieses Grundstück " + qm(A) + ": Größe und Zuschnitt weichen deutlich ab, der Wert kann entsprechend abweichen."); }
+    } else if (pot && !pot.fehler) { a4.zeilen.push(["Bodenrichtwert", "keine Zone für Bauland gefunden (zum Beispiel Außenbereich oder Fläche ohne Richtwert)"]); }
+    else if (!pot) { a4.zeilen.push(["Bodenrichtwert", "wird geladen …"]); }
+    if (restGF !== null && restGF > 0 && bauk > 0 && miete > 0) {
+      var invest = restGF * bauk, jahr1 = restGF * WF_FAKTOR * miete * 12;
+      a4.zeilen.push(["Zusätzliche Geschossfläche", qm(restGF)]);
+      a4.zeilen.push(["Baukosten (Annahme " + zahlDe(bauk, 0) + " €/m² Geschossfläche)", "ca. " + eur(invest)]);
+      a4.zeilen.push(["Mieteinnahmen (Annahme " + zahlDe(miete, 2) + " €/m² Wohnfläche im Monat)", "ca. " + eur(jahr1) + " im Jahr (kalt)"]);
+      a4.zeilen.push(["Bruttoanfangsrendite des Zusatzes", zahlDe(100 * jahr1 / invest, 1) + " %"]);
+      kenn.invest = invest; kenn.jahresmiete = jahr1; kenn.rendite = jahr1 / invest;
+      a4.liste.push("Faustrechnung ohne Grundstückskosten (das Baurecht liegt auf dem eigenen Grundstück), ohne Finanzierung, Leerstand, Bewirtschaftung und Steuern. Baukosten und Miete sind Annahmen und lassen sich darunter ändern.");
+    } else if (restGF === null && ber && ber.haupt > 0) { a4.liste.push("Für die Rechnung zum Zusatz fehlen die Gebäudehöhen („Gebäudehöhen laden“ in „Bestand“)."); }
+    else if (restGF !== null && restGF <= 0) { a4.liste.push("Es gibt nach den Annahmen keine zusätzliche Geschossfläche, deshalb keine Rechnung zum Zusatz."); }
+    a4.liste.push("Der Bodenrichtwert ist ein Durchschnittswert für ein typisches Grundstück der Zone und kein Verkehrswert. Eine Wertermittlung ersetzt das nicht.");
+    abs.push(a4);
+
+    // 5. Einschränkungen
+    var a5 = { titel: "Einschränkungen, die eine optimale Nutzung verhindern können", zeilen: [], liste: [] }, e = a5.liste;
+    if (restGrund !== null && restGrund < 0) { e.push("Überbauung über der angenommenen GRZ: nur Bestandsschutz, kein weiteres Wachstum."); achten.push("Die Hauptgebäude (" + qm(g.bestHaupt) + ") liegen über der angenommenen Grundfläche (" + qm(zulGrund) + ")."); }
+    if (zulGrund !== null && g.baufeldVoll && g.baufeldVoll < zulGrund * 0.85) { e.push("Die Abstände zur Grenze (" + zahlDe(g.abstand, 1) + " m) lassen nur " + qm(g.baufeldVoll) + " Baufeld; das ist weniger als die zulässige Grundfläche (" + qm(zulGrund) + "). Zuschnitt und Abstandsflächen begrenzen hier stärker als die GRZ."); achten.push("Zuschnitt und Abstandsflächen begrenzen die Bebauung stärker als die GRZ (Baufeld " + qm(g.baufeldVoll) + ")."); }
+    if (A < 350) { e.push("Das Grundstück ist mit " + qm(A) + " klein: Abstandsflächen, Stellplätze und Gartenanteil begrenzen die Möglichkeiten."); }
+    if (pot && !pot.fehler) {
+      if (pot.bplan) { e.push("Bebauungsplan: Baugrenzen, Geschosszahl, Dachform und weitere Festsetzungen können die Werte oben stark verändern (nicht in den App-Daten, beim Planungsamt klären)."); achten.push("Im Umriss eines Bebauungsplans: Festsetzungen beim Planungsamt prüfen."); }
+      var ld = pot.laerm.laerm_lden, ln = pot.laerm.laerm_nacht;
+      if (ld) { e.push("Straßenlärm (ganzer Tag): " + ld.text + " auf dem Grundstück" + (ld.stufe >= 2 ? ". Schallschutz (Grundrisse, Fenster, Lärmschutzwand) ist einzuplanen; für ein Allgemeines Wohngebiet gelten als Orientierungswerte tags 55 dB und nachts 45 dB (DIN 18005)." : ". Die Orientierungswerte für ein Wohngebiet liegen tags bei 55 dB und nachts bei 45 dB (DIN 18005).")); achten.push("Straßenlärm " + ld.text + " (ganzer Tag) auf dem Grundstück."); }
+      if (ln && !ld) { e.push("Straßenlärm nachts: " + ln.text + " auf dem Grundstück."); }
+      if (!ld && !ln) { e.push("Kein Straßenlärm ab 55 dB (Tag) bzw. 50 dB (Nacht) in der Lärmkartierung der Stadt (die Karte erfasst nur Hauptverkehrsstraßen)."); }
+      var sn = { nsg: "Naturschutzgebiet", lsg: "Landschaftsschutzgebiet", biotope: "geschütztes Biotop", wallhecken: "Wallhecke" };
+      Object.keys(sn).forEach(function (id) { if (pot.schutz[id]) { e.push("Das Grundstück liegt ganz oder teilweise in einem Bereich mit Schutzstatus (" + sn[id] + "): Eingriffe sind genehmigungspflichtig oder verboten."); achten.push("Schutzstatus: " + sn[id] + " auf dem Grundstück."); } });
+      if (!pot.schutz.nsg && !pot.schutz.lsg && !pot.schutz.biotope && !pot.schutz.wallhecken) { e.push("Keine Naturschutzgebiete, Landschaftsschutzgebiete, Biotope oder Wallhecken auf dem Grundstück (nach den Daten der Stadt)."); }
+    }
+    e.push("Nicht geprüft, weil nicht in den App-Daten: Baulasten und Grunddienstbarkeiten, Denkmalschutz, Altlasten, Grundwasserstand und Baugrund, Hochwasser und Starkregen, Leitungen, Baumschutz, Artenschutz, Erschließung und Stellplatznachweis. Altlasten, Baugrund, Grundwasser und Starkregen kannst du als Ebenen in „04 Analysedaten“ ansehen.");
+    abs.push(a5);
+
+    // Stärken für das Standortprofil
+    if (wePot >= 2) { staerken.push("Rechnerisch Platz für etwa " + wePot + " zusätzliche Wohnungen (bei " + WE_GROESSE + " m² Wohnfläche je Wohnung)."); }
+    if (zone) { kenn.brw = zone[2]; kenn.brwName = zone[1]; kenn.brwNutzung = (BRW_NUTZUNG[zone[3]] || [0, zone[3]])[1]; kenn.bodenwert = bodenwert; }
+    kenn.restGF = restGF; kenn.we = wePot; kenn.restGrund = restGrund;
+    return { abschnitte: abs, staerken: staerken, achten: achten, kenn: kenn };
+  }
+  function potenzialAnzeigen() {
+    var b = el("grundPotenzial"); if (!b) { return; }
+    b.textContent = "";
+    var p = potenzialBerechnen(); S.potErgebnis = p;
+    if (!p) { return; }
+    p.abschnitte.forEach(function (a) {
+      var t = document.createElement("div"); t.className = "gruppentitel"; t.style.marginTop = "10px"; t.textContent = a.titel; b.appendChild(t);
+      a.zeilen.forEach(function (z) { zeile(b, z[0], z[1]); });
+      a.liste.forEach(function (x) { absatz(b, "• " + x); });
+    });
+  }
+
   function aktualisiereAnzeige() {
     var f = S.f;
     if (!f) { return; }
@@ -827,6 +1074,7 @@
     }
     zeigeAuswahl();
     S.g = g;
+    potenzialAnzeigen();
   }
 
   function uebernehmen() {
@@ -1024,6 +1272,8 @@
       if (S.ber) { d.restGrund = g.grz * g.A - g.bestHaupt; if (g.gfz !== null && d.gfHaupt !== undefined) { d.restGF = g.gfz * g.A - g.gfHaupt; } }
       d.abstand = g.abstand; d.baufeld = g.baufeldVoll; d.frei = g.frei; d.n = g.n; d.H = g.H; d.grundBau = g.grundflaecheBau; d.gfBau = g.gfBau;
     }
+    var pe = potenzialBerechnen();
+    if (pe) { d.pot = pe.kenn; d.potStaerken = pe.staerken; d.potAchten = pe.achten; }
     return d;
   }
   // Zeilen im Format des KI-Textes: Überschrift, darunter "  - Merkmal: Wert"
@@ -1052,6 +1302,16 @@
       p("Baukörper-Studie", qm(d.grundBau) + " Grundfläche, " + d.n + " Geschosse, " + zahlDe(d.H, 1) + " m Höhe, Geschossfläche " + qm(d.gfBau));
     }
     z.push("  - (Orientierungswerte, keine amtliche Auskunft; Baugrenzen und Festsetzungen des Bebauungsplans, Baulasten, Abstände zur Straße und Sonderregeln der Bauordnung sind nicht berücksichtigt)");
+    // Potenzial und Einschränkungen: je Frage eine Überschrift, Zahlen als "Merkmal: Wert", Aussagen als eigene Zeilen
+    var pe = potenzialBerechnen();
+    if (pe) {
+      z.push("Potenzial und Einschränkungen des Grundstücks (regelbasiert aus den App-Daten, Orientierung ohne Rechtsauskunft):");
+      pe.abschnitte.forEach(function (a) {
+        z.push("  - " + a.titel);
+        a.zeilen.forEach(function (r) { z.push("  - " + r[0] + ": " + r[1]); });
+        a.liste.forEach(function (x) { z.push("  - " + x); });
+      });
+    }
     return z;
   }
   // Wartet, bis die Gebäude des Grundstücks geladen sind (und auf Wunsch die Gebäudehöhen für die GFZ), damit der Entwurfstext vollständig ist
@@ -1059,7 +1319,7 @@
     if (!S.f) { return Promise.resolve(); }
     var f = S.f, start = Date.now();
     function warteBestand() {
-      if (S.f !== f || S.ber || Date.now() - start > 10000) { return Promise.resolve(); }
+      if (S.f !== f || (S.ber && S.pot) || Date.now() - start > 15000) { return Promise.resolve(); }
       return new Promise(function (ok) { setTimeout(ok, 150); }).then(warteBestand);
     }
     return warteBestand().then(function () {
@@ -1072,7 +1332,8 @@
     if (!S.f) { return null; }
     return {
       id: S.f.id, bbox: S.f.bb, baufeld: !!S.zeigeBaufeld,
-      werte: { gebiet: el("grundGebiet").value, grz: el("grundGrz").value, gfz: el("grundGfz").value, geschosse: el("grundGeschosse").value, abstand: el("grundAbstand").value, bestand: el("grundBestandGeschosse").value }
+      werte: { gebiet: el("grundGebiet").value, grz: el("grundGrz").value, gfz: el("grundGfz").value, geschosse: el("grundGeschosse").value, abstand: el("grundAbstand").value, bestand: el("grundBestandGeschosse").value,
+               miete: el("grundMiete").value, baukosten: el("grundBaukosten").value }
     };
   }
   function stelleWiederHer(z) {
@@ -1085,12 +1346,13 @@
         if (w.gebiet && GEBIETE[w.gebiet]) { el("grundGebiet").value = w.gebiet; }
         el("grundGrz").value = w.grz || el("grundGrz").value; el("grundGfz").value = w.gfz || el("grundGfz").value;
         el("grundGeschosse").value = w.geschosse || ""; el("grundAbstand").value = w.abstand || ""; el("grundBestandGeschosse").value = w.bestand || "";
+        if (w.miete) { el("grundMiete").value = w.miete; } if (w.baukosten) { el("grundBaukosten").value = w.baukosten; }
         el("grundBaufeldZeigen").checked = !!z.baufeld; S.zeigeBaufeld = !!z.baufeld;
         waehleGrundstueck(f, { behalteWerte: true });
       }
     }).catch(function () { /* ohne Internet bleibt die Auswahl leer */ });
   }
-  function loesche() { S.token++; S.f = null; S.ber = null; S.umg = null; S.g = null; S.feld = null; zeigeAuswahl(); el("grundDaten").hidden = true; }
+  function loesche() { S.token++; S.f = null; S.ber = null; S.umg = null; S.g = null; S.feld = null; S.pot = null; S.potErgebnis = null; zeigeAuswahl(); el("grundDaten").hidden = true; }
 
   function neuRechnen() { if (S.f) { aktualisiereAnzeige(); } }
   function initUi() {
@@ -1099,12 +1361,16 @@
     sel.value = "WA";
     el("grundGrz").value = "0,4"; el("grundGfz").value = "1,2";
     sel.addEventListener("change", function () {
+      S.eigeneWerte = true;
       var g = GEBIETE[sel.value];
       el("grundGrz").value = String(g.grz).replace(".", ","); el("grundGfz").value = String(g.gfz).replace(".", ",");
       el("grundGeschosse").value = ""; el("grundAbstand").value = "";
       neuRechnen();
     });
     ["grundGrz", "grundGfz", "grundGeschosse", "grundAbstand", "grundBestandGeschosse"].forEach(function (id) {
+      el(id).addEventListener("input", function () { if (id === "grundGrz" || id === "grundGfz") { S.eigeneWerte = true; } clearTimeout(initUi.t); initUi.t = setTimeout(neuRechnen, 300); });
+    });
+    ["grundMiete", "grundBaukosten"].forEach(function (id) {
       el(id).addEventListener("input", function () { clearTimeout(initUi.t); initUi.t = setTimeout(neuRechnen, 300); });
     });
     el("grundBaufeldZeigen").addEventListener("change", function () { S.zeigeBaufeld = el("grundBaufeldZeigen").checked; zeigeAuswahl(); });
