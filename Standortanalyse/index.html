@@ -43,9 +43,47 @@
     }
 
     /* ---------- Aufteilung: Seitenleiste links, Karte rechts ---------- */
+    body { display: flex; flex-direction: column; }
+
+    /* ---------- Reiter: Karte | 3D-Ansicht (oben, bleiben immer sichtbar) ---------- */
+    .reiter {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: stretch;
+      height: 34px;
+      background: var(--papier);
+      border-bottom: 1px solid var(--tinte);
+      position: relative;
+      z-index: 6000;
+    }
+    .reiter button {
+      width: auto;
+      margin: 0;
+      padding: 0 18px;
+      background: var(--papier);
+      color: var(--tinte);
+      border: none;
+      border-right: 1px solid var(--tinte);
+      font: inherit;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .reiter button:hover { background: var(--papier); color: var(--rot); border-color: var(--tinte); }
+    .reiter button:focus-visible { outline: 2px solid var(--rot); outline-offset: -3px; }
+    .reiter button.aktiv { background: var(--tinte); color: var(--papier); }
+    .reiter button.aktiv:hover { color: var(--papier); }
+    .reiter .reiter-gruppe { display: flex; }
+    .reiter .reiter-gruppe .reiter-zu { padding: 0 11px; letter-spacing: 0; font-size: 12px; }
+    .reiter .reiter-gruppe .reiter-zu[hidden] { display: none; }
+    .reiter .reiter-gruppe.aktiv button { background: var(--tinte); color: var(--papier); }
+    .reiter .reiter-gruppe.aktiv button:hover { color: var(--rot); }
+
     .app {
       display: flex;
-      height: 100%;
+      flex: 1 1 0;
+      min-height: 0;
     }
 
     .seitenleiste {
@@ -604,6 +642,13 @@
 </head>
 
 <body>
+  <nav class="reiter" role="tablist" aria-label="Ansicht wählen">
+    <button type="button" role="tab" id="reiterKarte" class="aktiv" aria-selected="true">Karte</button>
+    <span class="reiter-gruppe" id="reiter3dGruppe">
+      <button type="button" role="tab" id="reiter3d" aria-selected="false" title="Zeigt die Umgebung als 3D-Modell mit Schatten">3D-Ansicht</button>
+      <button type="button" id="reiter3dZu" class="reiter-zu" hidden title="3D-Ansicht schließen (gibt den Speicher frei)" aria-label="3D-Ansicht schließen">✕</button>
+    </span>
+  </nav>
   <div class="app">
 
     <!-- ===== Seitenleiste ===== -->
@@ -934,7 +979,7 @@
       <details class="abschnitt">
         <summary><span class="nr">10</span> 3D-Ansicht</summary>
         <div class="inhalt">
-          <p class="hinweis" style="margin-top:0">Die Umgebung als 3D-Modell mit vereinfachten Dachformen und dem Schatten der Sonne. Du wählst Datum und Uhrzeit und siehst, wo Schatten fällt. Eigene Baukörper entstehen aus Flächen, die du in „06 Zeichnen“ zeichnest und denen du eine Höhe gibst. Die 3D-Ansicht lässt sich als Bild speichern.</p>
+          <p class="hinweis" style="margin-top:0">Die Umgebung als 3D-Modell mit vereinfachten Dachformen und dem Schatten der Sonne. Du wählst Datum und Uhrzeit und siehst, wo Schatten fällt. Eigene Baukörper entstehen aus Flächen, die du in „06 Zeichnen“ zeichnest und denen du eine Höhe gibst. Die 3D-Ansicht lässt sich als Bild speichern. Oben in der App wechselst du mit den Reitern „Karte“ und „3D-Ansicht“ hin und her; die 3D-Ansicht bleibt dabei erhalten (Kamera, Datum, Messungen). Hast du in der Karte etwas geändert (Zeichnung, Ebenen), baut sie sich beim Zurückwechseln neu auf. Das Kreuz am Reiter schließt sie ganz.</p>
           <button type="button" id="ansicht3dKnopf">3D-Ansicht öffnen</button>
           <div id="ansicht3dMeldung" class="meldung" aria-live="polite"></div>
           <p class="hinweis">Das Modell zeigt den Ausschnitt um den roten Punkt (ohne Adresse: um die Kartenmitte). Beim ersten Öffnen werden große Datendateien geladen (Gebäudehöhen und Gelände, zusammen etwa 13 MB), das dauert einen Moment. Sobald du diesen Abschnitt aufklappst, beginnt das Laden schon im Hintergrund.</p>
@@ -7496,18 +7541,47 @@
       if (abschnitt) { abschnitt.addEventListener("toggle", function () { if (abschnitt.open) { vorladeAnsicht3d(); } }); }
       ["pointerenter", "focus", "touchstart"].forEach(function (e) { knopf.addEventListener(e, vorladeAnsicht3d, { passive: true }); });
     })();
-    document.getElementById("ansicht3dKnopf").addEventListener("click", function () {
+    // ---------- Reiter "Karte" | "3D-Ansicht" ----------
+    // Die 3D-Ansicht liegt unter der Reiterleiste über der Karte. Ein Wechsel auf "Karte" versteckt sie nur (Kamera, Datum, Messungen bleiben);
+    // beim Zurückwechseln baut sie das Modell neu auf, falls sich Adresse, Zeichnung oder Ebenen geändert haben. Das Kreuz am Reiter schließt sie ganz.
+    (function () {
+      var reiterKarte = document.getElementById("reiterKarte"), reiter3d = document.getElementById("reiter3d");
+      var gruppe = document.getElementById("reiter3dGruppe"), zu = document.getElementById("reiter3dZu");
       var feld = document.getElementById("ansicht3dMeldung");
-      feld.textContent = "3D-Ansicht wird geladen … (beim ersten Mal große Datendateien, bei langsamem Internet kann das etwas dauern)";
-      feld.className = "meldung";
-      ladeAnsicht3d().then(function () {
-        feld.textContent = "";
-        window.ansicht3d.oeffnen();
-      }).catch(function () {
-        feld.textContent = "Die 3D-Ansicht konnte nicht geladen werden. Es fehlt eine Datei im Ordner „Standortanalyse“ (three, hoehen_oldenburg.js oder ansicht3d.js).";
-        feld.className = "meldung fehler";
-      });
-    });
+      function zeigeReiter(welcher) {         // "karte", "3d" oder "zu" (3D ganz geschlossen = Karte)
+        var offen = !!(window.ansicht3d && window.ansicht3d.offen && window.ansicht3d.offen());
+        var in3d = welcher === "3d";
+        reiterKarte.classList.toggle("aktiv", !in3d);
+        reiterKarte.setAttribute("aria-selected", in3d ? "false" : "true");
+        gruppe.classList.toggle("aktiv", in3d);
+        reiter3d.setAttribute("aria-selected", in3d ? "true" : "false");
+        zu.hidden = !offen;
+      }
+      function waehleKarte() { if (window.ansicht3d && window.ansicht3d.offen && window.ansicht3d.offen()) { window.ansicht3d.verbergen(); } zeigeReiter("karte"); }
+      function waehle3d() {
+        if (window.ansicht3d && window.ansicht3d.offen && window.ansicht3d.offen()) { window.ansicht3d.zeigen(); zeigeReiter("3d"); return; }
+        feld.textContent = "3D-Ansicht wird geladen … (beim ersten Mal große Datendateien, bei langsamem Internet kann das etwas dauern)";
+        feld.className = "meldung";
+        reiter3d.textContent = "3D lädt …";
+        ladeAnsicht3d().then(function () {
+          feld.textContent = "";
+          reiter3d.textContent = "3D-Ansicht";
+          window.ansicht3d.oeffnen();
+          zeigeReiter("3d");
+        }).catch(function () {
+          reiter3d.textContent = "3D-Ansicht";
+          feld.textContent = "Die 3D-Ansicht konnte nicht geladen werden. Es fehlt eine Datei im Ordner „Standortanalyse“ (three, hoehen_oldenburg.js oder ansicht3d.js).";
+          feld.className = "meldung fehler";
+        });
+      }
+      reiterKarte.addEventListener("click", waehleKarte);
+      reiter3d.addEventListener("click", waehle3d);
+      zu.addEventListener("click", function () { if (window.ansicht3d) { window.ansicht3d.schliessen(); } zeigeReiter("karte"); });
+      document.getElementById("ansicht3dKnopf").addEventListener("click", waehle3d);
+      // Die 3D-Ansicht meldet selbst, wenn sie sich versteckt (Knopf "Zurück zur Karte", Esc) oder schließt
+      document.addEventListener("ansicht3d-reiter", function (e) { zeigeReiter(e.detail); });
+      ["pointerenter", "focus", "touchstart"].forEach(function (e) { reiter3d.addEventListener(e, vorladeAnsicht3d, { passive: true }); });
+    })();
   </script>
 </body>
 </html>

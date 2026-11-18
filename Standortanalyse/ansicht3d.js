@@ -106,7 +106,7 @@
 
   // ---------- Oberfläche ----------
   var STIL = [
-    ".a3d{position:fixed;inset:0;z-index:5000;display:flex;background:var(--papier);font-family:var(--schrift);color:var(--tinte)}",
+    ".a3d{position:fixed;inset:34px 0 0 0;z-index:5000;display:flex;background:var(--papier);font-family:var(--schrift);color:var(--tinte)}",
     ".a3d input[type=date]{width:100%;padding:9px 10px;font-size:14px;font-family:inherit;color:var(--tinte);background:var(--feld);border:1px solid var(--tinte);border-radius:0}",
     ".a3d .abschnitt:last-of-type{border-bottom:none}",
     ".a3d .kopf h1{font-size:20px}",
@@ -351,7 +351,7 @@
     '        <li><strong>Kein Gebäude zu sehen:</strong> Es gibt keine Höhendaten an dieser Stelle (zum Beispiel am äußersten Stadtrand). Ort in der Karte prüfen.</li>',
     '        <li><strong>Die Farben auf dem Boden sind zu blass oder zu grell:</strong> In „04 Analysedaten“ die Regler „Farbstärke der Flächen“ und „Helligkeit des Bodens“ verstellen. „Standardwerte“ setzt sie zurück.</li>',
     '        <li><strong>Der Boden ist grau oder ohne Karte:</strong> Haken „Karte auf dem Boden“ in 03 prüfen und „Modell neu aufbauen“ drücken. Die Flächen und Linien der Analysedaten erscheinen nur, wenn dieser Haken an ist.</li>',
-    '        <li><strong>Fußweg, Wegenetz oder Sonnenstrahlen fehlen:</strong> Diese Ebenen brauchen eine gesuchte Adresse (der rote Punkt). Adresse in der Karte suchen und die 3D-Ansicht neu öffnen.</li>',
+    '        <li><strong>Fußweg, Wegenetz oder Sonnenstrahlen fehlen:</strong> Diese Ebenen brauchen eine gesuchte Adresse (der rote Punkt). Adresse im Reiter „Karte“ suchen und die 3D-Ansicht neu öffnen.</li>',
     '        <li><strong>Die Sonnenstunden brauchen sehr lange oder brechen ab:</strong> Einen kleineren Ausschnitt wählen (bis 800 m rechnet die App auch die Fassaden, darüber nur Boden und Dächer) oder „Fassaden“ abschalten. Ändert sich das Modell (Bäume, Baukörper), muss neu gerechnet werden.</li>',
     '        <li><strong>Eine Messung lässt sich nicht setzen:</strong> Prüfe, ob ein Werkzeug gewählt ist (es ist dunkel hinterlegt) und klicke auf eine Fläche des Modells, nicht in den leeren Himmel.</li>',
     '        <li><strong>Speichern klappt nicht:</strong> Bildgröße „wie auf dem Bildschirm“ wählen.</li>',
@@ -459,13 +459,14 @@
     laubAuto();
 
     // Ereignisse
-    el("a3dZu").addEventListener("click", schliessen);
+    el("a3dZu").addEventListener("click", verbergen);
     z.tasten = function (ev) {
+      if (z.versteckt) { return; }                 // die Karte ist gerade vorn: Tasten gehören ihr
       if (ev.key === "Escape") {
         // erst die laufende Messung abbrechen, dann das Werkzeug ablegen, erst dann die Ansicht schließen
         if (z.messEntwurf) { z.messEntwurf = null; messHinweis(); zeichne(); }
         else if (z.werkzeug) { messWerkzeug(null); }
-        else { schliessen(); }
+        else { verbergen(); }
       } else if (ev.key === "Enter" && z.werkzeug === "strecke") { messStreckeBeenden(); }
     };
     document.addEventListener("keydown", z.tasten);
@@ -515,7 +516,45 @@
     z.beobachter = new ResizeObserver(function () { groesseAnpassen(); });
     z.beobachter.observe(el("a3dFlaeche"));
 
+    z.stand = standSignatur();
     baueModell();
+  }
+
+  // ---------- Reiter: verstecken und wieder zeigen (die Ansicht bleibt dabei erhalten) ----------
+  // Was sich in der Karte ändern kann, solange die 3D-Ansicht versteckt ist (Adresse, Zeichnung, Ebenen, Hintergrund, Pläne), steht in der Signatur.
+  function standSignatur() {
+    try {
+      var p = projektSammeln(false);
+      delete p.gespeichert; delete p.einstellungen; delete p.exportMitte; delete p.fotos;
+      p.karte = { hintergrund: p.karte.hintergrund, bebauung: p.karte.bebauung, kontrast: p.karte.kontrast };
+      return JSON.stringify(p);
+    } catch (x) { return ""; }
+  }
+  function offen() { return !!zustand; }
+  function meldeReiter(was) { document.dispatchEvent(new CustomEvent("ansicht3d-reiter", { detail: was })); }
+  function verbergen() {
+    var z = zustand;
+    if (!z || z.versteckt) { return; }
+    if (z.spielt) { z.spielt = false; z.el("a3dPlay").textContent = "▶ Tag abspielen"; }
+    if (z.analyseTimer) { clearTimeout(z.analyseTimer); z.analyseTimer = null; }
+    z.stand = standSignatur();
+    z.versteckt = true;
+    z.wurzel.style.display = "none";
+    meldeReiter("karte");
+  }
+  function zeigen() {
+    var z = zustand;
+    if (!z) { return; }
+    z.versteckt = false;
+    z.wurzel.style.display = "";
+    var m = (typeof marker !== "undefined" && marker) ? marker.getLatLng() : null;
+    if (m && (Math.abs(m.lat - z.mitte.lat) > 1e-7 || Math.abs(m.lng - z.mitte.lng) > 1e-7)) {
+      schliessen(); oeffnen(); meldeReiter("3d"); return;           // neue Adresse: Ansicht ganz neu um den neuen Punkt
+    }
+    var neu = standSignatur();
+    if (neu !== z.stand) { z.stand = neu; analyseHakenAngleichen(); baueListe(); baueModell(); }
+    else { groesseAnpassen(); zeichne(); }
+    meldeReiter("3d");
   }
 
   function schliessen() {
@@ -4188,5 +4227,5 @@
   }
 
   // daten: für entwurf.js (Entwurfsstrategie): Gebäude mit Höhen, Gelände und die Umrechnung nach UTM
-  window.ansicht3d = { oeffnen: oeffnen, schliessen: schliessen, sonnenstand: sonnenstand, daten: { gebaeude: function () { return gelaendeLaden().then(function (G) { hoehenKorrigieren(G); return entpacke(); }); }, gelaende: gelaendeLaden, utm32: utm32 } };
+  window.ansicht3d = { oeffnen: oeffnen, schliessen: schliessen, verbergen: verbergen, zeigen: zeigen, offen: offen, sonnenstand: sonnenstand, daten: { gebaeude: function () { return gelaendeLaden().then(function (G) { hoehenKorrigieren(G); return entpacke(); }); }, gelaende: gelaendeLaden, utm32: utm32 } };
 })();
