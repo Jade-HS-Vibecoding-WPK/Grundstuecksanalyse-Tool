@@ -293,9 +293,21 @@
     '        <button type="button" class="zweit" data-mess="hoehe">Gebäudehöhe</button>',
     '        <button type="button" class="zweit" data-mess="schatten">Schatten prüfen</button>',
     '        <button type="button" class="zweit" data-mess="sonnenstunden">Sonnenstunden</button>',
+    '        <button type="button" class="zweit" data-mess="sicht">Sichtfeld</button>',
     '      </div>',
     '      <p class="hinweis" id="a3dMessHinweis">Wähle ein Werkzeug und klicke ins Modell. Die Punkte rasten an Gebäudeecken ein.</p>',
     '      <button type="button" id="a3dMessFertig" class="zweit" hidden>Strecke beenden (oder Enter)</button>',
+    '      <div class="gruppentitel" style="margin-top:14px">Sichtfeld (Was sieht man von hier?)</div>',
+    '      <p class="hinweis" style="margin-top:0">Werkzeug „Sichtfeld“ wählen und einen Standort anklicken (Boden, Dach oder Wand): Grün ist von dort aus zu sehen, Gelb nur durch Baumkronen und Laub, nicht gefärbt ist verdeckt. Gebäude, Gelände, eigene Baukörper, Bäume und Wälder (je nach Belaubung) versperren die Sicht. Ein weiterer Klick setzt den Blickpunkt neu.</p>',
+    '      <label for="a3dSichtHoehe">Augenhöhe in Metern</label>',
+    '      <input type="number" id="a3dSichtHoehe" min="0" max="100" step="0.1" value="1.6" autocomplete="off" title="Auge über dem angeklickten Boden oder Dach; an einer Wand sitzt das Auge an der angeklickten Stelle">',
+    '      <label class="haken"><input type="checkbox" id="a3dSichtFassade" checked autocomplete="off"> Fassaden einfärben (bis 800 m Ausschnitt)</label>',
+    '      <label class="haken"><input type="checkbox" id="a3dSichtZeigen" checked autocomplete="off"> Sichtfeld zeigen</label>',
+    '      <label for="a3dSichtDeckkraft" style="margin-top:8px">Deckkraft</label>',
+    '      <input type="range" id="a3dSichtDeckkraft" min="20" max="100" step="5" value="75" autocomplete="off">',
+    '      <div id="a3dSichtMeldung" class="meldung" aria-live="polite"></div>',
+    '      <p class="hinweis" id="a3dSichtErgebnis"></p>',
+    '      <button type="button" id="a3dSichtLoeschen" class="zweit" hidden>Sichtfeld entfernen</button>',
     '      <div class="gruppentitel" style="margin-top:14px">Messungen</div>',
     '      <ul class="a3d-liste" id="a3dMessListe"></ul>',
     '      <div class="knopfreihe" style="margin-top:6px"><button type="button" id="a3dMessLetzte" class="zweit">Letzte löschen</button><button type="button" id="a3dMessAlle" class="zweit">Alle löschen</button></div>',
@@ -338,7 +350,7 @@
     '        <li><strong>Sonnenstunden</strong> (05): „Sonnenstunden berechnen“ färbt Boden, Dächer und Fassaden nach den Sonnenstunden pro Tag im Jahresmittel (Gebäude, Bäume und Wälder werfen Schatten, ohne Wolken). Rot und Orange = viel Sonne, Blau = wenig. Das Ergebnis steht auch in der Karte (Ebene „Sonnenstunden“) und im gespeicherten Bild. Die Rechnung dauert einige Sekunden bis eine halbe Minute. Mit dem Werkzeug „Sonnenstunden“ in 08 liest du einen Wert ab.</li>',
     '        <li><strong>Bäume</strong> (06): Bäume aus OpenStreetMap stehen im Modell und werfen Schatten. Wälder erscheinen als grüne Baumblöcke (Höhe einstellbar, Standard 18 m). „Belaubung“ folgt dem Datum (im Winter sind Laubbäume kahl und werfen nur einen schwachen Schatten); ohne Haken „automatisch nach Datum“ stellst du sie selbst ein.</li>',
     '        <li><strong>Eigene Baukörper und Bäume</strong> (07): Zeichne in der Karte unter „06 Zeichnen“ eine Fläche (wird ein Baukörper) und trage hier die Höhe in Metern ein. Bäume setzt du hier direkt: Höhe, Krone und Art einstellen, „Baum setzen“ wählen und ins Modell klicken. „Verschieben“ (erst den eigenen Baum, dann den neuen Standort anklicken) und „Entfernen“ (eigene Bäume werden gelöscht, Bestandsbäume ausgeblendet, zum Beispiel für eine geplante Fällung) gehören dazu. Alle Bäume, die du setzt, erscheinen auch in der Karte; in „06 Bäume“ blendest du ausgeblendete Bestandsbäume wieder ein.</li>',
-    '        <li><strong>Messen</strong> (08): Werkzeug wählen und ins Modell klicken. „Entfernung“ nimmt zwei Punkte, „Strecke“ mehrere (Doppelklick oder Enter beendet), „Gebäudehöhe“ zeigt Traufe und First eines angeklickten Gebäudes, „Schatten prüfen“ sagt, wann ein Punkt Sonne bekommt, „Sonnenstunden“ liest den berechneten Jahreswert ab.</li>',
+    '        <li><strong>Messen</strong> (08): Werkzeug wählen und ins Modell klicken. „Entfernung“ nimmt zwei Punkte, „Strecke“ mehrere (Doppelklick oder Enter beendet), „Gebäudehöhe“ zeigt Traufe und First eines angeklickten Gebäudes, „Schatten prüfen“ sagt, wann ein Punkt Sonne bekommt, „Sonnenstunden“ liest den berechneten Jahreswert ab, „Sichtfeld“ zeigt, was man von einem angeklickten Standort aus sieht (Grün = zu sehen, Gelb = durch Baumkronen und Laub eingeschränkt, nicht gefärbt = verdeckt) samt Prozentzahl und weitester Sicht. Die Augenhöhe stellst du darunter ein (1,6 m = Mensch auf der Straße; für den Blick aus einem Fenster oder vom Dach einfach dort anklicken). Das Sichtfeld erscheint auch in der Karte (Ebene „Sichtfeld“ in 04 Analysedaten) und im gespeicherten Bild.</li>',
     '        <li><strong>Speichern</strong> (09): Dateiformat wählen und „Speichern“. PNG und PDF (Bild) zeigen die Ansicht wie am Bildschirm mit Datum, Uhrzeit, Sonnenstand, Analysedaten und Messungen. „PDF (Vektorzeichnung)“ und SVG sind Linienzeichnungen für Illustrator, Affinity oder Inkscape. DXF ist das 3D-Modell (Gebäude, eigene Baukörper und Bäume als 3D-Flächen in Metern) für AutoCAD, Rhino, Vectorworks, ArchiCAD.</li>',
     '      </ol>',
 
@@ -377,6 +389,7 @@
     '  <canvas class="a3d-ueber" id="a3dUeber"></canvas>',
     '  <div class="a3d-nord" id="a3dNord"><b>N</b><span></span></div>',
     '  <div class="a3d-legende" id="a3dSonneLegende" hidden></div>',
+    '  <div class="a3d-legende" id="a3dSichtLegende" hidden style="right:auto;bottom:auto;left:34px;top:12px"></div>',
     '  <div class="a3d-punktinfo" id="a3dPunktInfo" hidden></div>',
     '  <div class="a3d-info" id="a3dInfo"></div>',
     '  <div class="a3d-status" id="a3dStatus">Wird geladen …</div>',
@@ -403,7 +416,8 @@
       bodenToken: 0, punktToken: 0, punktAnzahl: 0, analyse: [], analyseTimer: null,
       baumToken: 0, baeume: [], baumGitter: null, baumMaterial: null, baumAnzahlEigen: 0,
       waldToken: 0, waelder: [], waldKarte: null, waldMaterial: null,
-      sonnenErgebnis: null, sonneArbeiter: [], sonneAbbruch: null
+      sonnenErgebnis: null, sonneArbeiter: [], sonneAbbruch: null,
+      sicht: null, sichtErgebnis: null, sichtNr: 0, sichtArbeiter: [], sichtAbbruch: null, sichtTimer: null, sichtMessungDa: false, modellBaut: false
     };
 
     var style = document.createElement("style");
@@ -452,6 +466,13 @@
     z.szene.add(z.waldGruppe);
     z.sonnenGruppe = new THREE.Group();     // Sonnenstunden: farbige Flächen auf Boden, Dächern und Fassaden
     z.szene.add(z.sonnenGruppe);
+    z.sichtGruppe = new THREE.Group();      // Sichtfeld: farbige Flächen auf Boden, Dächern und Fassaden
+    z.szene.add(z.sichtGruppe);
+    el("a3dSichtHoehe").addEventListener("change", sichtNeuPlanen);
+    el("a3dSichtFassade").addEventListener("change", sichtNeuPlanen);
+    el("a3dSichtZeigen").addEventListener("change", sichtAnzeigeAktualisieren);
+    el("a3dSichtDeckkraft").addEventListener("input", sichtAnzeigeAktualisieren);
+    el("a3dSichtLoeschen").addEventListener("click", function () { sichtEntfernen(); });
     el("a3dSonneInfo").textContent = sonneInfoText();
     el("a3dSonneRechnen").addEventListener("click", sonneStarten);
     el("a3dSonneStopp").addEventListener("click", function () { if (typeof z.sonneAbbruch === "function") { z.sonneAbbruch(); } });
@@ -582,6 +603,10 @@
     baeumeLeeren();
     waldLeeren();
     (z.sonneArbeiter || []).forEach(function (w) { w.terminate(); });
+    if (z.sichtTimer) { clearTimeout(z.sichtTimer); }
+    z.sichtNr++;
+    (z.sichtArbeiter || []).forEach(function (w) { w.terminate(); });
+    sichtLeeren();
     arbeiterSchliessen();
     sonneLeeren();
     leereModell();
@@ -1494,6 +1519,7 @@
     z.el("a3dStatus").textContent = "Modell wird aufgebaut …";
     z.el("a3dStatus").hidden = false;
     z.radius = +z.el("a3dRadius").value;
+    z.modellBaut = true;                // solange gebaut wird, rechnet das Sichtfeld nicht (Höhenraster wäre unvollständig)
     window.setTimeout(function () {
      gelaendeVorbereiten(z).then(function () {
       if (zustand !== z) { return; }
@@ -1594,6 +1620,8 @@
         if (zustand !== z) { return; }
         z.el("a3dStatus").hidden = true;
         sonneAnwenden();
+        z.modellBaut = false;
+        sichtNeuPlanen();                 // ein vorhandenes Sichtfeld mit dem neuen Modell neu rechnen
       });
       });
      });
@@ -1654,7 +1682,7 @@
     var breiteMm = 2 * R * 1000 / massstab;
     var dpi = pixel * 25.4 / breiteMm;
     var e = {
-      massstab: massstab, papier: "A4", quer: true, breiteMm: breiteMm, hoeheMm: breiteMm, dpi: dpi, format: "png", titel: "", ohnePunkte: true, ohneKoerper: true, ohneSonnenstunden: true,
+      massstab: massstab, papier: "A4", quer: true, breiteMm: breiteMm, hoeheMm: breiteMm, dpi: dpi, format: "png", titel: "", ohnePunkte: true, ohneKoerper: true, ohneSonnenstunden: true, ohneSichtfeld: true,
       kraeftig: Math.max(0.001, +z.el("a3dFarbstaerke").value),
       zeige: { titel: false, nordpfeil: false, legende: false, balken: false, quelle: false }
     };
@@ -1953,6 +1981,7 @@
     z.el("a3dLaubText").textContent = Math.round(d * 100) + " %";
     if (z.baumMaterial) { z.baumMaterial.laub.alphaTest = d >= 0.995 ? 0.001 : 1 - d; }
     if (z.waldMaterial) { var wd = waldDichte(); z.waldMaterial.alphaTest = wd >= 0.995 ? 0.001 : 1 - wd; }
+    sichtNeuPlanen();                  // das Sichtfeld hängt von der Belaubung ab
   }
 
   // Bei "automatisch": Belaubung folgt dem Datum
@@ -2201,7 +2230,8 @@
     ["Verkehr und Mobilität", function () { return MOBILITAET; }, function (g) { return g.name; }],
     ["Spielen und Bewegen (Grün und Freiräume)", function () { return SPIEL; }, function (g) { return g.name; }],
     ["Luftqualität", function () { return [LUFT]; }, function (g) { return g.name; }],
-    ["Einrichtungen", function () { return EINRICHTUNGEN; }, function (g) { return g.name; }],
+    ["Einrichtungen", function () { return EINRICHTUNGEN.filter(function (g) { return !g.zeit; }); }, function (g) { return g.name; }],
+    ["Tag- und Nachtnutzung", function () { return EINRICHTUNGEN.filter(function (g) { return g.zeit; }); }, function (g) { return g.name; }],
     ["Grün und Freiräume", function () { return FLAECHEN.filter(function (g) { return g.quelle === "flaechen"; }); }, function (g) { return g.name; }],
     ["Nutzungsarten", function () { return FLAECHEN.filter(function (g) { return g.quelle === "nutzung"; }); }, function (g) { return g.name; }],
     ["Starkregen (Bund, Online-Dienst)", function () { return STARKREGEN; }, function (g) { return g.name; }],
@@ -2539,7 +2569,7 @@
   }
 
   // ---------- Messen ----------
-  var MESS_FARBEN = { entfernung: "#d4202a", strecke: "#1d6fd8", hoehe: "#1a8f3a", schatten: "#333333", baum: "#e0a800" };
+  var MESS_FARBEN = { entfernung: "#d4202a", strecke: "#1d6fd8", hoehe: "#1a8f3a", schatten: "#333333", baum: "#e0a800", sichtfeld: "#0f7a33" };
   var MESS_NAMEN = { entfernung: "Entfernung", strecke: "Strecke", hoehe: "Gebäudehöhe", schatten: "Schattenprüfung" };
 
   function lm(m) {        // Länge als Text: "45,2 m", ab 1000 m in km
@@ -2579,6 +2609,7 @@
     }
     else if (w === "hoehe") { t = "Klicke ein Gebäude an (Wand oder Dach). Du siehst Traufe, First, die Dachform und die Höhe des Klickpunkts."; }
     else if (w === "sonnenstunden") { t = "Klicke Boden, Dach oder Wand an: Du siehst die Sonnenstunden pro Tag im Jahresmittel (zuerst in „05 Sonnenstunden“ berechnen)."; }
+    else if (w === "sicht") { t = "Klicke den Standort, von dem aus du sehen willst (Boden, Dach oder Wand). Das Sichtfeld wird sofort berechnet; ein weiterer Klick setzt den Blickpunkt neu."; }
     else { t = "Klicke einen Punkt am Boden, an einer Wand oder auf einem Dach. Du siehst, ob er jetzt im Schatten liegt und wann am gewählten Tag die Sonne ihn trifft."; }
     if (w) { t += " Esc legt das Werkzeug ab."; }
     z.el("a3dMessHinweis").textContent = t;
@@ -2652,6 +2683,9 @@
       }
       messNeu({ art: "sonnenstunden", punkte: [p], wert: wert });
       return;
+    } else if (w === "sicht") {
+      sichtSetzen(tr);
+      return;
     }
     messHinweis();
     zeichne();
@@ -2720,6 +2754,13 @@
       m.anker = p[0];
       m.zeilen = [shText + " h Sonne pro Tag", m.wert.art + ", Jahresmittel"];
       m.text = "Sonnenstunden im Jahresmittel: " + shText + " Stunden pro Tag (" + m.wert.art + ")" + (p[0].y > 0.3 && m.wert.art === "Boden" ? "" : "");
+    } else if (m.art === "sichtfeld") {
+      var fuss = p[0], augeP = new THREE.Vector3(fuss.x, m.augeY, fuss.z), st = m.stat;
+      m.linien.push({ a: fuss, b: augeP });
+      m.anker = augeP;
+      var augeUeber = m.augeY - fuss.y;
+      m.zeilen = ["Sichtfeld: " + sichtProzent(st.prozent) + " % sichtbar", (augeUeber > 0.01 ? "Auge " + lm(augeUeber) + " über " + (m.ort === "dach" ? "dem Dach" : "dem Boden") : "Auge an der Wand") + " · weiteste Sicht " + lm(st.weit)];
+      m.text = sichtErgebnisText(st, augeUeber);
     }
   }
 
@@ -2953,6 +2994,8 @@
 
   function messListe() {
     var z = zustand, ul = z.el("a3dMessListe");
+    // Wurde die Messung "Sichtfeld" gelöscht, verschwindet auch das Sichtfeld selbst
+    if (z.sicht && z.sichtMessungDa && !z.messungen.some(function (m) { return m.art === "sichtfeld"; })) { sichtEntfernen(); return; }
     ul.innerHTML = "";
     z.messungen.forEach(function (m, i) {
       var li = document.createElement("li"); li.className = "mess";
@@ -3561,14 +3604,460 @@
   // Wird aufgerufen, wenn sich das Modell ändert: das Ergebnis passt dann nicht mehr
   function sonneVeraltet() {
     var z = zustand;
+    sichtNeuPlanen();                  // Gebäude, Bäume oder Baukörper haben sich geändert: Sichtfeld neu rechnen
     if (!z || !z.sonnenErgebnis) { return; }
     if (z.sonnenErgebnis.P.R !== z.radius) { sonneLeeren(); z.el("a3dSonneMeldung").textContent = "Der Ausschnitt hat sich geändert, die Sonnenstunden müssen neu berechnet werden."; return; }
     z.sonnenErgebnis.veraltet = true;
     z.el("a3dSonneHinweis").textContent = "Das Modell hat sich seit der Berechnung geändert (zum Beispiel Bäume oder Baukörper). Rechne neu, damit die Farben stimmen.";
   }
 
+  // ---------- Sichtfeld (Isovist): Was sieht man von einem Punkt aus? ----------
+  // Für jede Stelle (Boden, Dach, Fassade) wird ein Blickstrahl vom Auge des Betrachters dorthin über das Höhenraster verfolgt (Gelände und Gebäude,
+  // auch die eigenen Baukörper). Baumkronen und Wälder lassen je nach Belaubung einen Teil durch. Ergebnis je Stelle: 0 (verdeckt) bis 1 (freie Sicht).
+  // Die Rechenkerne sind eigenständige Funktionen, damit sie auch in Hintergrundprozessen (Web Worker) laufen können.
+
+  // Lichtdurchlass entlang des Strahls vom Auge (ex, en, ey) zum Ziel (tx, tn, ty) in Metern (Ost, Nord, Höhe über dem roten Punkt).
+  // ef = so viele Meter um das Auge werden Gebäudezellen ignoriert (Auge an einer Wand oder auf einem Dach), fg = ebenso vor dem Ziel (Fassaden).
+  function sichtStrahl(P, ex, en, ey, tx, tn, ty, ef, fg) {
+    var dx = tx - ex, dn = tn - en, d = Math.sqrt(dx * dx + dn * dn), step = P.hkZ;
+    if (d <= step * 1.5) { return 1; }
+    var ux = dx / d, un = dn / d, slope = (ty - ey) / d, R = P.R, N = P.hkN, f = P.hkF, m = P.hkM;
+    var cH = P.cH, cB = P.cB, cT = P.cT, cN = P.cN, cZ = P.cZ, attM = P.attM, laenge = step * Math.sqrt(1 + slope * slope);
+    var licht = 1, ende = d - step * 1.2;
+    for (var u = step * 0.75; u < ende; u += step) {
+      var x = ex + ux * u + R, n = en + un * u + R;
+      var ix = Math.floor(x / step), iy = Math.floor(n / step);
+      if (ix < 0 || iy < 0 || ix >= N || iy >= N) { continue; }
+      var idx = iy * N + ix, ry = ey + slope * u;
+      if (f[idx] > ry + 0.25 && (!m[idx] || (u > ef && u < d - fg))) { return 0; }
+      var cx = Math.floor(x / cZ), cy = Math.floor(n / cZ);
+      if (cx >= 0 && cy >= 0 && cx < cN && cy < cN) {
+        var ci = cy * cN + cx, t = cT[ci];
+        if (t > 0 && ry < cH[ci] && ry > cB[ci]) {
+          licht *= Math.exp(-attM[t] * laenge);
+          if (licht < 0.04) { return 0; }
+        }
+      }
+    }
+    return licht;
+  }
+
+  // Boden und Dächer: Zeilen von bis der Rechenzellen (NR × NR)
+  function sichtKern(P, von, bis) {
+    var NR = P.NR, zr = P.zr, R = P.R, hkF = P.hkF, hkN = P.hkN, hkZ = P.hkZ, out = new Float32Array((bis - von) * NR);
+    for (var iy = von; iy < bis; iy++) {
+      var cn = (iy + 0.5) * zr - R;
+      for (var ix = 0; ix < NR; ix++) {
+        var cx = (ix + 0.5) * zr - R;
+        var hi = Math.min(hkN - 1, Math.floor((cx + R) / hkZ)), hj = Math.min(hkN - 1, Math.floor((cn + R) / hkZ));
+        out[(iy - von) * NR + ix] = sichtStrahl(P, P.ex, P.en, P.ey, cx, cn, hkF[hj * hkN + hi] + 0.1, P.ef, 0);
+      }
+    }
+    return out;
+  }
+
+  // Fassadenpunkte (P.fx, fy, fn, fnx, fnn): nur Wände, die dem Auge zugewandt sind
+  function sichtFassadenKern(P, von, bis) {
+    var out = new Float32Array(bis - von), fg = Math.max(3, 3 * P.hkZ);
+    for (var q = von; q < bis; q++) {
+      if ((P.ex - P.fx[q]) * P.fnx[q] + (P.en - P.fn[q]) * P.fnn[q] <= 0.05) { continue; }
+      out[q - von] = sichtStrahl(P, P.ex, P.en, P.ey, P.fx[q], P.fn[q], P.fy[q], P.ef, fg);
+    }
+    return out;
+  }
+
+  // Kronen und Wälder als Raster: Oberkante cH, Unterkante cB (beide über dem roten Punkt), Art cT (1 Laub, 2 Nadel, 3 Wald)
+  function sichtBaumRaster(hk) {
+    var z = zustand, R = z.radius, zelle = Math.max(1, hk.zelle), N = Math.ceil(2 * R / zelle);
+    var cH = new Float32Array(N * N), cB = new Float32Array(N * N), cT = new Uint8Array(N * N);
+    if (z.el("a3dBaeume").checked && z.baeume) {
+      z.baeume.forEach(function (b) {
+        var a = b.kr / 2, hk2 = b.h - b.stamm, cy = b.stamm + hk2 / 2, typ = b.ig ? 2 : 1, by = b.y0 || 0;
+        var x0 = Math.max(0, Math.floor((b.x - a + R) / zelle)), x1 = Math.min(N - 1, Math.floor((b.x + a + R) / zelle));
+        var y0 = Math.max(0, Math.floor((b.n - a + R) / zelle)), y1 = Math.min(N - 1, Math.floor((b.n + a + R) / zelle));
+        for (var iy = y0; iy <= y1; iy++) {
+          for (var ix = x0; ix <= x1; ix++) {
+            var dx = (ix + 0.5) * zelle - R - b.x, dn = (iy + 0.5) * zelle - R - b.n, r = Math.sqrt(dx * dx + dn * dn);
+            if (r > a) { continue; }
+            var halb = b.ig ? 0 : (hk2 / 2) * Math.sqrt(Math.max(0, 1 - (r * r) / (a * a)));
+            var top = by + (b.ig ? b.stamm + hk2 * (1 - r / a) : cy + halb), unten = by + (b.ig ? b.stamm : cy - halb);
+            if (!cT[iy * N + ix] || top > cH[iy * N + ix]) { cH[iy * N + ix] = top; cB[iy * N + ix] = unten; cT[iy * N + ix] = typ; }
+          }
+        }
+      });
+    }
+    if (z.el("a3dWald").checked && z.waelder && z.waelder.length) {
+      var wh = waldHoehe();
+      z.waelder.forEach(function (k) {
+        var r0 = k.ringe[0], minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9;
+        for (var i = 0; i < r0.length; i += 2) {
+          if (r0[i] < minx) { minx = r0[i]; } if (r0[i] > maxx) { maxx = r0[i]; }
+          if (r0[i + 1] < miny) { miny = r0[i + 1]; } if (r0[i + 1] > maxy) { maxy = r0[i + 1]; }
+        }
+        var x0 = Math.max(0, Math.floor((minx + R) / zelle)), x1 = Math.min(N - 1, Math.floor((maxx + R) / zelle));
+        var y0 = Math.max(0, Math.floor((miny + R) / zelle)), y1 = Math.min(N - 1, Math.floor((maxy + R) / zelle));
+        for (var iy = y0; iy <= y1; iy++) {
+          for (var ix = x0; ix <= x1; ix++) {
+            var cx = (ix + 0.5) * zelle - R, cy = (iy + 0.5) * zelle - R, innen = false;
+            for (var q = 0; q < k.ringe.length; q++) { if (imVieleck(cx, cy, k.ringe[q])) { innen = !innen; } }
+            if (!innen) { continue; }
+            var g = z.gh(cx, cy), wtop = wh + g;
+            if (!cT[iy * N + ix] || wtop > cH[iy * N + ix]) { cH[iy * N + ix] = wtop; cB[iy * N + ix] = g; cT[iy * N + ix] = 3; }
+          }
+        }
+      });
+    }
+    return { cH: cH, cB: cB, cT: cT, cN: N, cZ: zelle };
+  }
+
+  function sichtParameter(hk, s) {
+    var z = zustand, R = z.radius;
+    var bc = sichtBaumRaster(hk);
+    var zr = Math.max(1.5, Math.round(R / 250 * 2) / 2), NR = Math.ceil(2 * R / zr);
+    var dens = [0, baumDichte(), 0.85, waldDichte()];
+    var P = {
+      R: R, NR: NR, zr: zr, hkF: hk.f, hkM: hk.m, hkN: hk.N, hkZ: hk.zelle, cH: bc.cH, cB: bc.cB, cT: bc.cT, cN: bc.cN, cZ: bc.cZ,
+      attM: new Float32Array(dens.map(function (d) { return BAUM_DAEMPFUNG * d; })),
+      ex: s.x, en: s.n, ey: s.auge, ef: s.nahFrei ? 3 + 2 * hk.zelle : 0
+    };
+    P.occ = new Float32Array(NR * NR);         // Höhe der Dachfläche über der Mitte (nur wo occM = 1)
+    P.occM = new Uint8Array(NR * NR);          // 1 = Zelle liegt unter einem Gebäude
+    for (var iy = 0; iy < NR; iy++) {
+      for (var ix = 0; ix < NR; ix++) {
+        var hi = Math.min(hk.N - 1, Math.floor(((ix + 0.5) * zr) / hk.zelle)), hj = Math.min(hk.N - 1, Math.floor(((iy + 0.5) * zr) / hk.zelle));
+        P.occ[iy * NR + ix] = hk.f[hj * hk.N + hi];
+        P.occM[iy * NR + ix] = hk.m[hj * hk.N + hi];
+      }
+    }
+    return P;
+  }
+
+  // Führt die Rechnung aus: mit Hintergrundprozessen, sonst Stück für Stück im Hauptprogramm. Gibt ein Versprechen zurück.
+  function sichtRechnen(P, mitFassaden, beiFortschritt) {
+    var z = zustand, NR = P.NR, jobs = [], i, zeilen = 4;
+    for (i = 0; i < NR; i += zeilen) { jobs.push({ art: "boden", von: i, bis: Math.min(NR, i + zeilen) }); }
+    var nf = mitFassaden ? P.fx.length : 0, bloecke = 400;
+    for (i = 0; i < nf; i += bloecke) { jobs.push({ art: "fassade", von: i, bis: Math.min(nf, i + bloecke) }); }
+    var gesamt = jobs.length, fertig = 0, ergebnisBoden = new Float32Array(NR * NR), ergebnisFassade = new Float32Array(nf), naechster = 0;
+    function ablegen(job, out) {
+      if (job.art === "boden") { ergebnisBoden.set(out, job.von * NR); } else { ergebnisFassade.set(out, job.von); }
+      fertig++; beiFortschritt(fertig / gesamt);
+    }
+    return new Promise(function (erfuellt, abgebrochen) {
+      z.sichtAbbruch = function () { (z.sichtArbeiter || []).forEach(function (w) { w.terminate(); }); z.sichtArbeiter = []; z.sichtAbbruch = null; abgebrochen(new Error("abgebrochen")); };
+      var abbruchStand = z.sichtAbbruch;
+      function imHauptprogramm() {
+        (z.sichtArbeiter || []).forEach(function (w) { w.terminate(); }); z.sichtArbeiter = [];
+        function schritt() {
+          if (zustand !== z || z.sichtAbbruch !== abbruchStand) { return; }
+          var start = performance.now();
+          while (naechster < jobs.length && performance.now() - start < 30) {
+            var j = jobs[naechster++];
+            ablegen(j, (j.art === "boden" ? sichtKern : sichtFassadenKern)(P, j.von, j.bis));
+          }
+          if (naechster < jobs.length) { setTimeout(schritt, 0); } else { erfuellt({ boden: ergebnisBoden, fassade: ergebnisFassade }); }
+        }
+        schritt();
+      }
+      var anzahl = Math.max(1, Math.min(6, (navigator.hardwareConcurrency || 4) - 1));
+      var quelle = "var sichtStrahl=" + sichtStrahl.toString() + ";var sichtKern=" + sichtKern.toString() + ";var sichtFassadenKern=" + sichtFassadenKern.toString() + ";var P=null;" +
+        "self.onmessage=function(e){var d=e.data;if(d.init){P=d.init;self.postMessage({bereit:true});return;}" +
+        "var out=(d.art==='fassade'?sichtFassadenKern:sichtKern)(P,d.von,d.bis);self.postMessage({id:d.id,out:out},[out.buffer]);};";
+      var blob, url;
+      try {
+        blob = new Blob([quelle], { type: "text/javascript" }); url = URL.createObjectURL(blob);
+        z.sichtArbeiter = [];
+        var fehlerGemeldet = false, laufend = 0;
+        var naechsteAufgabe = function (w) {
+          if (naechster >= jobs.length) {
+            if (laufend === 0 && fertig === gesamt) { z.sichtArbeiter.forEach(function (x) { x.terminate(); }); z.sichtArbeiter = []; z.sichtAbbruch = null; URL.revokeObjectURL(url); erfuellt({ boden: ergebnisBoden, fassade: ergebnisFassade }); }
+            return;
+          }
+          var id = naechster++, j = jobs[id];
+          laufend++;
+          w.postMessage({ id: id, art: j.art, von: j.von, bis: j.bis });
+        };
+        for (var wi = 0; wi < anzahl; wi++) {
+          (function () {
+            var w = new Worker(url);
+            w.onmessage = function (ev) {
+              if (ev.data.bereit) { naechsteAufgabe(w); return; }
+              laufend--;
+              ablegen(jobs[ev.data.id], ev.data.out);
+              naechsteAufgabe(w);
+            };
+            w.onerror = function () {
+              if (fehlerGemeldet) { return; }
+              fehlerGemeldet = true;
+              naechster = 0; fertig = 0; laufend = 0; imHauptprogramm();      // Hintergrundprozess nicht möglich: im Hauptprogramm nachholen
+            };
+            z.sichtArbeiter.push(w);
+            w.postMessage({ init: P });
+          })();
+        }
+      } catch (e) { imHauptprogramm(); }
+    });
+  }
+
+  function sichtKlasse(v) { return v >= 0.5 ? 2 : (v >= 0.12 ? 1 : 0); }          // 2 = zu sehen, 1 = durch Bäume und Laub eingeschränkt, 0 = verdeckt
+  var SICHT_RGB = [null, [232, 185, 35], [31, 160, 74]];
+
+  function sichtProzent(p) { if (p > 0 && p < 0.05) { return "< 0,1"; } return (p < 10 ? (Math.round(p * 10) / 10).toFixed(1) : String(Math.round(p))).replace(".", ","); }     // unter 10 % mit einer Nachkommastelle
+  function sichtFlaeche(qm) { return qm >= 10000 ? (qm / 10000).toFixed(1).replace(".", ",") + " ha" : Math.round(qm).toLocaleString("de-DE") + " m²"; }
+  function sichtErgebnisText(st, augeUeber) {
+    return "Sichtfeld" + (augeUeber > 0.01 ? " aus " + lm(augeUeber) + " Augenhöhe" : " von der Wand") + ": " + sichtProzent(st.prozent) + " % der freien Fläche im Ausschnitt sind zu sehen (" + sichtFlaeche(st.qmSichtbar) + ")" +
+      (st.prozentTeils >= 0.5 ? ", weitere " + sichtProzent(st.prozentTeils) + " % nur durch Bäume und Laub eingeschränkt" : "") + ". Weiteste Sicht " + lm(st.weit) + ".";
+  }
+
+  function sichtMeldung(t, art) { var z = zustand; if (!z) { return; } var m = z.el("a3dSichtMeldung"); m.textContent = t; m.className = "meldung " + (art || ""); }
+
+  // Alles zum Sichtfeld aus dem Modell nehmen. Das Farbbild in der Karte (2D) bleibt stehen, solange nichts anderes gewählt wird (wie bei den Sonnenstunden)
+  function sichtLeeren() {
+    var z = zustand;
+    if (!z || !z.sichtGruppe) { return; }
+    while (z.sichtGruppe.children.length) {
+      var k = z.sichtGruppe.children.pop();
+      if (k.geometry) { k.geometry.dispose(); }
+      if (k.material) { if (k.material.map) { k.material.map.dispose(); } k.material.dispose(); }
+    }
+    z.sichtErgebnis = null;
+    var l = z.el("a3dSichtLegende"); if (l) { l.hidden = true; }
+  }
+
+  // Sichtfeld ganz entfernen (3D, Karte und Messung)
+  function sichtEntfernen() {
+    var z = zustand;
+    if (!z) { return; }
+    z.sichtNr++;
+    if (z.sichtTimer) { clearTimeout(z.sichtTimer); z.sichtTimer = null; }
+    if (typeof z.sichtAbbruch === "function") { z.sichtAbbruch(); }
+    z.sicht = null; z.sichtMessungDa = false;
+    sichtLeeren();
+    sichtKarteSetzen(null);
+    z.messungen = z.messungen.filter(function (m) { return m.art !== "sichtfeld"; });
+    z.el("a3dSichtErgebnis").textContent = "";
+    z.el("a3dSichtLoeschen").hidden = true;
+    sichtMeldung("");
+    messListe();
+    zeichne();
+  }
+
+  // Klick mit dem Werkzeug "Sichtfeld": neuen Blickpunkt setzen und rechnen
+  function sichtSetzen(tr) {
+    var z = zustand, p = tr.punkt, info = tr.info, R = z.radius;
+    if (Math.abs(p.x) > R || Math.abs(p.z) > R) { sichtMeldung("Dieser Punkt liegt außerhalb des Ausschnitts.", "fehler"); return; }
+    var ort = "boden", gelaende = z.gh(p.x, -p.z);
+    if (info) {
+      var dachY = (info.y0 || 0) + (info.hf ? info.hf(p.x, -p.z) : (info.h || 0));
+      if (p.y >= dachY - 0.6) { ort = "dach"; }
+      else if (p.y - gelaende > 0.6) { ort = "wand"; }
+    }
+    z.sicht = { x: p.x, n: -p.z, base: p.y, ort: ort, nahFrei: !!info, auge: p.y };
+    sichtStarten();
+  }
+
+  // Nach einer Änderung (Augenhöhe, Belaubung, Gebäude, Bäume …) das Sichtfeld kurz danach neu rechnen
+  function sichtNeuPlanen() {
+    var z = zustand;
+    if (!z || !z.sicht) { return; }
+    if (z.sichtTimer) { clearTimeout(z.sichtTimer); }
+    z.sichtTimer = setTimeout(function () { z.sichtTimer = null; sichtStarten(); }, 700);
+  }
+
+  function sichtStarten() {
+    var z = zustand;
+    if (!z || !z.sicht) { return; }
+    if (z.modellBaut) { z.sichtTimer = setTimeout(function () { z.sichtTimer = null; sichtStarten(); }, 500); return; }
+    var s = z.sicht, R = z.radius;
+    if (Math.abs(s.x) > R || Math.abs(s.n) > R) { sichtEntfernen(); sichtMeldung("Der Blickpunkt liegt nicht mehr im Ausschnitt, das Sichtfeld wurde entfernt.", "fehler"); return; }
+    var nr = ++z.sichtNr;
+    if (typeof z.sichtAbbruch === "function") { z.sichtAbbruch(); }
+    var h = parseFloat(String(z.el("a3dSichtHoehe").value).replace(",", "."));
+    if (!(h >= 0)) { h = 1.6; }
+    h = Math.min(100, h);
+    s.augeHoehe = s.ort === "wand" ? 0 : h;
+    s.auge = s.base + s.augeHoehe;
+    z.el("a3dSichtLoeschen").hidden = false;
+    sichtMeldung("Wird vorbereitet …");
+    window.setTimeout(function () {
+      if (zustand !== z || nr !== z.sichtNr) { return; }
+      var P, fassaden = null, t0 = performance.now();
+      var mitF = z.el("a3dSichtFassade").checked && R <= SONNE_FASSADEN_MAX_RADIUS;
+      hoehenkarteAsync().then(function (hk) {
+        if (zustand !== z || nr !== z.sichtNr || !hk) { throw new Error("abgebrochen"); }
+        P = sichtParameter(hk, s);
+        return mitF ? sonneFassadenAsync(P) : null;
+      }).then(function (f) {
+        if (zustand !== z || nr !== z.sichtNr) { throw new Error("abgebrochen"); }
+        fassaden = f && f.length ? f : null;
+        return sichtRechnen(P, !!fassaden, function (anteil) { if (nr === z.sichtNr) { sichtMeldung("Wird berechnet … " + Math.round(anteil * 100) + " %"); } });
+      }).then(function (erg) {
+        if (zustand !== z || nr !== z.sichtNr) { return; }
+        sichtAnzeigen(P, erg, fassaden);
+        var sek = Math.round((performance.now() - t0) / 100) / 10;
+        sichtMeldung("Fertig in " + sek.toString().replace(".", ",") + " Sekunden.", "ok");
+      }).catch(function (fehler) {
+        if (zustand !== z || nr !== z.sichtNr || (fehler && fehler.message === "abgebrochen")) { return; }
+        sichtMeldung("Die Berechnung ist fehlgeschlagen. Versuche einen kleineren Ausschnitt.", "fehler");
+      });
+    }, 30);
+  }
+
+  function sichtAnzeigen(P, erg, fassadenTeile) {
+    var z = zustand, THREE = window.THREE, R = P.R, NR = P.NR, zr = P.zr, s = z.sicht;
+    sichtLeeren();
+    var mitFassade = !!(fassadenTeile && fassadenTeile.length);
+    var c3 = document.createElement("canvas"), c2 = document.createElement("canvas");
+    c3.width = c3.height = c2.width = c2.height = NR;
+    var x3 = c3.getContext("2d"), x2 = c2.getContext("2d");
+    var d3 = x3.createImageData(NR, NR), d2 = x2.createImageData(NR, NR);
+    var gesamt = 0, sichtbar = 0, teils = 0, weit = 0, R2 = R * R;
+    for (var iy = 0; iy < NR; iy++) {
+      for (var ix = 0; ix < NR; ix++) {
+        var q = iy * NR + ix, k = sichtKlasse(erg.boden[q]), px = ((NR - 1 - iy) * NR + ix) * 4;
+        var cx = (ix + 0.5) * zr - R, cn = (iy + 0.5) * zr - R, dach = P.occM[q] === 1;
+        if (k) {
+          var col = SICHT_RGB[k];
+          d2.data[px] = col[0]; d2.data[px + 1] = col[1]; d2.data[px + 2] = col[2]; d2.data[px + 3] = 255;
+          if (!dach) { d3.data[px] = col[0]; d3.data[px + 1] = col[1]; d3.data[px + 2] = col[2]; d3.data[px + 3] = 255; }
+          if (k === 2) { var de = Math.hypot(cx - s.x, cn - s.n); if (de > weit) { weit = de; } }
+        }
+        if (!dach && cx * cx + cn * cn <= R2) { gesamt++; if (k === 2) { sichtbar++; } else if (k === 1) { teils++; } }
+      }
+    }
+    x3.putImageData(d3, 0, 0); x2.putImageData(d2, 0, 0);
+    // Blickpunkt in der Karte: roter Punkt mit weißem Rand
+    var mx = (s.x + R) / zr, my = NR - (s.n + R) / zr;
+    x2.beginPath(); x2.arc(mx, my, Math.max(2.5, NR / 120), 0, 2 * Math.PI);
+    x2.fillStyle = "#c0392b"; x2.fill(); x2.lineWidth = Math.max(1, NR / 300); x2.strokeStyle = "#ffffff"; x2.stroke();
+
+    var stat = {
+      prozent: gesamt ? sichtbar / gesamt * 100 : 0, prozentTeils: gesamt ? teils / gesamt * 100 : 0,
+      qmSichtbar: sichtbar * zr * zr, qmTeils: teils * zr * zr, qmGesamt: gesamt * zr * zr, weit: weit
+    };
+    var gruppe = z.sichtGruppe, deckkraft = +z.el("a3dSichtDeckkraft").value / 100;
+    var tex = new THREE.CanvasTexture(c3);
+    tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter;
+    var boden = new THREE.Mesh(bodenGeometrie(R, 0.1), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: deckkraft, depthWrite: false, side: THREE.DoubleSide }));
+    boden.renderOrder = 3;
+    gruppe.add(boden);
+
+    // Dächer: nur Zellen mit Sicht, Eckhöhen aus den Nachbarzellen (geneigte Dächer bleiben glatt)
+    var zellen = 0, q2;
+    for (q2 = 0; q2 < P.occM.length; q2++) { if (P.occM[q2] && sichtKlasse(erg.boden[q2])) { zellen++; } }
+    if (zellen > 0 && zellen <= 700000) {
+      var pos = new Float32Array(zellen * 18), farben = new Float32Array(zellen * 18), o = 0;
+      var eckH = function (cx2, cy2, eigen) {
+        var sum = 0, m = 0;
+        for (var dy = -1; dy <= 0; dy++) {
+          for (var dx = -1; dx <= 0; dx++) {
+            var ax = cx2 + dx, ay = cy2 + dy;
+            if (ax < 0 || ay < 0 || ax >= NR || ay >= NR) { continue; }
+            var hh = P.occ[ay * NR + ax];
+            if (P.occM[ay * NR + ax] && Math.abs(hh - eigen) < 6) { sum += hh; m++; }
+          }
+        }
+        return m ? sum / m + 0.07 : eigen + 0.07;
+      };
+      for (var jy = 0; jy < NR; jy++) {
+        for (var jx = 0; jx < NR; jx++) {
+          var qq = jy * NR + jx;
+          if (!P.occM[qq]) { continue; }
+          var kl = sichtKlasse(erg.boden[qq]);
+          if (!kl) { continue; }
+          var c = SICHT_RGB[kl], h = P.occ[qq], x0 = jx * zr - R, x1 = x0 + zr, n0 = jy * zr - R, n1 = n0 + zr;
+          var h00 = eckH(jx, jy, h), h10 = eckH(jx + 1, jy, h), h11 = eckH(jx + 1, jy + 1, h), h01 = eckH(jx, jy + 1, h);
+          var ecken = [x0, h00, -n0, x1, h10, -n0, x1, h11, -n1, x0, h00, -n0, x1, h11, -n1, x0, h01, -n1];
+          for (var e = 0; e < 18; e += 3) { pos[o + e] = ecken[e]; pos[o + e + 1] = ecken[e + 1]; pos[o + e + 2] = ecken[e + 2]; farben[o + e] = c[0] / 255; farben[o + e + 1] = c[1] / 255; farben[o + e + 2] = c[2] / 255; }
+          o += 18;
+        }
+      }
+      var gd = new THREE.BufferGeometry();
+      gd.setAttribute("position", new THREE.BufferAttribute(pos, 3)); gd.setAttribute("color", new THREE.BufferAttribute(farben, 3));
+      var dachMesh = new THREE.Mesh(gd, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: deckkraft, side: THREE.DoubleSide }));
+      dachMesh.renderOrder = 2; gruppe.add(dachMesh);
+    }
+
+    // Fassaden: Stücke, die vom Auge aus zu sehen sind
+    if (mitFassade) {
+      var nf = fassadenTeile.length, anz = 0, f;
+      for (f = 0; f < nf; f++) { if (sichtKlasse(erg.fassade[f])) { anz++; } }
+      if (anz) {
+        var pos2 = new Float32Array(anz * 18), farben2 = new Float32Array(anz * 18), o2 = 0;
+        for (f = 0; f < nf; f++) {
+          var kf = sichtKlasse(erg.fassade[f]);
+          if (!kf) { continue; }
+          var t = fassadenTeile[f], cf = SICHT_RGB[kf], vx = t.nx * 0.1, vn = t.nn * 0.1;
+          var A = [t.ax + vx, t.y0, -(t.an + vn)], B = [t.bx + vx, t.y0, -(t.bn + vn)], C = [t.bx + vx, t.y1, -(t.bn + vn)], D = [t.ax + vx, t.y1, -(t.an + vn)];
+          var tri = [A, B, C, A, C, D];
+          for (var e2 = 0; e2 < 6; e2++) {
+            pos2[o2] = tri[e2][0]; pos2[o2 + 1] = tri[e2][1]; pos2[o2 + 2] = tri[e2][2];
+            farben2[o2] = cf[0] / 255; farben2[o2 + 1] = cf[1] / 255; farben2[o2 + 2] = cf[2] / 255;
+            o2 += 3;
+          }
+        }
+        var gf = new THREE.BufferGeometry();
+        gf.setAttribute("position", new THREE.BufferAttribute(pos2, 3)); gf.setAttribute("color", new THREE.BufferAttribute(farben2, 3));
+        var fassadeMesh = new THREE.Mesh(gf, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: deckkraft, side: THREE.DoubleSide }));
+        fassadeMesh.renderOrder = 2; gruppe.add(fassadeMesh);
+      }
+    }
+
+    z.sichtErgebnis = { P: P, erg: erg, fassaden: fassadenTeile || [], stat: stat };
+    gruppe.visible = z.el("a3dSichtZeigen").checked;
+    // Ergebnis auch in der Karte (Ebene "Sichtfeld" in 04 Analysedaten)
+    var dla = R / z.mLat, dlo = R / z.mLng;
+    sichtKarteSetzen({ canvas: c2, s: z.mitte.lat - dla, n: z.mitte.lat + dla, w: z.mitte.lng - dlo, o: z.mitte.lng + dlo });
+    // Messung "Sichtfeld" (Linie vom Boden zum Auge mit Beschriftung), es gibt immer nur eine
+    z.messungen = z.messungen.filter(function (m) { return m.art !== "sichtfeld"; });
+    var fussY = s.ort === "wand" ? s.base : s.base;
+    messNeu({ art: "sichtfeld", punkte: [new THREE.Vector3(s.x, fussY, -s.n)], augeY: s.auge, ort: s.ort, stat: stat });
+    z.sichtMessungDa = true;
+    z.el("a3dSichtErgebnis").textContent = sichtErgebnisText(stat, s.augeHoehe);
+    sichtLegendeBauen();
+    zeichne();
+  }
+
+  function sichtLegendeBauen() {
+    var z = zustand, l = z.el("a3dSichtLegende");
+    var html = '<div class="a3d-leg-titel">Sichtfeld vom Blickpunkt</div>' +
+      '<div><i style="background:' + SICHT_FARBE_SICHTBAR + '"></i>zu sehen</div>' +
+      '<div><i style="background:' + SICHT_FARBE_TEILS + '"></i>durch Bäume und Laub eingeschränkt</div>' +
+      '<div><i style="background:transparent"></i>nicht gefärbt: verdeckt</div>';
+    l.innerHTML = html;
+    l.hidden = !(z.sichtErgebnis && z.el("a3dSichtZeigen").checked);
+  }
+
+  function sichtAnzeigeAktualisieren() {
+    var z = zustand, an = z.el("a3dSichtZeigen").checked, deck = +z.el("a3dSichtDeckkraft").value / 100;
+    z.sichtGruppe.visible = an;
+    z.sichtGruppe.children.forEach(function (m) { if (m.material) { m.material.opacity = deck; } });
+    z.el("a3dSichtLegende").hidden = !(z.sichtErgebnis && an);
+    zeichne();
+  }
+
+  // Legende des Sichtfelds oben links im gespeicherten 3D-Bild
+  function sichtLegendeZeichnen(c, B, H, u) {
+    var z = zustand;
+    if (!z.sichtErgebnis || !z.el("a3dSichtZeigen").checked) { return; }
+    var schrift = "px Bahnschrift, 'Segoe UI', Arial, sans-serif", zeile = 17 * u, pad = 8 * u;
+    var zeilen = [[SICHT_FARBE_SICHTBAR, "zu sehen"], [SICHT_FARBE_TEILS, "durch Bäume und Laub eingeschränkt"], [null, "nicht gefärbt: verdeckt"]];
+    var bw = 236 * u, bh = pad * 2 + zeile * (zeilen.length + 0.5), x = 34 * u, y = 12 * u;
+    c.fillStyle = "rgba(245,243,238,0.94)"; c.fillRect(x, y, bw, bh);
+    c.strokeStyle = "#1a1a1a"; c.lineWidth = Math.max(1, u); c.strokeRect(x, y, bw, bh);
+    c.textBaseline = "top"; c.textAlign = "left";
+    c.fillStyle = "#1a1a1a"; c.font = "bold " + 12 * u + schrift;
+    c.fillText("Sichtfeld vom Blickpunkt", x + pad, y + pad);
+    zeilen.forEach(function (e, i) {
+      var yy = y + pad + zeile * (i + 1.1);
+      if (e[0]) { c.fillStyle = e[0]; c.fillRect(x + pad, yy, 22 * u, 12 * u); }
+      c.strokeStyle = "rgba(0,0,0,0.35)"; c.lineWidth = Math.max(1, 0.8 * u); c.strokeRect(x + pad, yy, 22 * u, 12 * u);
+      c.fillStyle = "#1a1a1a"; c.font = 12 * u + schrift; c.fillText(e[1], x + pad + 30 * u, yy - 1 * u);
+    });
+  }
+
   // ---------- Speichern ----------
-  var VEKTOR_MAX_RADIUS = 1500;        // größere Ausschnitte würden zu schwere Vektordateien ergeben
+  var VEKTOR_MAX_RADIUS = 1500;       // größere Ausschnitte würden zu schwere Vektordateien ergeben
   var DXF_MAX_FLAECHEN = 600000;       // so viele 3D-Flächen höchstens in einer DXF-Datei
 
   function dateiName(endung) {
@@ -3688,6 +4177,7 @@
       messZeichnen(c, kamera, B, H, B / b0);                 // Messungen
       beschriftungZeichnen(c, B, H, Math.max(1, H / 900));   // Titelkasten, Nordpfeil
       sonneLegendeZeichnen(c, B, H, Math.max(1, H / 900));   // Legende der Sonnenstunden (wenn sie gezeigt werden)
+      sichtLegendeZeichnen(c, B, H, Math.max(1, H / 900));   // Legende des Sichtfelds (wenn es gezeigt wird)
       return ziel;
     } finally {
       z.renderer.setPixelRatio(pr);

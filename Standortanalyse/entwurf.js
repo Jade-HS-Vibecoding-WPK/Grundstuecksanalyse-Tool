@@ -430,6 +430,7 @@
           (K.einr = K.einr || {})[g.id] = pg;
           B.push("  - " + g.name + ": " + z(pg.n1) + " im 400-m-, " + z(pg.n2) + " im 800-m-Umkreis, " + abstandText(pg.naechste));
         });
+        B.push("  - Hinweis zu „aktiv“: Tag- und Nachtnutzung nach den Öffnungszeiten aus OpenStreetMap, soweit eingetragen und lesbar, sonst nach der Art geschätzt; ein Ort zählt in jedem Zeitfenster, in dem er aktiv ist.");
         teile.quellen.push("Einrichtungen: © OpenStreetMap-Mitwirkende (ODbL)");
       }
       if (daten.spiel) {
