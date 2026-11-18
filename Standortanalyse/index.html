@@ -808,6 +808,7 @@
           <details class="analyseGruppe"><summary><span class="titel">Gebäudehöhen</span><span class="anzahl"></span></summary><div id="analyseHoehen"></div><p class="hinweis" style="margin:4px 0 0">Färbt jedes Gebäude nach seiner Traufhöhe (Höhe der Dachkante über dem Boden, Gebäudemodell des LGLN, auf 1 bis 5 m genau): unter 4 m (Garagen, Schuppen), 4 bis 7 m, 7 bis 10 m, 10 bis 13 m, 13 bis 20 m und über 20 m. Sichtbar ab der Nahansicht. Beim ersten Zuschalten werden ca. 13 MB geladen (die Höhendaten und das Gelände, die auch die 3D-Ansicht braucht). Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Grünversorgung (Fußweg)</span><span class="anzahl"></span></summary><div id="analyseVersorgung"></div><p class="hinweis" style="margin:4px 0 0">Zeigt für die Wohngebiete (Nutzungsart Wohnen), wie weit es zu Fuß nach dem Wegenetz bis zum nächsten öffentlichen Park, Spielplatz oder Wald ist: grün bis 300 m, orange 300 bis 500 m, dunkelrot darüber. Gerechnet in Rasterzellen von 20 m; die erste Berechnung dauert einige Sekunden. Grundlage sind OpenStreetMap-Daten (Parks ab 1.000 m², Spielplätze ab 100 m², Wald ab 1 ha, ohne privaten Zugang); wo dort Flächen oder Wege fehlen, erscheinen Lücken. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Durchlässigkeit des Wegenetzes</span><span class="anzahl"></span></summary><div id="analyseDl"></div><p class="hinweis" id="dlInfo" style="margin:4px 0 0;display:none"></p><p class="hinweis" style="margin:4px 0 0">Zeigt, wie gut man zu Fuß durch das Quartier kommt. <em>Kreuzungsdichte</em>: Kreuzungen je km² auf einem 100-m-Raster (rot = weitmaschig, grün = engmaschig). <em>Blockgrößen</em>: Fläche der Blöcke zwischen Wegen, Bahn, Gewässern (grün = kleinteilig, rot = großer Block). <em>Umwegfaktor</em>: wie viel länger der echte Fußweg ab dem roten Punkt ist als die Luftlinie (1,0 = direkt; braucht eine Adresse). <em>Barrieren</em>: Bahn, Flüsse und Kanäle, Hauptstraßen; weiße Kreise zeigen, wo Wege Bahn und Wasser queren (Brücke, Unterführung, Bahnübergang). Gerechnet wird aus dem Wegenetz von OpenStreetMap (nur so vollständig wie dieses). Die erste Berechnung dauert einige Sekunden. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
+          <details class="analyseGruppe"><summary><span class="titel">Wer wohnt dort? (Zensus 2022)</span><span class="anzahl"></span></summary><div id="analyseZensus"></div><p class="hinweis" style="margin:4px 0 0">Ergebnisse des Zensus 2022 (Stichtag 15. Mai 2022) auf einem Raster von 100 × 100 m: Einwohnerdichte, Durchschnittsalter, Anteil der unter 18-Jährigen und der ab 65-Jährigen, durchschnittliche Haushaltsgröße, Nettokaltmiete (€ je m²), Leerstandsquote und Eigentümerquote. Ein Klick auf eine Zelle zeigt alle Werte. Zellen ohne Angabe bleiben ungefärbt (Datenschutz: wo zu wenige Menschen oder Wohnungen leben, werden keine Werte veröffentlicht). Die Zahlen sind aus Datenschutzgründen leicht verändert; Werte in Klammern beruhen auf wenigen Fällen. Quelle: © Statistische Ämter des Bundes und der Länder, 2024 (Datenlizenz Deutschland – Namensnennung – Version 2.0). Die Datei wird erst beim Zuschalten geladen (ca. 0,4 MB). Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Nutzungsmischung (Wärmebild)</span><span class="anzahl"></span></summary><div id="analyseMischung"></div><p class="hinweis" style="margin:4px 0 0">Ein Wärmebild auf einem Raster von 100 m: Rot = einseitig (fast nur eine Nutzung), Grün = gut gemischt. Verglichen werden vier Nutzungen: Wohnen, Arbeiten (Gewerbe, Industrie, Büros), Läden und Gastronomie sowie Gemeinbedarf (Schulen, Ärzte, Behörden, Kultur). Jede Zelle wird mit ihren Nachbarzellen gemittelt; Gebiete ohne Nutzung (Wald, Wasser, Felder) bleiben ungefärbt. Grundlage sind OpenStreetMap-Daten, die nicht überall vollständig sind. Die erste Berechnung dauert einige Sekunden. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Einrichtungen</span><span class="anzahl"></span></summary><div id="analyseEinrichtungen"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Tag- und Nachtnutzung</span><span class="anzahl"></span></summary><div id="analyseZeiten"></div><p class="hinweis" style="margin:4px 0 0">Zeigt, welche Orte zu welcher Tageszeit aktiv sind: tagsüber (10–16 Uhr), abends (18–23 Uhr) und nachts (23–5 Uhr); gemeint ist: an mindestens einem Wochentag in diesem Zeitfenster geöffnet. Die Einteilung folgt den Öffnungszeiten aus OpenStreetMap, soweit eingetragen und lesbar (etwa jeder zweite Ort); sonst ist sie nach der Art geschätzt (zum Beispiel Büros tagsüber, Bars und Hotels nachts, Krankenhäuser rund um die Uhr). Ein Klick auf einen Punkt zeigt die Zeiten und ob sie eingetragen oder geschätzt sind. Ein Ort erscheint in jeder Ebene, in der er aktiv ist. OpenStreetMap ist nicht vollständig. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
@@ -1220,6 +1221,7 @@
             <li><strong>Karte</strong> oben rechts wählen: „Startkarte“ (ohne Symbole), „Hellgrau“, „Schwarzplan“ (schwarze Gebäude auf Weiß) oder „Freiraumplan“ (umgekehrt: Gebäude weiß, Freiraum schwarz). „Bebauung“ zeigt die Gebäude, sobald du nah genug herangezoomt hast.</li>
             <li><strong>Analysedaten</strong> (04): Haken setzen oder „Alles einschalten“. Fußweg und Sonnenstand brauchen die Adresse.</li>
             <li><strong>Neue Analyse-Ebenen</strong> (alle in 04, nicht bei „Alles einschalten“): „Gebäudehöhen“ färbt die Gebäude nach Traufhöhe (lädt einmalig ca. 13 MB). „Straßen nach Höchstgeschwindigkeit“ und „nach Straßenart“ stehen in „Verkehr und Mobilität“ (grau = in OpenStreetMap kein Tempo eingetragen). „Grünversorgung (Fußweg)“ färbt Wohngebiete rot, wenn Park, Spielplatz oder Wald mehr als 300 m Fußweg entfernt sind (braucht die Adresse nicht). „Nutzungsmischung (Wärmebild)“ zeigt auf einem 100-m-Raster, wie gut Wohnen, Arbeiten, Läden und Gastronomie sowie Gemeinbedarf gemischt sind (grün = gut gemischt, rot = einseitig). Alle vier sind Orientierung aus OpenStreetMap-Daten und nur so vollständig wie diese. Die Gruppe „Durchlässigkeit des Wegenetzes“ zeigt, wie gut man zu Fuß durch das Quartier kommt: <em>Kreuzungsdichte</em> (Kreuzungen je km², rot = weitmaschig), <em>Blockgrößen</em> (Blöcke zwischen Wegen, Bahn und Gewässern), <em>Umwegfaktor</em> (wie viel länger der Fußweg ab dem roten Punkt ist als die Luftlinie, braucht die Adresse) und <em>Barrieren und Querungen</em> (Bahn, Flüsse, Hauptstraßen; weiße Kreise = Brücke, Unterführung oder Bahnübergang). Unter den Haken stehen die wichtigsten Zahlen.</li>
+             <li><strong>Wer wohnt dort? (Zensus 2022)</strong> (Gruppe in 04, bei „Alles einschalten“ aus): acht Ebenen aus dem Zensus 2022 auf einem Raster von 100 × 100 m (Einwohnerdichte, Durchschnittsalter, Anteil unter 18 und ab 65 Jahren, Haushaltsgröße, Nettokaltmiete, Leerstand, Eigentümerquote). Ein Klick auf eine Zelle zeigt alle Werte. Leere Zellen: zu wenige Fälle, es werden keine Zahlen veröffentlicht. Die Zahlen sind leicht verändert. Quelle: © Statistische Ämter des Bundes und der Länder, 2024; sie steht in Karte und gespeichertem Bild. Die Zahlen für die Umgebung stehen auch im Text der Entwurfsstrategie (Abschnitt 11).</li>
             <li><strong>Eigene Pläne</strong> (05): Bis zu fünf JPG, PNG oder PDF hochladen. In der Liste wählst du einen Plan aus, blendest ihn mit dem Haken aus oder ein und änderst mit ▲ und ▼ die Reihenfolge. Mit dem Kreis in der Mitte verschieben, mit dem roten Quadrat drehen und vergrößern, oder „Zwei Punkte einpassen“ für den genauen Maßstab. „Plan sperren“ schützt vor Verschieben.</li>
             <li><strong>Zeichnen</strong> (06): Werkzeug wählen und in die Karte klicken. Objekte anklicken zum Ändern, Entf löscht, Strg+Z nimmt zurück. Mit „Strecke messen“ und „Fläche messen“ liest du Längen in Metern und Flächen in Quadratmetern ab, sie stehen auf der Karte und im gespeicherten Bild.</li>
             <li><strong>Ausschnitt</strong> (07): Maßstab und Papierformat wählen. Mit „Rahmen auf der Karte zeigen“ siehst du, was ins Bild kommt.</li>
@@ -2320,6 +2322,32 @@
     DL.forEach(function (d) { d.ebene.getAttribution = function () { return "Durchlässigkeit: &copy; OpenStreetMap-Mitwirkende"; }; });
     var dlErgebnis = { kreuz: null, bloecke: null, barr: null, umweg: null };     // Ergebnisse (werden beim ersten Zuschalten gerechnet)
     function istDlEbene(ebene) { return DL.some(function (d) { return d.ebene === ebene; }); }
+    // Gruppe "Wer wohnt dort? (Zensus 2022)": Ergebnisse des Zensus 2022 im 100-m-Gitter (Datei zensus_oldenburg.js, Programm 28 in Datenpflege),
+    // je Merkmal eine Ebene. Datenlizenz Deutschland - Namensnennung - Version 2.0; die Zahlen sind durch ein Geheimhaltungsverfahren leicht verändert.
+    var ZENSUS_QUELLE_TEXT = "Zensus 2022: © Statistische Ämter des Bundes und der Länder, 2024, dl-de/by-2-0";
+    function zensusEbene(id, name, titel, einheit, spalte, dez, grenzen, farben, klammer) {
+      var g = { id: id, name: name, titel: titel, einheit: einheit, spalte: spalte, dez: dez, grenzen: grenzen, klammer: klammer, flaeche: true, farbe: farben[2], deckkraft: 0.75, nichtAlle: true, ebene: L.layerGroup() };
+      var f = function (v) { return v.toLocaleString("de-DE", { minimumFractionDigits: dez, maximumFractionDigits: dez }); };
+      g.klassen = farben.map(function (farbe, i) {
+        var text = i === 0 ? "unter " + f(grenzen[0]) : (i === grenzen.length ? "ab " + f(grenzen[i - 1]) : f(grenzen[i - 1]) + " bis unter " + f(grenzen[i]));
+        return { farbe: farbe, text: text + einheit };
+      });
+      g.ebene.getAttribution = function () { return "Zensus 2022: &copy; Statistische &Auml;mter des Bundes und der L&auml;nder, 2024"; };
+      return g;
+    }
+    // Spalten der Datei: 2 Einwohner, 3 Alter, 4 unter 18, 5 ab 65, 6 Haushaltsgröße, 7 Miete, 8 Leerstand, 9 Eigentümer (Klammer-Bit je Merkmal)
+    var ZENSUS = [
+      zensusEbene("einw",  "Einwohnerdichte",                     "Einwohnerdichte",          " Einw. je ha",  2, 0, [10, 25, 50, 100],      ["#f2f0f7", "#cbc9e2", "#9e9ac8", "#756bb1", "#54278f"], 0),
+      zensusEbene("alter", "Durchschnittsalter",                  "Durchschnittsalter",       " Jahre",        3, 0, [36, 42, 47, 52],       ["#ffffcc", "#c2e699", "#78c679", "#31a354", "#006837"], 1),
+      zensusEbene("u18",   "Anteil Kinder und Jugendliche (unter 18)", "Anteil unter 18 Jahre", " %",         4, 0, [8, 12, 16, 20],        ["#feebe2", "#fbb4b9", "#f768a1", "#c51b8a", "#7a0177"], 2),
+      zensusEbene("o65",   "Anteil ab 65 Jahren",                 "Anteil ab 65 Jahren",      " %",            5, 0, [15, 20, 25, 30],       ["#fff7ec", "#fdd49e", "#fc8d59", "#d7301f", "#7f0000"], 4),
+      zensusEbene("hh",    "Durchschnittliche Haushaltsgröße",    "Haushaltsgröße",           " Pers.",        6, 1, [1.6, 1.9, 2.2, 2.5],   ["#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c"], 8),
+      zensusEbene("miete", "Durchschnittliche Nettokaltmiete",    "Nettokaltmiete",           " €/m²",         7, 1, [6, 7, 8, 9.5],         ["#ffffd4", "#fed98e", "#fe9929", "#d95f0e", "#993404"], 16),
+      zensusEbene("leer",  "Leerstandsquote der Wohnungen",       "Leerstandsquote",          " %",            8, 0, [1, 3, 6, 10],          ["#f1eef6", "#d7b5d8", "#df65b0", "#dd1c77", "#980043"], 32),
+      zensusEbene("eigen", "Eigentümerquote",                     "Eigentümerquote",          " %",            9, 0, [20, 40, 60, 80],       ["#edf8fb", "#b3cde3", "#8c96c6", "#8856a7", "#810f7c"], 64)
+    ];
+    function istZensusEbene(ebene) { return ZENSUS.some(function (g) { return g.ebene === ebene; }); }
+    var zensusDaten = null, zensusVorgang = null, zensusErgebnis = {};
     var hoehenListe = null, hoehenLadevorgang = null;
     function hoehenKlasseVon(t) {
       for (var i = 0; i < HOEHEN_KLASSEN.length; i++) { if (t < HOEHEN_KLASSEN[i].bis) { return i; } }
@@ -2675,6 +2703,7 @@
     baueAnalyseHaken("analyseVersorgung", [VERSORGUNG], function (g) { return g.name; });
     baueAnalyseHaken("analyseMischung", [MISCHUNG], function (g) { return g.name; });
     baueAnalyseHaken("analyseDl", DL, function (g) { return g.name; });
+    baueAnalyseHaken("analyseZensus", ZENSUS, function (g) { return g.name; });
     baueAnalyseHaken("analyseEinrichtungen", EINRICHTUNGEN.filter(function (g) { return !g.zeit; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseZeiten", EINRICHTUNGEN.filter(function (g) { return g.zeit; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseFlaechen", FLAECHEN.filter(function (g) { return g.quelle === "flaechen"; }), function (gruppe) { return gruppe.name; });
@@ -2909,6 +2938,7 @@
       else if (ebene === VERSORGUNG.ebene) { aktualisiereVersorgung(); }
       else if (ebene === MISCHUNG.ebene) { aktualisiereMischung(); }
       else if (istDlEbene(ebene)) { aktualisiereDl(true); }
+      else if (istZensusEbene(ebene)) { aktualisiereZensus(); }
       else if (istEinrichtungsEbene(ebene)) { aktualisiereEinrichtungen(); }
       else if (istMobilitaetEbene(ebene)) { aktualisiereMobilitaet(); }
       else if (ebene === TAKT.ebene) { aktualisiereTakt(); }
@@ -2923,7 +2953,7 @@
     karte.on("layerremove", function (ereignis) {
       if (sammelSchalten) { return; }
       var ebene = ereignis.layer;
-      if (!istKreisEbene(ebene) && !istSonnenEbene(ebene) && !istWegenetzEbene(ebene) && ebene !== OEPNV.ebene && ebene !== BAEUME2D.ebene && !istStarkregenEbene(ebene) && ebene !== SONNENSTUNDEN2D.ebene && ebene !== SICHTFELD2D.ebene && ebene !== HOEHENKARTE.ebene && ebene !== VERSORGUNG.ebene && ebene !== MISCHUNG.ebene && !istDlEbene(ebene) && !istEinrichtungsEbene(ebene) && !istMobilitaetEbene(ebene) && ebene !== TAKT.ebene && ebene !== LUFT.ebene && !istSpielEbene(ebene) && !istGrundEbene(ebene) && !istFlaechenEbene(ebene)) { return; }
+      if (!istKreisEbene(ebene) && !istSonnenEbene(ebene) && !istWegenetzEbene(ebene) && ebene !== OEPNV.ebene && ebene !== BAEUME2D.ebene && !istStarkregenEbene(ebene) && ebene !== SONNENSTUNDEN2D.ebene && ebene !== SICHTFELD2D.ebene && ebene !== HOEHENKARTE.ebene && ebene !== VERSORGUNG.ebene && ebene !== MISCHUNG.ebene && !istDlEbene(ebene) && !istZensusEbene(ebene) && !istEinrichtungsEbene(ebene) && !istMobilitaetEbene(ebene) && ebene !== TAKT.ebene && ebene !== LUFT.ebene && !istSpielEbene(ebene) && !istGrundEbene(ebene) && !istFlaechenEbene(ebene)) { return; }
       if (ebene.clearLayers) { ebene.clearLayers(); }
       if (istGrundEbene(ebene)) { aktualisiereGrund(); }
       setzeKartenStatus("");
@@ -2936,7 +2966,7 @@
     // Abschnitts (Fußweg, Sonnenstand, ÖPNV, Einrichtungen, Grün und Freiräume) auf einmal. Die Bebauung gehört
     // nicht dazu. Dabei wird nicht für jede Ebene einzeln gezeichnet, sondern am Ende einmal für alle.
     function alleAnalyseEbenen() {
-      return [].concat(FLAECHEN, DIENSTE, FLST, [HOEHENKARTE, VERSORGUNG, MISCHUNG, BAEUME2D], DL, MOBILITAET, EINRICHTUNGEN, SPIEL, [TAKT, OEPNV, LUFT], WEGENETZ_ZEITEN, KREISE, SONNE);   // von unten nach oben
+      return [].concat(FLAECHEN, DIENSTE, FLST, [HOEHENKARTE, VERSORGUNG, MISCHUNG, BAEUME2D], DL, ZENSUS, MOBILITAET, EINRICHTUNGEN, SPIEL, [TAKT, OEPNV, LUFT], WEGENETZ_ZEITEN, KREISE, SONNE);   // von unten nach oben
     }
     function schalteAlleAnalyseEbenen(an) {
       sammelSchalten = true;
@@ -2955,6 +2985,7 @@
       aktualisiereVersorgung();
       aktualisiereMischung();
       aktualisiereDl(false);
+      aktualisiereZensus();
       aktualisiereBaeume();
       aktualisiereEinrichtungen();
       aktualisiereMobilitaet();
@@ -4714,6 +4745,152 @@
         });
       }, 30);
     }
+
+    // ---------- Gruppe "Wer wohnt dort? (Zensus 2022)" ----------
+    // Lädt die Zensus-Datei (nur beim ersten Mal) und entpackt sie: je Zelle Mittelpunkt (Breite, Länge) und die Werte als Zahlenfelder (NaN = keine Angabe)
+    function ladeZensus() {
+      if (zensusDaten) { return Promise.resolve(zensusDaten); }
+      if (zensusVorgang) { return zensusVorgang; }
+      zensusVorgang = new Promise(function (fertig, fehler) {
+        function aufbauen() {
+          try {
+            var roh = window.ZENSUS_OLDENBURG, z = roh.z, n = z.length, e = roh.einheit;
+            var lat = new Float64Array(n), lng = new Float64Array(n), w = [], flags = new Uint8Array(n), la = 0, lo = 0, i, s;
+            for (s = 2; s <= 9; s++) { w[s] = new Float32Array(n); }
+            for (i = 0; i < n; i++) {
+              la += z[i][0]; lo += z[i][1]; lat[i] = la * e; lng[i] = lo * e;
+              for (s = 2; s <= 9; s++) { w[s][i] = z[i][s] < 0 ? NaN : z[i][s]; }
+              flags[i] = z[i][10];
+            }
+            var gx = [roh.gx[0] * e, roh.gx[1] * e], gy = [roh.gy[0] * e, roh.gy[1] * e], gitter = new Map(), sn = 90, ss = -90, sw = 180, so = -180;
+            for (i = 0; i < n; i++) {
+              var key = Math.floor(lat[i] / 0.002) * 100000 + Math.floor(lng[i] / 0.003), l = gitter.get(key);
+              if (!l) { l = []; gitter.set(key, l); } l.push(i);
+              if (lat[i] < sn) { sn = lat[i]; } if (lat[i] > ss) { ss = lat[i]; } if (lng[i] < sw) { sw = lng[i]; } if (lng[i] > so) { so = lng[i]; }
+            }
+            window.ZENSUS_OLDENBURG = null;
+            zensusDaten = { n: n, lat: lat, lng: lng, w: w, flags: flags, gx: gx, gy: gy, gitter: gitter, s: sn, n2: ss, w2: sw, o: so };
+            fertig(zensusDaten);
+          } catch (x) { zensusVorgang = null; fehler(x); }
+        }
+        if (window.ZENSUS_OLDENBURG) { aufbauen(); return; }
+        var skript = document.createElement("script");
+        skript.src = "zensus_oldenburg.js";
+        skript.onload = aufbauen;
+        skript.onerror = function () { zensusVorgang = null; fehler(new Error("Datei zensus_oldenburg.js nicht gefunden")); };
+        document.head.appendChild(skript);
+      });
+      return zensusVorgang;
+    }
+    function zensusKlasse(g, v) { var i = 0; while (i < g.grenzen.length && v >= g.grenzen[i]) { i++; } return i; }
+    // Zeichnet die Zellen einer Ebene (gedrehte Quadrate, wie im Gitter) auf eine Leinwand, die an Breite und Länge ausgerichtet ist (12 Bildpunkte je Zelle)
+    function zensusBerechne(g) {
+      var d = zensusDaten, P = 12;
+      var dLat = (100 / WEGE_M_PRO_GRAD) / P, dLng = (100 / (WEGE_M_PRO_GRAD * WEGE_COS)) / P, rand = 2;
+      var west = d.w2 - rand * P * dLng, nord = d.n2 + rand * P * dLat;
+      var B = Math.ceil((d.o - d.w2) / dLng) + 2 * rand * P, H = Math.ceil((d.n2 - d.s) / dLat) + 2 * rand * P;
+      var cv = document.createElement("canvas"); cv.width = B; cv.height = H;
+      var c = cv.getContext("2d"), werte = d.w[g.spalte], zk = g.klassen.map(function () { return 0; }), gesamt = 0;
+      var hx = [d.gx[0] * 0.51, d.gx[1] * 0.51], hy = [d.gy[0] * 0.51, d.gy[1] * 0.51];     // halbe Zellkante, ein Hauch größer, damit keine Fugen bleiben
+      function X(lo) { return (lo - west) / dLng; }
+      function Y(la) { return (nord - la) / dLat; }
+      for (var kl = 0; kl < g.klassen.length; kl++) {
+        c.fillStyle = g.klassen[kl].farbe; c.beginPath();
+        for (var i = 0; i < d.n; i++) {
+          var v = werte[i]; if (v !== v) { continue; }
+          if (zensusKlasse(g, v) !== kl) { continue; }
+          var la = d.lat[i], lo = d.lng[i];
+          c.moveTo(X(lo - hx[1] - hy[1]), Y(la - hx[0] - hy[0]));
+          c.lineTo(X(lo + hx[1] - hy[1]), Y(la + hx[0] - hy[0]));
+          c.lineTo(X(lo + hx[1] + hy[1]), Y(la + hx[0] + hy[0]));
+          c.lineTo(X(lo - hx[1] + hy[1]), Y(la - hx[0] + hy[0]));
+          c.closePath(); zk[kl]++; gesamt++;
+        }
+        c.fill();
+      }
+      var summe = Math.max(1, gesamt);
+      return { canvas: cv, s: nord - H * dLat, w: west, n: nord, o: west + B * dLng, anteile: zk.map(function (z) { return Math.round(z * 100 / summe); }), zellen: gesamt };
+    }
+    function zensusFehler(fehler) {
+      if (window.console) { console.error("Zensus konnte nicht geladen werden:", fehler); }
+      setzeKartenStatus("Die Zensus-Daten konnten nicht geladen werden. Die Datei zensus_oldenburg.js muss im selben Ordner wie index.html liegen.", true);
+    }
+    function aktualisiereZensus() {
+      ZENSUS.forEach(function (g) { if (!karte.hasLayer(g.ebene)) { g.ebene.clearLayers(); } });
+      var aktiv = ZENSUS.filter(function (g) { return karte.hasLayer(g.ebene); });
+      if (!aktiv.length) { return; }
+      var ladeText = "Zensus-Daten werden geladen …";
+      if (!zensusDaten) { setzeKartenStatus(ladeText); }
+      ladeZensus().then(function () {
+        if (kartenStatus.textContent === ladeText) { setzeKartenStatus(""); }
+        aktiv.forEach(function (g) {
+          if (!karte.hasLayer(g.ebene)) { return; }
+          if (!zensusErgebnis[g.id]) { zensusErgebnis[g.id] = zensusBerechne(g); }
+          var v = zensusErgebnis[g.id];
+          g.ebene.clearLayers();
+          L.imageOverlay(v.canvas.toDataURL("image/png"), [[v.s, v.w], [v.n, v.o]], { opacity: 0.75, pane: "sonnePane", interactive: false, className: "pixelbild" }).addTo(g.ebene);
+        });
+        kreiseNachVorn(); aktualisiereExportInfo();
+      }).catch(zensusFehler);
+    }
+    // Ergebnisse der zugeschalteten Ebenen (Legende, Bild): Liste { g, v }
+    function zensusAktive() {
+      return ZENSUS.filter(function (g) { return karte.hasLayer(g.ebene) && zensusErgebnis[g.id]; }).map(function (g) { return { g: g, v: zensusErgebnis[g.id] }; });
+    }
+    function zensusExportDaten(e) {
+      var aktiv = ZENSUS.filter(function (g) { return karte.hasLayer(g.ebene); });
+      if (e.ohneVersorgung || !aktiv.length) { return Promise.resolve(null); }
+      return ladeZensus().then(function () {
+        aktiv.forEach(function (g) { if (!zensusErgebnis[g.id]) { zensusErgebnis[g.id] = zensusBerechne(g); } });
+        return aktiv.map(function (g) { return { g: g, v: zensusErgebnis[g.id] }; });
+      });
+    }
+    function zensusLegendenEintraege(liste, eintraege) {
+      liste.forEach(function (x) {
+        x.g.klassen.forEach(function (kl, i) {
+          eintraege.push({ art: "flaeche", farbe: kl.farbe, deckkraft: 0.85, text: (i === 0 ? x.g.titel + " (Zensus 2022, 100-m-Raster): " : "") + kl.text + " (" + x.v.anteile[i] + " %)" });
+        });
+      });
+    }
+    // Welche Zelle liegt am Punkt? (Index oder -1). Die Zelle ist ein gedrehtes Quadrat; geprüft wird in Zellkanten-Koordinaten.
+    function zensusZelleAn(lat, lng) {
+      var d = zensusDaten; if (!d) { return -1; }
+      var ci = Math.floor(lat / 0.002), cj = Math.floor(lng / 0.003), det = d.gx[0] * d.gy[1] - d.gy[0] * d.gx[1];
+      for (var a = ci - 1; a <= ci + 1; a++) { for (var b = cj - 1; b <= cj + 1; b++) {
+        var l = d.gitter.get(a * 100000 + b); if (!l) { continue; }
+        for (var i = 0; i < l.length; i++) {
+          var dla = lat - d.lat[l[i]], dlo = lng - d.lng[l[i]];
+          var u = (dla * d.gy[1] - d.gy[0] * dlo) / det, v = (d.gx[0] * dlo - dla * d.gx[1]) / det;
+          if (Math.abs(u) <= 0.5 && Math.abs(v) <= 0.5) { return l[i]; }
+        }
+      } }
+      return -1;
+    }
+    function zensusPopup(i) {
+      var d = zensusDaten, div = document.createElement("div"); div.style.maxWidth = "260px";
+      popupZeile(div, "Zensus 2022, Zelle von 100 × 100 m", true);
+      var f = function (v, dez) { return v.toLocaleString("de-DE", { minimumFractionDigits: dez, maximumFractionDigits: dez }); };
+      var unsicher = false;
+      ZENSUS.forEach(function (g) {
+        var v = d.w[g.spalte][i], bit = { 2: 0, 3: 1, 4: 2, 5: 4, 6: 8, 7: 16, 8: 32, 9: 64 }[g.spalte];
+        var t = v !== v ? "keine Angabe" : (g.spalte === 2 ? f(v, 0) + " Einwohner in dieser Zelle (1 ha)" : f(v, g.spalte === 6 || g.spalte === 7 ? 2 : 1) + g.einheit);
+        var klammer = v === v && bit && (d.flags[i] & bit); if (klammer) { unsicher = true; t = "(" + t + ")"; }
+        var z = popupZeile(div, g.titel + ": " + t); z.style.marginTop = g.spalte === 2 ? "4px" : "1px";
+      });
+      var h = popupZeile(div, unsicher ? "Werte in Klammern beruhen auf wenigen Fällen und sind nur eingeschränkt aussagekräftig. " : "");
+      h.style.cssText = "margin-top:6px;font-size:11px;color:#666";
+      h.textContent += "Die Zahlen sind aus Datenschutzgründen leicht verändert. Quelle: Statistische Ämter des Bundes und der Länder, Zensus 2022.";
+      return div;
+    }
+    karte.on("click", function (ereignis) {
+      if (!zensusDaten || !ZENSUS.some(function (g) { return karte.hasLayer(g.ebene); }) || !popupErlaubt()) { return; }
+      var ort = ereignis.latlng;
+      setTimeout(function () {
+        if (karte._popup && karte.hasLayer(karte._popup)) { return; }      // ein anderes Fenster (Haltestelle, Grundstück …) ist schon offen
+        var i = zensusZelleAn(ort.lat, ort.lng); if (i < 0) { return; }
+        L.popup({ maxWidth: 270, autoPanPadding: [20, 20] }).setLatLng(ort).setContent(zensusPopup(i)).openOn(karte);
+      }, 0);
+    });
 
     // ---------- Ebenen "Grün und Freiräume" und "Nutzungsarten" (Flächen aus den lokalen Dateien flaechen_oldenburg.js und nutzung_oldenburg.js) ----------
 
@@ -7178,6 +7355,7 @@
         (karte.hasLayer(VERSORGUNG.ebene) ? " Die Grünversorgung der Wohngebiete wird eingezeichnet." : "") +
         (karte.hasLayer(MISCHUNG.ebene) ? " Die Nutzungsmischung wird als Wärmebild eingezeichnet." : "") +
         (DL.some(function (d) { return karte.hasLayer(d.ebene); }) ? " Die Durchlässigkeit des Wegenetzes wird eingezeichnet." : "") +
+        (ZENSUS.some(function (g) { return karte.hasLayer(g.ebene); }) ? " Die Zensus-Ergebnisse (Wer wohnt dort?) werden eingezeichnet." : "") +
         (sichtbareEinrichtungen().length ? " Die Einrichtungen werden eingezeichnet." : "") +
         (sichtbareFlaechen().length ? " Die Flächen werden eingezeichnet." : "") +
         (sichtbareSonne().length ? (marker ? " Der Sonnenstand wird eingezeichnet." :
@@ -7398,6 +7576,7 @@
         MISCHUNG_KLASSEN.forEach(function (kl, i) { eintraege.push({ art: "flaeche", farbe: kl.farbe, deckkraft: 0.85, text: (i === 0 ? "Nutzungsmischung (100-m-Raster): " : "") + kl.text + " (" + mischungErgebnis.anteile[i] + " %)" }); });
       }
       if (s.dl) { dlLegendenEintraege(s.dl, eintraege); }
+      if (s.zensus && s.zensus.length) { zensusLegendenEintraege(s.zensus, eintraege); }
       if (s.hoehenImBild) {
         HOEHEN_KLASSEN.forEach(function (kl, i) { eintraege.push({ art: "flaeche", farbe: kl.farbe, rand: "#777777", text: (i === 0 ? "Gebäude, Traufhöhe: " : "Gebäude: ") + kl.text }); });
       }
@@ -7534,7 +7713,7 @@
       return legendenEintraege({
         markerImBild: mitAdresse,
         fotoBild: fotoZeigenFeld.checked && fotos.some(function (f) { return f.lat !== null; }),
-        gebaeude: an(bebauungEbene), hoehenImBild: an(HOEHENKARTE.ebene), versorgungImBild: an(VERSORGUNG.ebene), mischungImBild: an(MISCHUNG.ebene), dl: dlAktive(),
+        gebaeude: an(bebauungEbene), hoehenImBild: an(HOEHENKARTE.ebene), versorgungImBild: an(VERSORGUNG.ebene), mischungImBild: an(MISCHUNG.ebene), dl: dlAktive(), zensus: zensusAktive(),
         bildKreise: kreise, kreiseImBild: kreise.length > 0,
         bildWegenetz: mitAdresse ? sichtbareWegenetz() : [],
         oepnvImBild: an(OEPNV.ebene), baeumeImBild: an(BAEUME2D.ebene),
@@ -7663,6 +7842,7 @@
       var mischungAbruf = (karte.hasLayer(MISCHUNG.ebene) && !e.ohneVersorgung) ? (mischungErgebnis ? Promise.resolve(mischungErgebnis) : mischungBerechnen().then(function (v) { mischungErgebnis = v; return v; })) : Promise.resolve(null);
       mischungAbruf = mischungAbruf.catch(function () { versorgungFehler = true; return null; });
       var dlAbruf = dlExportDaten(e).catch(function () { versorgungFehler = true; return null; });
+      var zensusAbruf = zensusExportDaten(e).catch(function () { versorgungFehler = true; return null; });
       var hoehenFehler = false;
       var hoehenAbruf = (karte.hasLayer(HOEHENKARTE.ebene) && !e.ohneHoehenkarte) ? holeExportHoehen(plan, mitte) : Promise.resolve(null);
       hoehenAbruf = hoehenAbruf.catch(function () { hoehenFehler = true; return null; });
@@ -7722,7 +7902,7 @@
       var wegenetzAbruf = (marker && sichtbareWegenetz().length) ? ladeWegenetz() : Promise.resolve(null);
       wegenetzAbruf = wegenetzAbruf.catch(function () { wegenetzFehler = true; return null; });
 
-      return Promise.all([ladeAlleKacheln(liste, beiFortschritt), gebaeudeAbruf, kartenDaten, oepnvAbruf, einrichtungenAbruf, flaechenAbruf, wegenetzAbruf, baeumeAbruf, starkregenAbruf, mobilitaetAbruf, taktAbruf, luftAbruf, spielAbruf, grundAbruf, hoehenAbruf, versorgungAbruf, mischungAbruf, dlAbruf]).then(function (ergebnisse) {
+      return Promise.all([ladeAlleKacheln(liste, beiFortschritt), gebaeudeAbruf, kartenDaten, oepnvAbruf, einrichtungenAbruf, flaechenAbruf, wegenetzAbruf, baeumeAbruf, starkregenAbruf, mobilitaetAbruf, taktAbruf, luftAbruf, spielAbruf, grundAbruf, hoehenAbruf, versorgungAbruf, mischungAbruf, dlAbruf, zensusAbruf]).then(function (ergebnisse) {
         var bilder = ergebnisse[0];
         var einzelBaeume = ergebnisse[7];
         var starkregenBilder = ergebnisse[8].filter(function (x) { return !!x.bild; });
@@ -7805,6 +7985,9 @@
         var dlBild = ergebnisse[17], dlImBild = !!(dlBild && (dlBild.kreuz || dlBild.bloecke || dlBild.umweg || dlBild.barr));
         if (dlBild && dlBild.bloecke) { zeichneDlRasterInBild(c, k, dlBild.bloecke, 0.75); }
         if (dlBild && dlBild.kreuz) { zeichneDlRasterInBild(c, k, dlBild.kreuz, 0.75); }
+        // Zensus 2022: Rasterbilder (je Merkmal eines), unter den Gebäuden
+        var zensusBild = ergebnisse[18], zensusImBild = !!(zensusBild && zensusBild.length);
+        if (zensusImBild) { zensusBild.forEach(function (x) { zeichneDlRasterInBild(c, k, x.v, 0.75); }); }
         // Sichtfeld (Ergebnis aus der 3D-Ansicht): ebenso, die 3D-Ansicht zeichnet es selbst
         var sichtImBild = !!(sichtKarte && karte.hasLayer(SICHTFELD2D.ebene) && !e.ohneSichtfeld);
         if (sichtImBild) {
@@ -7941,6 +8124,7 @@
                         (versorgungImBild ? "  ·  " + VERSORGUNG_QUELLE_TEXT : "") +
                         (mischungImBild ? "  ·  " + MISCHUNG_QUELLE_TEXT : "") +
                         (dlImBild ? "  ·  " + DL_QUELLE_TEXT : "") +
+                        (zensusImBild ? "  ·  " + ZENSUS_QUELLE_TEXT : "") +
                         (oepnvImBild ? "  ·  Haltestellen: © OpenStreetMap-Mitwirkende" : "") +
                         (baeumeImBild ? "  ·  Bäume: © OpenStreetMap-Mitwirkende" : "") +
                         (starkregenImBild ? dienstQuellenText() : "") +
@@ -7959,7 +8143,7 @@
           untenSlot -= hQuelle + 2 * pxProMm;
         }
         if (zeige.legende) {
-          var eintraege = legendenEintraege({ markerImBild: markerImBild, fotoBild: fotoBild, gebaeude: !!gebaeude, hoehenImBild: hoehenImBild, versorgungImBild: versorgungImBild, mischungImBild: mischungImBild, dl: dlImBild ? dlBild : null, bildKreise: bildKreise, kreiseImBild: kreiseImBild, bildWegenetz: bildWegenetz, oepnvImBild: oepnvImBild, baeumeImBild: baeumeImBild, sonnenImBild: sonnenImBild, sichtImBild: sichtImBild, starkregenImBild: starkregenImBild, starkregenBilder: starkregenBilder, bildEinrichtungen: bildEinrichtungen, bildMobilitaet: bildMobilitaet, bildSpiel: bildSpiel, luftImBild: luftImBild, grundG: grundG, taktImBild: taktImBild, bildFlaechen: bildFlaechen, bildSonne: bildSonne, zeichnungDa: zeichnungDa, vektor: !!quelle.vektor, live: false });
+          var eintraege = legendenEintraege({ markerImBild: markerImBild, fotoBild: fotoBild, gebaeude: !!gebaeude, hoehenImBild: hoehenImBild, versorgungImBild: versorgungImBild, mischungImBild: mischungImBild, dl: dlImBild ? dlBild : null, zensus: zensusImBild ? zensusBild : null, bildKreise: bildKreise, kreiseImBild: kreiseImBild, bildWegenetz: bildWegenetz, oepnvImBild: oepnvImBild, baeumeImBild: baeumeImBild, sonnenImBild: sonnenImBild, sichtImBild: sichtImBild, starkregenImBild: starkregenImBild, starkregenBilder: starkregenBilder, bildEinrichtungen: bildEinrichtungen, bildMobilitaet: bildMobilitaet, bildSpiel: bildSpiel, luftImBild: luftImBild, grundG: grundG, taktImBild: taktImBild, bildFlaechen: bildFlaechen, bildSonne: bildSonne, zeichnungDa: zeichnungDa, vektor: !!quelle.vektor, live: false });
           zeichneLegende(c, eintraege, plan.B - 6 * pxProMm, untenSlot, pxProMm);
         }
 
@@ -8675,6 +8859,7 @@
       if (e === VERSORGUNG) { return "versorgung"; }
       if (e === MISCHUNG) { return "mischung"; }
       if (DL.indexOf(e) >= 0) { return "dl_" + e.id; }
+      if (ZENSUS.indexOf(e) >= 0) { return "zensus_" + e.id; }
       if (STARKREGEN.indexOf(e) >= 0) { return "starkregen_" + e.id; }
       if (UNTERGRUND.indexOf(e) >= 0) { return "untergrund_" + e.id; }
       if (EINRICHTUNGEN.indexOf(e) >= 0) { return "einrichtung_" + e.id; }
@@ -8797,7 +8982,7 @@
           if (!soll && karte.hasLayer(eintrag.ebene)) { karte.removeLayer(eintrag.ebene); }
         });
       } finally { sammelSchalten = false; }
-      aktualisiereFlaechen(); aktualisiereHoehen(); aktualisiereVersorgung(); aktualisiereMischung(); aktualisiereDl(false); aktualisiereBaeume(); aktualisiereEinrichtungen(); aktualisiereMobilitaet(); aktualisiereTakt(); aktualisiereLuft(); aktualisiereSpiel(); aktualisiereGrund(); aktualisiereOepnv(); aktualisiereWegenetz(false); aktualisiereKreise(false); aktualisiereSonne(false);
+      aktualisiereFlaechen(); aktualisiereHoehen(); aktualisiereVersorgung(); aktualisiereMischung(); aktualisiereDl(false); aktualisiereZensus(); aktualisiereBaeume(); aktualisiereEinrichtungen(); aktualisiereMobilitaet(); aktualisiereTakt(); aktualisiereLuft(); aktualisiereSpiel(); aktualisiereGrund(); aktualisiereOepnv(); aktualisiereWegenetz(false); aktualisiereKreise(false); aktualisiereSonne(false);
       synchronisiereAnalyseHaken();
 
       // 5b. Grundstück (Abschnitt 13): nur laden, wenn die Datei eines hatte

@@ -164,6 +164,7 @@
       lade("luft", window.ladeLuftDaten),
       lade("spiel", window.ladeSpielDaten),
       lade("baeume", window.ladeBaeumeDaten),
+      lade("zensus", window.ladeZensus),
       lade("flaechen", function () { return window.ladeFlaechenDaten(window.FLAECHEN); })
     ];
     if (opt.hoehen) {
@@ -441,6 +442,44 @@
         B.push(zeile("Spielplätze (OpenStreetMap)", z(sp.n1) + " im 400-m-, " + z(sp.n2) + " im 800-m-Umkreis, " + abstandText(sp.naechste) + "; davon wahrscheinlich öffentlich (Zugang nicht eingeschränkt): " + abstandText(spo.naechste)));
         B.push("  - Bewegungsorte: " + orte.join("; "));
       }
+
+      // Bevölkerung (Zensus 2022, 100-m-Raster): Zellen, deren Mittelpunkt im Umkreis liegt
+      if (daten.zensus) {
+        var ZD = daten.zensus;
+        var zensusSumme = function (R) {
+          var s = { zellen: 0, einw: 0, a: 0, aw: 0, u: 0, uw: 0, o: 0, ow: 0, h: 0, hw: 0, mi: 0, mn: 0, le: 0, ln: 0, ei: 0, en: 0 }, i, w;
+          for (i = 0; i < ZD.n; i++) {
+            if (O.abstand(ZD.lat[i], ZD.lng[i]) > R) { continue; }
+            s.zellen++; w = ZD.w[2][i]; if (w !== w) { continue; }
+            s.einw += w;
+            if (ZD.w[3][i] === ZD.w[3][i]) { s.a += w * ZD.w[3][i]; s.aw += w; }
+            if (ZD.w[4][i] === ZD.w[4][i]) { s.u += w * ZD.w[4][i]; s.uw += w; }
+            if (ZD.w[5][i] === ZD.w[5][i]) { s.o += w * ZD.w[5][i]; s.ow += w; }
+            if (ZD.w[6][i] === ZD.w[6][i]) { s.h += w * ZD.w[6][i]; s.hw += w; }
+            if (ZD.w[7][i] === ZD.w[7][i]) { s.mi += ZD.w[7][i]; s.mn++; }
+            if (ZD.w[8][i] === ZD.w[8][i]) { s.le += ZD.w[8][i]; s.ln++; }
+            if (ZD.w[9][i] === ZD.w[9][i]) { s.ei += ZD.w[9][i]; s.en++; }
+          }
+          return { zellen: s.zellen, einw: Math.round(s.einw), alter: s.aw ? s.a / s.aw : null, u18: s.uw ? s.u / s.uw : null, o65: s.ow ? s.o / s.ow : null,
+                   hh: s.hw ? s.h / s.hw : null, miete: s.mn ? s.mi / s.mn : null, leer: s.ln ? s.le / s.ln : null, eigen: s.en ? s.ei / s.en : null, flaecheHa: s.zellen };
+        };
+        var zs1 = zensusSumme(R1), zs2 = zensusSumme(R2);
+        K.zensus = { r400: zs1, r800: zs2 };
+        var zz = function (v, st, e) { return v === null ? "keine Angabe" : z(v, st) + (e || ""); };
+        var zsZeile = function (r, s) {
+          return "  - " + r + "-m-Umkreis: ca. " + z(s.einw) + " Einwohner (im Mittel " + z(s.einw / Math.max(1, s.flaecheHa), 0) + " je Zelle von 1 ha; " + z(s.zellen) + " Zellen), Durchschnittsalter " + zz(s.alter, 1, " Jahre") + ", unter 18 Jahre " + zz(s.u18, 0, " %") + ", ab 65 Jahre " + zz(s.o65, 0, " %") +
+            ", Haushaltsgröße " + zz(s.hh, 1, " Personen") + ", Nettokaltmiete im Mittel " + zz(s.miete, 1, " €/m²") + ", Leerstandsquote im Mittel " + zz(s.leer, 1, " %") + ", Eigentümerquote im Mittel " + zz(s.eigen, 0, " %");
+        };
+        B.push("Wer wohnt dort? (Zensus 2022, Stichtag 15.05.2022, Raster 100 × 100 m; Zahlen aus Datenschutzgründen leicht verändert, Zellen mit zu wenigen Fällen ohne Angabe; Mittelwerte sind nach Einwohnern gewichtet bzw. über die Zellen gemittelt):");
+        B.push(zsZeile(400, zs1)); B.push(zsZeile(800, zs2));
+        var zi = -1, zb = 1e9, ii;
+        for (ii = 0; ii < ZD.n; ii++) { var ab = O.abstand(ZD.lat[ii], ZD.lng[ii]); if (ab < zb) { zb = ab; zi = ii; } }
+        if (zi >= 0 && zb <= 75) {
+          B.push("  - Zelle am roten Punkt: " + z(ZD.w[2][zi]) + " Einwohner, Durchschnittsalter " + zz(ZD.w[3][zi] === ZD.w[3][zi] ? ZD.w[3][zi] : null, 1, " Jahre") + ", ab 65 Jahre " + zz(ZD.w[5][zi] === ZD.w[5][zi] ? ZD.w[5][zi] : null, 0, " %") +
+                 ", Nettokaltmiete " + zz(ZD.w[7][zi] === ZD.w[7][zi] ? ZD.w[7][zi] : null, 1, " €/m²"));
+        }
+        teile.quellen.push(window.ZENSUS_QUELLE_TEXT);
+      } else { teile.fehlt.push("Bevölkerungsdaten (Zensus 2022) konnten nicht geladen werden."); }
 
       // Sonne
       B.push("Sonne am Standort (gerechnet, ohne Verschattung durch Umgebung; Ortszeit):");
