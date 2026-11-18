@@ -807,6 +807,7 @@
           <details class="analyseGruppe"><summary><span class="titel">Sonnenstunden und Sichtfeld</span><span class="anzahl"></span></summary><div id="analyseSonnenstunden"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Gebäudehöhen</span><span class="anzahl"></span></summary><div id="analyseHoehen"></div><p class="hinweis" style="margin:4px 0 0">Färbt jedes Gebäude nach seiner Traufhöhe (Höhe der Dachkante über dem Boden, Gebäudemodell des LGLN, auf 1 bis 5 m genau): unter 4 m (Garagen, Schuppen), 4 bis 7 m, 7 bis 10 m, 10 bis 13 m, 13 bis 20 m und über 20 m. Sichtbar ab der Nahansicht. Beim ersten Zuschalten werden ca. 13 MB geladen (die Höhendaten und das Gelände, die auch die 3D-Ansicht braucht). Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Grünversorgung (Fußweg)</span><span class="anzahl"></span></summary><div id="analyseVersorgung"></div><p class="hinweis" style="margin:4px 0 0">Zeigt für die Wohngebiete (Nutzungsart Wohnen), wie weit es zu Fuß nach dem Wegenetz bis zum nächsten öffentlichen Park, Spielplatz oder Wald ist: grün bis 300 m, orange 300 bis 500 m, dunkelrot darüber. Gerechnet in Rasterzellen von 20 m; die erste Berechnung dauert einige Sekunden. Grundlage sind OpenStreetMap-Daten (Parks ab 1.000 m², Spielplätze ab 100 m², Wald ab 1 ha, ohne privaten Zugang); wo dort Flächen oder Wege fehlen, erscheinen Lücken. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
+          <details class="analyseGruppe"><summary><span class="titel">Durchlässigkeit des Wegenetzes</span><span class="anzahl"></span></summary><div id="analyseDl"></div><p class="hinweis" id="dlInfo" style="margin:4px 0 0;display:none"></p><p class="hinweis" style="margin:4px 0 0">Zeigt, wie gut man zu Fuß durch das Quartier kommt. <em>Kreuzungsdichte</em>: Kreuzungen je km² auf einem 100-m-Raster (rot = weitmaschig, grün = engmaschig). <em>Blockgrößen</em>: Fläche der Blöcke zwischen Wegen, Bahn, Gewässern (grün = kleinteilig, rot = großer Block). <em>Umwegfaktor</em>: wie viel länger der echte Fußweg ab dem roten Punkt ist als die Luftlinie (1,0 = direkt; braucht eine Adresse). <em>Barrieren</em>: Bahn, Flüsse und Kanäle, Hauptstraßen; weiße Kreise zeigen, wo Wege Bahn und Wasser queren (Brücke, Unterführung, Bahnübergang). Gerechnet wird aus dem Wegenetz von OpenStreetMap (nur so vollständig wie dieses). Die erste Berechnung dauert einige Sekunden. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Nutzungsmischung (Wärmebild)</span><span class="anzahl"></span></summary><div id="analyseMischung"></div><p class="hinweis" style="margin:4px 0 0">Ein Wärmebild auf einem Raster von 100 m: Rot = einseitig (fast nur eine Nutzung), Grün = gut gemischt. Verglichen werden vier Nutzungen: Wohnen, Arbeiten (Gewerbe, Industrie, Büros), Läden und Gastronomie sowie Gemeinbedarf (Schulen, Ärzte, Behörden, Kultur). Jede Zelle wird mit ihren Nachbarzellen gemittelt; Gebiete ohne Nutzung (Wald, Wasser, Felder) bleiben ungefärbt. Grundlage sind OpenStreetMap-Daten, die nicht überall vollständig sind. Die erste Berechnung dauert einige Sekunden. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Einrichtungen</span><span class="anzahl"></span></summary><div id="analyseEinrichtungen"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Tag- und Nachtnutzung</span><span class="anzahl"></span></summary><div id="analyseZeiten"></div><p class="hinweis" style="margin:4px 0 0">Zeigt, welche Orte zu welcher Tageszeit aktiv sind: tagsüber (10–16 Uhr), abends (18–23 Uhr) und nachts (23–5 Uhr); gemeint ist: an mindestens einem Wochentag in diesem Zeitfenster geöffnet. Die Einteilung folgt den Öffnungszeiten aus OpenStreetMap, soweit eingetragen und lesbar (etwa jeder zweite Ort); sonst ist sie nach der Art geschätzt (zum Beispiel Büros tagsüber, Bars und Hotels nachts, Krankenhäuser rund um die Uhr). Ein Klick auf einen Punkt zeigt die Zeiten und ob sie eingetragen oder geschätzt sind. Ein Ort erscheint in jeder Ebene, in der er aktiv ist. OpenStreetMap ist nicht vollständig. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
@@ -1218,7 +1219,7 @@
             <li><strong>Adresse</strong> in „01 Standort“ eingeben und „Adresse suchen“. Der rote Punkt ist dein Standort.</li>
             <li><strong>Karte</strong> oben rechts wählen: „Startkarte“ (ohne Symbole), „Hellgrau“, „Schwarzplan“ (schwarze Gebäude auf Weiß) oder „Freiraumplan“ (umgekehrt: Gebäude weiß, Freiraum schwarz). „Bebauung“ zeigt die Gebäude, sobald du nah genug herangezoomt hast.</li>
             <li><strong>Analysedaten</strong> (04): Haken setzen oder „Alles einschalten“. Fußweg und Sonnenstand brauchen die Adresse.</li>
-            <li><strong>Neue Analyse-Ebenen</strong> (alle in 04, nicht bei „Alles einschalten“): „Gebäudehöhen“ färbt die Gebäude nach Traufhöhe (lädt einmalig ca. 13 MB). „Straßen nach Höchstgeschwindigkeit“ und „nach Straßenart“ stehen in „Verkehr und Mobilität“ (grau = in OpenStreetMap kein Tempo eingetragen). „Grünversorgung (Fußweg)“ färbt Wohngebiete rot, wenn Park, Spielplatz oder Wald mehr als 300 m Fußweg entfernt sind (braucht die Adresse nicht). „Nutzungsmischung (Wärmebild)“ zeigt auf einem 100-m-Raster, wie gut Wohnen, Arbeiten, Läden und Gastronomie sowie Gemeinbedarf gemischt sind (grün = gut gemischt, rot = einseitig). Alle vier sind Orientierung aus OpenStreetMap-Daten und nur so vollständig wie diese.</li>
+            <li><strong>Neue Analyse-Ebenen</strong> (alle in 04, nicht bei „Alles einschalten“): „Gebäudehöhen“ färbt die Gebäude nach Traufhöhe (lädt einmalig ca. 13 MB). „Straßen nach Höchstgeschwindigkeit“ und „nach Straßenart“ stehen in „Verkehr und Mobilität“ (grau = in OpenStreetMap kein Tempo eingetragen). „Grünversorgung (Fußweg)“ färbt Wohngebiete rot, wenn Park, Spielplatz oder Wald mehr als 300 m Fußweg entfernt sind (braucht die Adresse nicht). „Nutzungsmischung (Wärmebild)“ zeigt auf einem 100-m-Raster, wie gut Wohnen, Arbeiten, Läden und Gastronomie sowie Gemeinbedarf gemischt sind (grün = gut gemischt, rot = einseitig). Alle vier sind Orientierung aus OpenStreetMap-Daten und nur so vollständig wie diese. Die Gruppe „Durchlässigkeit des Wegenetzes“ zeigt, wie gut man zu Fuß durch das Quartier kommt: <em>Kreuzungsdichte</em> (Kreuzungen je km², rot = weitmaschig), <em>Blockgrößen</em> (Blöcke zwischen Wegen, Bahn und Gewässern), <em>Umwegfaktor</em> (wie viel länger der Fußweg ab dem roten Punkt ist als die Luftlinie, braucht die Adresse) und <em>Barrieren und Querungen</em> (Bahn, Flüsse, Hauptstraßen; weiße Kreise = Brücke, Unterführung oder Bahnübergang). Unter den Haken stehen die wichtigsten Zahlen.</li>
             <li><strong>Eigene Pläne</strong> (05): Bis zu fünf JPG, PNG oder PDF hochladen. In der Liste wählst du einen Plan aus, blendest ihn mit dem Haken aus oder ein und änderst mit ▲ und ▼ die Reihenfolge. Mit dem Kreis in der Mitte verschieben, mit dem roten Quadrat drehen und vergrößern, oder „Zwei Punkte einpassen“ für den genauen Maßstab. „Plan sperren“ schützt vor Verschieben.</li>
             <li><strong>Zeichnen</strong> (06): Werkzeug wählen und in die Karte klicken. Objekte anklicken zum Ändern, Entf löscht, Strg+Z nimmt zurück. Mit „Strecke messen“ und „Fläche messen“ liest du Längen in Metern und Flächen in Quadratmetern ab, sie stehen auf der Karte und im gespeicherten Bild.</li>
             <li><strong>Ausschnitt</strong> (07): Maßstab und Papierformat wählen. Mit „Rahmen auf der Karte zeigen“ siehst du, was ins Bild kommt.</li>
@@ -2282,6 +2283,43 @@
     var MISCHUNG = { name: "Nutzungsmischung (Wärmebild, 100-m-Raster)", flaeche: true, farbe: "#fee08b", deckkraft: 0.75, nichtAlle: true, ebene: L.layerGroup() };
     MISCHUNG.ebene.getAttribution = function () { return "Nutzungsmischung: &copy; OpenStreetMap-Mitwirkende"; };
     var mischungErgebnis = null;          // { canvas, s, w, n, o, anteile: [%, ...] }
+    // Gruppe "Durchlässigkeit des Wegenetzes": vier Ebenen, gerechnet im Browser aus dem Wegenetz (wegenetz_oldenburg.js) und der Kartendatei
+    // (Bahn, Gewässer, Hauptstraßen): Kreuzungsdichte, Blockgrößen, Umwegfaktor ab dem roten Punkt, Barrieren mit Querungen.
+    var DL_QUELLE_TEXT = "Durchlässigkeit: © OpenStreetMap-Mitwirkende";
+    var DL_KREUZ_KLASSEN = [
+      { bis: 30,       farbe: "#a50026", text: "weitmaschig: unter 30 Kreuzungen je km²" },
+      { bis: 60,       farbe: "#f46d43", text: "30 bis 60 je km²" },
+      { bis: 100,      farbe: "#fee08b", text: "60 bis 100 je km²" },
+      { bis: 150,      farbe: "#a6d96a", text: "100 bis 150 je km²" },
+      { bis: Infinity, farbe: "#1a9850", text: "engmaschig: über 150 je km²" }
+    ];
+    var DL_BLOCK_KLASSEN = [
+      { bis: 1,        farbe: "#1a9850", text: "kleinteilig: unter 1 ha" },
+      { bis: 2.5,      farbe: "#a6d96a", text: "1 bis 2,5 ha" },
+      { bis: 6,        farbe: "#fee08b", text: "2,5 bis 6 ha" },
+      { bis: 15,       farbe: "#f46d43", text: "6 bis 15 ha" },
+      { bis: Infinity, farbe: "#a50026", text: "über 15 ha (Großblock oder Barriere)" }
+    ];
+    var DL_UMWEG_KLASSEN = [
+      { bis: 1.15,     farbe: "#1a9850", text: "fast direkt: bis 1,15" },
+      { bis: 1.3,      farbe: "#a6d96a", text: "1,15 bis 1,3" },
+      { bis: 1.5,      farbe: "#fee08b", text: "1,3 bis 1,5" },
+      { bis: 1.8,      farbe: "#f46d43", text: "1,5 bis 1,8" },
+      { bis: Infinity, farbe: "#a50026", text: "großer Umweg: über 1,8" }
+    ];
+    var DL_BARR_STIL = {
+      bahn:    { farbe: "#5d4037", text: "Bahnlinie (Barriere)", strich: true },
+      wasser:  { farbe: "#1f78b4", text: "Fluss, Kanal, großer See (Barriere)", strich: false },
+      strasse: { farbe: "#d73027", text: "Hauptstraße, Schnellstraße (Barriere)", strich: false }
+    };
+    var DL_KREUZ = { id: "kreuzung", name: "Kreuzungsdichte (Wärmebild, 100-m-Raster)", flaeche: true, farbe: "#fee08b", deckkraft: 0.75, nichtAlle: true, ebene: L.layerGroup() };
+    var DL_BLOECKE = { id: "bloecke", name: "Blockgrößen (zwischen Wegen und Barrieren)", flaeche: true, farbe: "#f46d43", deckkraft: 0.75, nichtAlle: true, ebene: L.layerGroup() };
+    var DL_UMWEG = { id: "umweg", name: "Umwegfaktor ab dem roten Punkt (bis 800 m)", farbe: "#f46d43", nichtAlle: true, ebene: L.layerGroup() };
+    var DL_BARR = { id: "barrieren", name: "Barrieren und Querungen (Bahn, Wasser, Hauptstraßen)", farbe: "#5d4037", strich: [8, 5], nichtAlle: true, ebene: L.layerGroup() };
+    var DL = [DL_KREUZ, DL_BLOECKE, DL_UMWEG, DL_BARR];
+    DL.forEach(function (d) { d.ebene.getAttribution = function () { return "Durchlässigkeit: &copy; OpenStreetMap-Mitwirkende"; }; });
+    var dlErgebnis = { kreuz: null, bloecke: null, barr: null, umweg: null };     // Ergebnisse (werden beim ersten Zuschalten gerechnet)
+    function istDlEbene(ebene) { return DL.some(function (d) { return d.ebene === ebene; }); }
     var hoehenListe = null, hoehenLadevorgang = null;
     function hoehenKlasseVon(t) {
       for (var i = 0; i < HOEHEN_KLASSEN.length; i++) { if (t < HOEHEN_KLASSEN[i].bis) { return i; } }
@@ -2636,6 +2674,7 @@
     baueAnalyseHaken("analyseHoehen", [HOEHENKARTE], function (g) { return g.name; });
     baueAnalyseHaken("analyseVersorgung", [VERSORGUNG], function (g) { return g.name; });
     baueAnalyseHaken("analyseMischung", [MISCHUNG], function (g) { return g.name; });
+    baueAnalyseHaken("analyseDl", DL, function (g) { return g.name; });
     baueAnalyseHaken("analyseEinrichtungen", EINRICHTUNGEN.filter(function (g) { return !g.zeit; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseZeiten", EINRICHTUNGEN.filter(function (g) { return g.zeit; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseFlaechen", FLAECHEN.filter(function (g) { return g.quelle === "flaechen"; }), function (gruppe) { return gruppe.name; });
@@ -2869,6 +2908,7 @@
       else if (ebene === HOEHENKARTE.ebene) { hoehenGezeichnet = null; aktualisiereHoehen(); }
       else if (ebene === VERSORGUNG.ebene) { aktualisiereVersorgung(); }
       else if (ebene === MISCHUNG.ebene) { aktualisiereMischung(); }
+      else if (istDlEbene(ebene)) { aktualisiereDl(true); }
       else if (istEinrichtungsEbene(ebene)) { aktualisiereEinrichtungen(); }
       else if (istMobilitaetEbene(ebene)) { aktualisiereMobilitaet(); }
       else if (ebene === TAKT.ebene) { aktualisiereTakt(); }
@@ -2883,7 +2923,7 @@
     karte.on("layerremove", function (ereignis) {
       if (sammelSchalten) { return; }
       var ebene = ereignis.layer;
-      if (!istKreisEbene(ebene) && !istSonnenEbene(ebene) && !istWegenetzEbene(ebene) && ebene !== OEPNV.ebene && ebene !== BAEUME2D.ebene && !istStarkregenEbene(ebene) && ebene !== SONNENSTUNDEN2D.ebene && ebene !== SICHTFELD2D.ebene && ebene !== HOEHENKARTE.ebene && ebene !== VERSORGUNG.ebene && ebene !== MISCHUNG.ebene && !istEinrichtungsEbene(ebene) && !istMobilitaetEbene(ebene) && ebene !== TAKT.ebene && ebene !== LUFT.ebene && !istSpielEbene(ebene) && !istGrundEbene(ebene) && !istFlaechenEbene(ebene)) { return; }
+      if (!istKreisEbene(ebene) && !istSonnenEbene(ebene) && !istWegenetzEbene(ebene) && ebene !== OEPNV.ebene && ebene !== BAEUME2D.ebene && !istStarkregenEbene(ebene) && ebene !== SONNENSTUNDEN2D.ebene && ebene !== SICHTFELD2D.ebene && ebene !== HOEHENKARTE.ebene && ebene !== VERSORGUNG.ebene && ebene !== MISCHUNG.ebene && !istDlEbene(ebene) && !istEinrichtungsEbene(ebene) && !istMobilitaetEbene(ebene) && ebene !== TAKT.ebene && ebene !== LUFT.ebene && !istSpielEbene(ebene) && !istGrundEbene(ebene) && !istFlaechenEbene(ebene)) { return; }
       if (ebene.clearLayers) { ebene.clearLayers(); }
       if (istGrundEbene(ebene)) { aktualisiereGrund(); }
       setzeKartenStatus("");
@@ -2896,7 +2936,7 @@
     // Abschnitts (Fußweg, Sonnenstand, ÖPNV, Einrichtungen, Grün und Freiräume) auf einmal. Die Bebauung gehört
     // nicht dazu. Dabei wird nicht für jede Ebene einzeln gezeichnet, sondern am Ende einmal für alle.
     function alleAnalyseEbenen() {
-      return [].concat(FLAECHEN, DIENSTE, FLST, [HOEHENKARTE, VERSORGUNG, MISCHUNG, BAEUME2D], MOBILITAET, EINRICHTUNGEN, SPIEL, [TAKT, OEPNV, LUFT], WEGENETZ_ZEITEN, KREISE, SONNE);   // von unten nach oben
+      return [].concat(FLAECHEN, DIENSTE, FLST, [HOEHENKARTE, VERSORGUNG, MISCHUNG, BAEUME2D], DL, MOBILITAET, EINRICHTUNGEN, SPIEL, [TAKT, OEPNV, LUFT], WEGENETZ_ZEITEN, KREISE, SONNE);   // von unten nach oben
     }
     function schalteAlleAnalyseEbenen(an) {
       sammelSchalten = true;
@@ -2914,6 +2954,7 @@
       aktualisiereHoehen();
       aktualisiereVersorgung();
       aktualisiereMischung();
+      aktualisiereDl(false);
       aktualisiereBaeume();
       aktualisiereEinrichtungen();
       aktualisiereMobilitaet();
@@ -4302,6 +4343,374 @@
         }).catch(function (fehler) {
           if (window.console) { console.error("Grünversorgung konnte nicht berechnet werden:", fehler); }
           setzeKartenStatus("Die Grünversorgung konnte nicht berechnet werden. Die Dateien wegenetz_oldenburg.js, nutzung_oldenburg.js und gruenversorgung_oldenburg.js müssen im selben Ordner wie index.html liegen.", true);
+        });
+      }, 30);
+    }
+
+    // ---------- Gruppe "Durchlässigkeit des Wegenetzes" ----------
+    // Rasterfeld über das ganze Wegenetz (Zellen von zelleM Metern, rand Zellen Rand). Zelle (x, y): x = (Länge - w) / dLng, y = (n - Breite) / dLat.
+    function dlGitter(netz, zelleM, rand) {
+      if (!netz.bbox) {
+        var s = 90, w = 180, n = -90, o = -180;
+        for (var i = 0; i < netz.n; i++) {
+          if (netz.la[i] < s) { s = netz.la[i]; } if (netz.la[i] > n) { n = netz.la[i]; }
+          if (netz.lo[i] < w) { w = netz.lo[i]; } if (netz.lo[i] > o) { o = netz.lo[i]; }
+        }
+        netz.bbox = { s: s, w: w, n: n, o: o };
+      }
+      var b = netz.bbox, dLat = zelleM / WEGE_M_PRO_GRAD, dLng = zelleM / (WEGE_M_PRO_GRAD * WEGE_COS), r = rand || 0;
+      var west = b.w - r * dLng, nord = b.n + r * dLat;
+      var NX = Math.ceil((b.o - b.w) / dLng) + 2 * r + 1, NY = Math.ceil((b.n - b.s) / dLat) + 2 * r + 1;
+      return { s: nord - NY * dLat, w: west, n: nord, o: west + NX * dLng, dLat: dLat, dLng: dLng, NX: NX, NY: NY };
+    }
+    function dlFarbe(hex) { return [parseInt(hex.substr(1, 2), 16), parseInt(hex.substr(3, 2), 16), parseInt(hex.substr(5, 2), 16)]; }
+    function dlKlasse(klassen, wert) { var i = 0; while (i < klassen.length - 1 && wert >= klassen[i].bis) { i++; } return i; }
+
+    // Kreuzungsdichte: Knoten mit mindestens drei verschiedenen Nachbarn (Punkte innerhalb von 15 m zählen als eine Kreuzung),
+    // je Zelle von 100 m gezählt, dann über 3 x 3 Zellen (300 x 300 m = 0,09 km²) auf Kreuzungen je km² umgerechnet.
+    function dlKreuzung(netz) {
+      var g = dlGitter(netz, 100, 1), NX = g.NX, NY = g.NY, N = NX * NY;
+      var zaehl = new Float32Array(N), hat = new Uint8Array(N), gesehen = new Set(), anzahl = 0;
+      var sLa = 15 / WEGE_M_PRO_GRAD, sLo = 15 / (WEGE_M_PRO_GRAD * WEGE_COS);
+      for (var u = 0; u < netz.n; u++) {
+        var cx = Math.floor((netz.lo[u] - g.w) / g.dLng), cy = Math.floor((g.n - netz.la[u]) / g.dLat);
+        if (cx < 0 || cy < 0 || cx >= NX || cy >= NY) { continue; }
+        hat[cy * NX + cx] = 1;
+        var von = netz.start[u], bis = netz.start[u + 1];
+        if (bis - von < 3) { continue; }
+        var nachbarn = [];
+        for (var j = von; j < bis; j++) { if (nachbarn.indexOf(netz.nb[j]) < 0) { nachbarn.push(netz.nb[j]); } }
+        if (nachbarn.length < 3) { continue; }
+        var key = Math.floor(netz.la[u] / sLa) * 100000 + Math.floor(netz.lo[u] / sLo);
+        if (gesehen.has(key)) { continue; }
+        gesehen.add(key); zaehl[cy * NX + cx]++; anzahl++;
+      }
+      var aus = document.createElement("canvas"); aus.width = NX; aus.height = NY;
+      var ac = aus.getContext("2d"), bild = ac.createImageData(NX, NY), px = bild.data;
+      var farben = DL_KREUZ_KLASSEN.map(function (k) { return dlFarbe(k.farbe); }), zk = DL_KREUZ_KLASSEN.map(function () { return 0; }), summeDichte = 0, zellen = 0;
+      for (var y = 0; y < NY; y++) {
+        for (var x = 0; x < NX; x++) {
+          var q = y * NX + x;
+          if (!hat[q]) { continue; }
+          var sum = 0;
+          for (var dy = -1; dy <= 1; dy++) { for (var dx = -1; dx <= 1; dx++) {
+            var xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < NX && yy < NY) { sum += zaehl[yy * NX + xx]; }
+          } }
+          var dichte = sum / 0.09, kl = dlKlasse(DL_KREUZ_KLASSEN, dichte);
+          zk[kl]++; summeDichte += dichte; zellen++;
+          px[q * 4] = farben[kl][0]; px[q * 4 + 1] = farben[kl][1]; px[q * 4 + 2] = farben[kl][2]; px[q * 4 + 3] = 255;
+        }
+      }
+      ac.putImageData(bild, 0, 0);
+      var summe = Math.max(1, zellen);
+      return { canvas: aus, s: g.s, w: g.w, n: g.n, o: g.o, anteile: zk.map(function (z) { return Math.round(z * 100 / summe); }), mittel: Math.round(summeDichte / summe), anzahl: anzahl };
+    }
+
+    // Große Wasserflächen (umschließendes Rechteck mindestens 2 ha) gelten als Barriere, kleine Teiche nicht
+    function dlGrosseFlaeche(f) { return (f.n - f.s) * WEGE_M_PRO_GRAD * (f.o - f.w) * WEGE_M_PRO_GRAD * WEGE_COS >= 20000; }
+
+    // Blockgrößen: Wege, Bahn, Flüsse und große Wasserflächen werden als Wände in ein Raster (Zellen von 8 m) gezeichnet,
+    // dann wird jedes zusammenhängende Stück Raster zwischen den Wänden gezählt (Flutfüllung). Stücke, die den Rand berühren, sind offen und bleiben ungefärbt.
+    function dlBloecke(netz, D) {
+      var ZELLE = 8, g = dlGitter(netz, ZELLE, 3), NX = g.NX, NY = g.NY, N = NX * NY;
+      var cv = document.createElement("canvas"); cv.width = NX; cv.height = NY;
+      var c = cv.getContext("2d", { willReadFrequently: true });
+      function X(lng) { return (lng - g.w) / g.dLng; }
+      function Y(lat) { return (g.n - lat) / g.dLat; }
+      c.fillStyle = "#000"; c.strokeStyle = "#000"; c.lineWidth = 1.6; c.lineCap = "round"; c.lineJoin = "round";
+      D.wasser.forEach(function (f) {
+        if (!dlGrosseFlaeche(f)) { return; }
+        c.beginPath();
+        f.ringe.forEach(function (ring) {
+          for (var i = 0; i < ring.length; i += 2) { if (i === 0) { c.moveTo(X(ring[i + 1]), Y(ring[i])); } else { c.lineTo(X(ring[i + 1]), Y(ring[i])); } }
+          c.closePath();
+        });
+        c.fill("evenodd");
+      });
+      c.beginPath();
+      for (var e = 0; e < netz.m; e++) { c.moveTo(X(netz.lo[netz.a[e]]), Y(netz.la[netz.a[e]])); c.lineTo(X(netz.lo[netz.b[e]]), Y(netz.la[netz.b[e]])); }
+      function linien(liste) {
+        liste.forEach(function (l) {
+          var p = l.pts;
+          for (var i = 0; i < p.length; i += 2) { if (i === 0) { c.moveTo(X(p[i + 1]), Y(p[i])); } else { c.lineTo(X(p[i + 1]), Y(p[i])); } }
+        });
+      }
+      linien(D.bahn);
+      linien(D.gewaesser.filter(function (l) { return l.k === 0; }));
+      c.stroke();
+      var daten = c.getImageData(0, 0, NX, NY).data;
+      var wand = new Uint8Array(N), klasse = new Uint8Array(N), schlange = new Int32Array(N);
+      for (var i0 = 0; i0 < N; i0++) { wand[i0] = daten[i0 * 4 + 3] >= 64 ? 1 : 0; }
+      var haZelle = ZELLE * ZELLE / 10000, flaechen = [], zk = DL_BLOCK_KLASSEN.map(function () { return 0; });
+      for (var s0 = 0; s0 < N; s0++) {
+        if (wand[s0]) { continue; }
+        var kopf = 0, ende = 0, offen = false;
+        schlange[ende++] = s0; wand[s0] = 2;
+        while (kopf < ende) {
+          var p0 = schlange[kopf++], x = p0 % NX, y = (p0 / NX) | 0;
+          if (x === 0 || y === 0 || x === NX - 1 || y === NY - 1) { offen = true; }
+          if (x > 0 && !wand[p0 - 1]) { wand[p0 - 1] = 2; schlange[ende++] = p0 - 1; }
+          if (x < NX - 1 && !wand[p0 + 1]) { wand[p0 + 1] = 2; schlange[ende++] = p0 + 1; }
+          if (y > 0 && !wand[p0 - NX]) { wand[p0 - NX] = 2; schlange[ende++] = p0 - NX; }
+          if (y < NY - 1 && !wand[p0 + NX]) { wand[p0 + NX] = 2; schlange[ende++] = p0 + NX; }
+        }
+        if (offen) { continue; }
+        var ha = ende * haZelle, kl = dlKlasse(DL_BLOCK_KLASSEN, ha);
+        for (var t = 0; t < ende; t++) { klasse[schlange[t]] = kl + 1; }
+        zk[kl] += ende;
+        if (ha >= 0.2) { flaechen.push(ha); }       // winzige Splitter (zum Beispiel zwischen zwei Fahrbahnen) zählen nicht als Block
+      }
+      var aus = document.createElement("canvas"); aus.width = NX; aus.height = NY;
+      var ac = aus.getContext("2d"), bild = ac.createImageData(NX, NY), px = bild.data, farben = DL_BLOCK_KLASSEN.map(function (k) { return dlFarbe(k.farbe); });
+      for (var q = 0; q < N; q++) {
+        if (!klasse[q]) { continue; }
+        var f = farben[klasse[q] - 1];
+        px[q * 4] = f[0]; px[q * 4 + 1] = f[1]; px[q * 4 + 2] = f[2]; px[q * 4 + 3] = 255;
+      }
+      ac.putImageData(bild, 0, 0);
+      flaechen.sort(function (a, b) { return a - b; });
+      var summe = Math.max(1, zk.reduce(function (a, b) { return a + b; }, 0));
+      return { canvas: aus, s: g.s, w: g.w, n: g.n, o: g.o, anteile: zk.map(function (z) { return Math.round(z * 100 / summe); }),
+               anzahl: flaechen.length, medianHa: flaechen.length ? flaechen[flaechen.length >> 1] : 0 };
+    }
+
+    // Barrieren: Bahn, Flüsse/Kanäle (Linien der Klasse 0) samt Umrissen großer Wasserflächen, Hauptstraßen (Klasse 0 der Straßen).
+    // Querungen: Wegstücke, die Bahn oder Wasser kreuzen, ohne dass der Weg dort aufhört (Brücke, Unterführung, Bahnübergang). Querungen
+    // innerhalb von 50 m zählen als eine. Bei Hauptstraßen lassen sich Querungen nicht ermitteln (Übergänge teilen sich Punkte mit der Straße).
+    function dlBarrieren(netz, D) {
+      var typen = { bahn: D.bahn.map(function (l) { return l.pts; }), wasser: [], strasse: D.strassenNachKlasse[0].map(function (l) { return l.pts; }) };
+      D.gewaesser.forEach(function (l) { if (l.k === 0) { typen.wasser.push(l.pts); } });
+      D.wasser.forEach(function (f) {
+        if (!dlGrosseFlaeche(f)) { return; }
+        f.ringe.forEach(function (ring) {
+          var zu = new Float64Array(ring.length + 2); zu.set(ring); zu[ring.length] = ring[0]; zu[ring.length + 1] = ring[1];     // Ring schließen
+          typen.wasser.push(zu);
+        });
+      });
+      // Strecken von Bahn und Wasser in ein Raster (Zellen 0,002 x 0,003 Grad)
+      var GLA = 0.002, GLO = 0.003, gitter = new Map(), sLa0 = [], sLo0 = [], sLa1 = [], sLo1 = [], sTyp = [];
+      ["bahn", "wasser"].forEach(function (typ) {
+        typen[typ].forEach(function (pts) {
+          for (var i = 0; i + 3 < pts.length; i += 2) {
+            var id = sTyp.length, la0 = pts[i], lo0 = pts[i + 1], la1 = pts[i + 2], lo1 = pts[i + 3];
+            sLa0.push(la0); sLo0.push(lo0); sLa1.push(la1); sLo1.push(lo1); sTyp.push(typ);
+            for (var ci = Math.floor(Math.min(la0, la1) / GLA); ci <= Math.floor(Math.max(la0, la1) / GLA); ci++) {
+              for (var cj = Math.floor(Math.min(lo0, lo1) / GLO); cj <= Math.floor(Math.max(lo0, lo1) / GLO); cj++) {
+                var key = ci * 100000 + cj, l = gitter.get(key); if (!l) { l = []; gitter.set(key, l); } l.push(id);
+              }
+            }
+          }
+        });
+      });
+      var EPS = 1e-13, X = WEGE_COS;
+      var kreuz = { bahn: [], wasser: [] }, punktGitter = { bahn: new Map(), wasser: new Map() };
+      var dLa = 50 / WEGE_M_PRO_GRAD, dLo = 50 / (WEGE_M_PRO_GRAD * WEGE_COS), besucht = new Int32Array(sTyp.length).fill(-1);
+      function neu(typ, la, lo) {
+        var ci = Math.floor(la / dLa), cj = Math.floor(lo / dLo), m = punktGitter[typ];
+        for (var a = ci - 1; a <= ci + 1; a++) { for (var b = cj - 1; b <= cj + 1; b++) {
+          var l = m.get(a * 100000 + b); if (!l) { continue; }
+          for (var i = 0; i < l.length; i++) { if (wegeAbstandM(la, lo, l[i][0], l[i][1]) < 50) { return false; } }
+        } }
+        var key = ci * 100000 + cj, liste = m.get(key); if (!liste) { liste = []; m.set(key, liste); }
+        liste.push([la, lo]); kreuz[typ].push([la, lo]); return true;
+      }
+      for (var e = 0; e < netz.m; e++) {
+        var ka = netz.a[e], kb = netz.b[e], ay = netz.la[ka], ax = netz.lo[ka] * X, by = netz.la[kb], bx = netz.lo[kb] * X;
+        for (var ci = Math.floor(Math.min(ay, by) / GLA); ci <= Math.floor(Math.max(ay, by) / GLA); ci++) {
+          for (var cj = Math.floor(Math.min(netz.lo[ka], netz.lo[kb]) / GLO); cj <= Math.floor(Math.max(netz.lo[ka], netz.lo[kb]) / GLO); cj++) {
+            var l = gitter.get(ci * 100000 + cj); if (!l) { continue; }
+            for (var i = 0; i < l.length; i++) {
+              var id = l[i]; if (besucht[id] === e) { continue; } besucht[id] = e;
+              var sy0 = sLa0[id], sx0 = sLo0[id] * X, sy1 = sLa1[id], sx1 = sLo1[id] * X;
+              var d1 = (sx1 - sx0) * (ay - sy0) - (sy1 - sy0) * (ax - sx0), d2 = (sx1 - sx0) * (by - sy0) - (sy1 - sy0) * (bx - sx0);
+              if (!((d1 > EPS && d2 < -EPS) || (d1 < -EPS && d2 > EPS))) { continue; }
+              var d3 = (bx - ax) * (sy0 - ay) - (by - ay) * (sx0 - ax), d4 = (bx - ax) * (sy1 - ay) - (by - ay) * (sx1 - ax);
+              if (!((d3 > EPS && d4 < -EPS) || (d3 < -EPS && d4 > EPS))) { continue; }
+              var t = d1 / (d1 - d2);
+              neu(sTyp[id], ay + (by - ay) * t, (ax + (bx - ax) * t) / X);
+            }
+          }
+        }
+      }
+      return { typen: typen, kreuz: kreuz, anzahl: { bahn: kreuz.bahn.length, wasser: kreuz.wasser.length } };
+    }
+
+    // Kürzeste Wege (Dijkstra) von mehreren Startknoten [[Knoten, Entfernung], ...] bis maxM Meter; gibt die Entfernung je Knoten zurück (Infinity = nicht erreicht)
+    function wegenetzDijkstra(netz, starts, maxM) {
+      var dist = new Float64Array(netz.n); dist.fill(Infinity);
+      var hKey = [], hKnoten = [];
+      function hinein(d, u) {
+        var i = hKey.length; hKey.push(d); hKnoten.push(u);
+        while (i > 0) { var p = (i - 1) >> 1; if (hKey[p] <= hKey[i]) { break; }
+          var tk = hKey[p]; hKey[p] = hKey[i]; hKey[i] = tk; var tn = hKnoten[p]; hKnoten[p] = hKnoten[i]; hKnoten[i] = tn; i = p; }
+      }
+      function heraus() {
+        var d = hKey[0], u = hKnoten[0], dk = hKey.pop(), du = hKnoten.pop();
+        if (hKey.length) {
+          hKey[0] = dk; hKnoten[0] = du;
+          var i = 0, n = hKey.length;
+          for (;;) {
+            var l = 2 * i + 1, r = l + 1, m = i;
+            if (l < n && hKey[l] < hKey[m]) { m = l; }
+            if (r < n && hKey[r] < hKey[m]) { m = r; }
+            if (m === i) { break; }
+            var tk = hKey[m]; hKey[m] = hKey[i]; hKey[i] = tk; var tn = hKnoten[m]; hKnoten[m] = hKnoten[i]; hKnoten[i] = tn; i = m;
+          }
+        }
+        return [d, u];
+      }
+      starts.forEach(function (s) { if (s[1] < dist[s[0]]) { dist[s[0]] = s[1]; hinein(s[1], s[0]); } });
+      while (hKey.length) {
+        var ds = heraus(), d = ds[0], u = ds[1];
+        if (d > dist[u] || d > maxM) { continue; }
+        for (var j = netz.start[u]; j < netz.start[u + 1]; j++) {
+          var v = netz.nb[j], nd = d + netz.laenge[netz.nbKante[j]];
+          if (nd < dist[v]) { dist[v] = nd; hinein(nd, v); }
+        }
+      }
+      return dist;
+    }
+
+    // Umwegfaktor ab dem roten Punkt: Weg im Netz geteilt durch die Luftlinie (mindestens 60 m Luftlinie, mindestens 1,0). Gezeichnet werden
+    // die Wege bis 800 m Fußweg in der Farbe ihres Faktors. Zahlen: Mittel und Median über Wegpunkte 200 bis 600 m in Luftlinie
+    // (nicht erreichte Punkte zählen mit 3,0), dazu der Anteil der Wegpunkte im 400-m-Umkreis, die auch in 400 m Fußweg erreichbar sind.
+    function dlUmweg(netz, punkt) {
+      var an = wegenetzAnschluss(netz, punkt.lat, punkt.lng);
+      if (!an) { return null; }
+      var len = netz.laenge[an.kante], ZEICHNEN = 800;
+      // Ausgangspunkt ist der Punkt auf dem nächsten Wegstück (der Weg von der Adresse dorthin bleibt außen vor, sonst wären nahe Punkte verfälscht)
+      var oLa = netz.la[netz.a[an.kante]] + (netz.la[netz.b[an.kante]] - netz.la[netz.a[an.kante]]) * an.t;
+      var oLo = netz.lo[netz.a[an.kante]] + (netz.lo[netz.b[an.kante]] - netz.lo[netz.a[an.kante]]) * an.t;
+      var dist = wegenetzDijkstra(netz, [[netz.a[an.kante], an.t * len], [netz.b[an.kante], (1 - an.t) * len]], 1500);
+      var faktor = new Float32Array(netz.n), werte = [], nahe = 0, naheErreicht = 0;
+      for (var u = 0; u < netz.n; u++) {
+        var luft = wegeAbstandM(oLa, oLo, netz.la[u], netz.lo[u]);
+        faktor[u] = isFinite(dist[u]) ? Math.max(1, dist[u] / Math.max(luft, 60)) : NaN;
+        if (luft >= 200 && luft <= 600) { werte.push(isFinite(dist[u]) ? Math.min(3, faktor[u]) : 3); }
+        if (luft <= 400) { nahe++; if (dist[u] <= 400) { naheErreicht++; } }
+      }
+      werte.sort(function (a, b) { return a - b; });
+      var segs = DL_UMWEG_KLASSEN.map(function () { return []; });
+      for (var k = 0; k < netz.m; k++) {
+        var a = netz.a[k], b = netz.b[k], da = dist[a], db = dist[b];
+        var nah = da <= db ? a : b, fern = nah === a ? b : a, dn = Math.min(da, db), df = Math.max(da, db);
+        if (!(dn < ZEICHNEN)) { continue; }
+        var t1 = 1, fk = faktor[fern];
+        if (!(df <= ZEICHNEN)) { t1 = Math.min(1, (ZEICHNEN - dn) / Math.max(netz.laenge[k], 0.01)); }
+        if (!isFinite(fk)) { fk = faktor[nah]; }
+        var kl = dlKlasse(DL_UMWEG_KLASSEN, fk);
+        segs[kl].push([[netz.la[nah], netz.lo[nah]], [netz.la[nah] + (netz.la[fern] - netz.la[nah]) * t1, netz.lo[nah] + (netz.lo[fern] - netz.lo[nah]) * t1]]);
+      }
+      var mittel = werte.length ? werte.reduce(function (s, v) { return s + v; }, 0) / werte.length : 0;
+      return { segs: segs, mittel: mittel, median: werte.length ? werte[werte.length >> 1] : 0, anteil400: nahe ? Math.round(naheErreicht * 100 / nahe) : 0,
+               schluessel: punkt.lat.toFixed(6) + "," + punkt.lng.toFixed(6) };
+    }
+
+    var dlKette = Promise.resolve();
+    function dlUmwegSchluessel() { var p = marker.getLatLng(); return p.lat.toFixed(6) + "," + p.lng.toFixed(6); }
+    // Rechnet, was für die gewünschten Ebenen noch fehlt (immer nacheinander)
+    function dlBerechnen(brauche) {
+      var p = dlKette.then(function () {
+        return Promise.all([ladeWegenetz(), (brauche.bloecke || brauche.barr) ? ladeKartenDaten() : Promise.resolve(null)]).then(function (r) {
+          var netz = r[0], D = r[1];
+          if (brauche.kreuz && !dlErgebnis.kreuz) { dlErgebnis.kreuz = dlKreuzung(netz); }
+          if (brauche.bloecke && !dlErgebnis.bloecke) { dlErgebnis.bloecke = dlBloecke(netz, D); }
+          if (brauche.barr && !dlErgebnis.barr) { dlErgebnis.barr = dlBarrieren(netz, D); }
+          if (brauche.umweg && marker && !(dlErgebnis.umweg && dlErgebnis.umweg.schluessel === dlUmwegSchluessel())) { dlErgebnis.umweg = dlUmweg(netz, marker.getLatLng()); }
+        });
+      });
+      dlKette = p.catch(function () { });
+      return p;
+    }
+    // Ergebnisse der gerade zugeschalteten Ebenen (für Legende, Bild und Anzeige)
+    function dlAktive() {
+      var an = function (d) { return karte.hasLayer(d.ebene); };
+      return { kreuz: an(DL_KREUZ) ? dlErgebnis.kreuz : null, bloecke: an(DL_BLOECKE) ? dlErgebnis.bloecke : null,
+               barr: an(DL_BARR) ? dlErgebnis.barr : null, umweg: (an(DL_UMWEG) && marker) ? dlErgebnis.umweg : null };
+    }
+    function dlExportDaten(e) {
+      var an = function (d) { return karte.hasLayer(d.ebene); };
+      if (e.ohneVersorgung || !DL.some(an)) { return Promise.resolve(null); }
+      return dlBerechnen({ kreuz: an(DL_KREUZ), bloecke: an(DL_BLOECKE), barr: an(DL_BARR), umweg: an(DL_UMWEG) && !!marker }).then(dlAktive);
+    }
+    // Legendenzeilen (Bildschirm und gespeichertes Bild) für die Ergebnisse aus dlAktive()
+    function dlLegendenEintraege(dl, eintraege) {
+      if (dl.kreuz) {
+        DL_KREUZ_KLASSEN.forEach(function (kl, i) { eintraege.push({ art: "flaeche", farbe: kl.farbe, deckkraft: 0.85, text: (i === 0 ? "Kreuzungsdichte (Wegenetz, 100-m-Raster): " : "") + kl.text + " (" + dl.kreuz.anteile[i] + " %)" }); });
+      }
+      if (dl.bloecke) {
+        DL_BLOCK_KLASSEN.forEach(function (kl, i) { eintraege.push({ art: "flaeche", farbe: kl.farbe, deckkraft: 0.85, text: (i === 0 ? "Blockgröße (zwischen Wegen und Barrieren): " : "") + kl.text + " (" + dl.bloecke.anteile[i] + " %)" }); });
+      }
+      if (dl.umweg) {
+        DL_UMWEG_KLASSEN.forEach(function (kl, i) { eintraege.push({ art: "linie", farbe: kl.farbe, text: (i === 0 ? "Umwegfaktor, Fußweg gegenüber Luftlinie (bis 800 m): " : "") + kl.text }); });
+      }
+      if (dl.barr) {
+        ["bahn", "wasser", "strasse"].forEach(function (t) {
+          var st = DL_BARR_STIL[t];
+          eintraege.push({ art: "linie", farbe: st.farbe, strich: st.strich ? [3, 2] : undefined, text: st.text });
+        });
+        eintraege.push({ art: "punkt", farbe: "#ffffff", rand: "#333333", text: "Querung von Bahn oder Wasser (Brücke, Unterführung, Bahnübergang)" });
+      }
+    }
+    function dlInfoAktualisieren() {
+      var feld = document.getElementById("dlInfo"); if (!feld) { return; }
+      var d = dlAktive(), z = [];
+      var zahl = function (v, st) { return v.toLocaleString("de-DE", { maximumFractionDigits: st }); };
+      if (d.kreuz) { z.push("Kreuzungsdichte: im Mittel " + zahl(d.kreuz.mittel, 0) + " je km² (" + zahl(d.kreuz.anzahl, 0) + " Kreuzungen im Gebiet)."); }
+      if (d.bloecke) { z.push("Blöcke ab 0,2 ha: " + zahl(d.bloecke.anzahl, 0) + ", die Hälfte davon kleiner als " + zahl(d.bloecke.medianHa, 1) + " ha."); }
+      if (d.umweg) { z.push("Umwegfaktor am Standort: Mittel " + zahl(d.umweg.mittel, 2) + ", Median " + zahl(d.umweg.median, 2) + ". " + d.umweg.anteil400 + " % der Wegpunkte im 400-m-Umkreis sind auch in 400 m Fußweg erreichbar."); }
+      if (d.barr) { z.push("Querungen im Gebiet: " + zahl(d.barr.anzahl.bahn, 0) + " über die Bahn, " + zahl(d.barr.anzahl.wasser, 0) + " über Flüsse, Kanäle und große Seen."); }
+      feld.style.display = z.length ? "" : "none";
+      feld.innerHTML = z.join("<br>");
+    }
+    function dlZeichnen() {
+      DL.forEach(function (d) { d.ebene.clearLayers(); });
+      var an = function (d) { return karte.hasLayer(d.ebene); };
+      function raster(d, v) {
+        if (an(d) && v) { L.imageOverlay(v.canvas.toDataURL("image/png"), [[v.s, v.w], [v.n, v.o]], { opacity: 0.75, pane: "sonnePane", interactive: false, className: "pixelbild" }).addTo(d.ebene); }
+      }
+      raster(DL_KREUZ, dlErgebnis.kreuz); raster(DL_BLOECKE, dlErgebnis.bloecke);
+      if (an(DL_UMWEG) && dlErgebnis.umweg && marker) {
+        var u = dlErgebnis.umweg;
+        u.segs.forEach(function (liste) { if (liste.length) { L.polyline(liste, { color: "#ffffff", weight: 7, opacity: 0.8, lineCap: "round", lineJoin: "round", interactive: false }).addTo(DL_UMWEG.ebene); } });
+        u.segs.forEach(function (liste, kl) { if (liste.length) { L.polyline(liste, { color: DL_UMWEG_KLASSEN[kl].farbe, weight: 4.5, opacity: 1, lineCap: "round", lineJoin: "round", interactive: false }).addTo(DL_UMWEG.ebene); } });
+      }
+      if (an(DL_BARR) && dlErgebnis.barr) {
+        var b = dlErgebnis.barr;
+        ["strasse", "wasser", "bahn"].forEach(function (t) {
+          var st = DL_BARR_STIL[t], linien = b.typen[t].map(function (pts) { var r = []; for (var i = 0; i < pts.length; i += 2) { r.push([pts[i], pts[i + 1]]); } return r; });
+          L.polyline(linien, { color: st.farbe, weight: 3, opacity: 0.9, dashArray: st.strich ? "8 5" : null, interactive: false }).addTo(DL_BARR.ebene);
+        });
+        ["bahn", "wasser"].forEach(function (t) {
+          b.kreuz[t].forEach(function (p) { L.circleMarker(p, { radius: 5, color: DL_BARR_STIL[t].farbe, weight: 2.5, fillColor: "#ffffff", fillOpacity: 1, interactive: false }).addTo(DL_BARR.ebene); });
+        });
+      }
+      kreiseNachVorn();
+      dlInfoAktualisieren();
+    }
+    function aktualisiereDl(mitHinweis) {
+      var an = function (d) { return karte.hasLayer(d.ebene); };
+      DL.forEach(function (d) { if (!an(d)) { d.ebene.clearLayers(); } });
+      var brauche = { kreuz: an(DL_KREUZ), bloecke: an(DL_BLOECKE), barr: an(DL_BARR), umweg: an(DL_UMWEG) };
+      if (!brauche.kreuz && !brauche.bloecke && !brauche.barr && !brauche.umweg) { dlInfoAktualisieren(); return; }
+      var hinweis = "Der Umwegfaktor braucht eine Adresse. Bitte zuerst eine Adresse suchen.";
+      if (brauche.umweg && !marker) {
+        brauche.umweg = false;
+        if (mitHinweis) { setzeKartenStatus(hinweis); setTimeout(function () { if (kartenStatus.textContent === hinweis) { setzeKartenStatus(""); } }, 6000); }
+      } else if (kartenStatus.textContent === hinweis) { setzeKartenStatus(""); }
+      var fehlt = (brauche.kreuz && !dlErgebnis.kreuz) || (brauche.bloecke && !dlErgebnis.bloecke) || (brauche.barr && !dlErgebnis.barr) ||
+                  (brauche.umweg && !(dlErgebnis.umweg && dlErgebnis.umweg.schluessel === dlUmwegSchluessel()));
+      if (!fehlt) { dlZeichnen(); return; }
+      var ladeText = "Durchlässigkeit des Wegenetzes wird berechnet …";
+      setzeKartenStatus(ladeText);
+      setTimeout(function () {
+        dlBerechnen(brauche).then(function () {
+          if (kartenStatus.textContent === ladeText) { setzeKartenStatus(""); }
+          if (brauche.umweg && marker && !dlErgebnis.umweg) { setzeKartenStatus("In der Nähe der Adresse gibt es keinen Weg im Wegenetz. Bitte eine Adresse an einer Straße oder einem Weg suchen.", true); }
+          dlZeichnen(); aktualisiereExportInfo();
+        }).catch(function (fehler) {
+          if (window.console) { console.error("Durchlässigkeit konnte nicht berechnet werden:", fehler); }
+          setzeKartenStatus("Die Durchlässigkeit des Wegenetzes konnte nicht berechnet werden. Die Dateien wegenetz_oldenburg.js und karte_oldenburg.js müssen im selben Ordner wie index.html liegen.", true);
         });
       }, 30);
     }
@@ -6198,6 +6607,7 @@
       aktualisiereKreise(false);
       aktualisiereSonne(false);
       aktualisiereWegenetz(false);
+      aktualisiereDl(false);
       karte.once("moveend", function () { aktualisiereKreise(false); aktualisiereSonne(false); aktualisiereWegenetz(false); });
       zeigeMeldung("Gefunden: " + anzeige, "ok");
       vorschlagListe.innerHTML = ""; // alte Vorschläge ausblenden
@@ -6767,6 +7177,7 @@
         (karte.hasLayer(HOEHENKARTE.ebene) ? " Die Gebäude werden nach ihrer Traufhöhe gefärbt." : "") +
         (karte.hasLayer(VERSORGUNG.ebene) ? " Die Grünversorgung der Wohngebiete wird eingezeichnet." : "") +
         (karte.hasLayer(MISCHUNG.ebene) ? " Die Nutzungsmischung wird als Wärmebild eingezeichnet." : "") +
+        (DL.some(function (d) { return karte.hasLayer(d.ebene); }) ? " Die Durchlässigkeit des Wegenetzes wird eingezeichnet." : "") +
         (sichtbareEinrichtungen().length ? " Die Einrichtungen werden eingezeichnet." : "") +
         (sichtbareFlaechen().length ? " Die Flächen werden eingezeichnet." : "") +
         (sichtbareSonne().length ? (marker ? " Der Sonnenstand wird eingezeichnet." :
@@ -6986,6 +7397,7 @@
       if (s.mischungImBild && mischungErgebnis) {
         MISCHUNG_KLASSEN.forEach(function (kl, i) { eintraege.push({ art: "flaeche", farbe: kl.farbe, deckkraft: 0.85, text: (i === 0 ? "Nutzungsmischung (100-m-Raster): " : "") + kl.text + " (" + mischungErgebnis.anteile[i] + " %)" }); });
       }
+      if (s.dl) { dlLegendenEintraege(s.dl, eintraege); }
       if (s.hoehenImBild) {
         HOEHEN_KLASSEN.forEach(function (kl, i) { eintraege.push({ art: "flaeche", farbe: kl.farbe, rand: "#777777", text: (i === 0 ? "Gebäude, Traufhöhe: " : "Gebäude: ") + kl.text }); });
       }
@@ -7122,7 +7534,7 @@
       return legendenEintraege({
         markerImBild: mitAdresse,
         fotoBild: fotoZeigenFeld.checked && fotos.some(function (f) { return f.lat !== null; }),
-        gebaeude: an(bebauungEbene), hoehenImBild: an(HOEHENKARTE.ebene), versorgungImBild: an(VERSORGUNG.ebene), mischungImBild: an(MISCHUNG.ebene),
+        gebaeude: an(bebauungEbene), hoehenImBild: an(HOEHENKARTE.ebene), versorgungImBild: an(VERSORGUNG.ebene), mischungImBild: an(MISCHUNG.ebene), dl: dlAktive(),
         bildKreise: kreise, kreiseImBild: kreise.length > 0,
         bildWegenetz: mitAdresse ? sichtbareWegenetz() : [],
         oepnvImBild: an(OEPNV.ebene), baeumeImBild: an(BAEUME2D.ebene),
@@ -7250,6 +7662,7 @@
       versorgungAbruf = versorgungAbruf.catch(function () { versorgungFehler = true; return null; });
       var mischungAbruf = (karte.hasLayer(MISCHUNG.ebene) && !e.ohneVersorgung) ? (mischungErgebnis ? Promise.resolve(mischungErgebnis) : mischungBerechnen().then(function (v) { mischungErgebnis = v; return v; })) : Promise.resolve(null);
       mischungAbruf = mischungAbruf.catch(function () { versorgungFehler = true; return null; });
+      var dlAbruf = dlExportDaten(e).catch(function () { versorgungFehler = true; return null; });
       var hoehenFehler = false;
       var hoehenAbruf = (karte.hasLayer(HOEHENKARTE.ebene) && !e.ohneHoehenkarte) ? holeExportHoehen(plan, mitte) : Promise.resolve(null);
       hoehenAbruf = hoehenAbruf.catch(function () { hoehenFehler = true; return null; });
@@ -7309,7 +7722,7 @@
       var wegenetzAbruf = (marker && sichtbareWegenetz().length) ? ladeWegenetz() : Promise.resolve(null);
       wegenetzAbruf = wegenetzAbruf.catch(function () { wegenetzFehler = true; return null; });
 
-      return Promise.all([ladeAlleKacheln(liste, beiFortschritt), gebaeudeAbruf, kartenDaten, oepnvAbruf, einrichtungenAbruf, flaechenAbruf, wegenetzAbruf, baeumeAbruf, starkregenAbruf, mobilitaetAbruf, taktAbruf, luftAbruf, spielAbruf, grundAbruf, hoehenAbruf, versorgungAbruf, mischungAbruf]).then(function (ergebnisse) {
+      return Promise.all([ladeAlleKacheln(liste, beiFortschritt), gebaeudeAbruf, kartenDaten, oepnvAbruf, einrichtungenAbruf, flaechenAbruf, wegenetzAbruf, baeumeAbruf, starkregenAbruf, mobilitaetAbruf, taktAbruf, luftAbruf, spielAbruf, grundAbruf, hoehenAbruf, versorgungAbruf, mischungAbruf, dlAbruf]).then(function (ergebnisse) {
         var bilder = ergebnisse[0];
         var einzelBaeume = ergebnisse[7];
         var starkregenBilder = ergebnisse[8].filter(function (x) { return !!x.bild; });
@@ -7388,6 +7801,10 @@
           c.drawImage(mv.canvas, (mp0.x - k.links) * k.f, (mp0.y - k.oben) * k.f, (mp1.x - mp0.x) * k.f, (mp1.y - mp0.y) * k.f);
           c.restore();
         }
+        // Durchlässigkeit des Wegenetzes: die beiden Wärmebilder (Kreuzungsdichte, Blockgrößen) unter den Gebäuden; Linien weiter unten
+        var dlBild = ergebnisse[17], dlImBild = !!(dlBild && (dlBild.kreuz || dlBild.bloecke || dlBild.umweg || dlBild.barr));
+        if (dlBild && dlBild.bloecke) { zeichneDlRasterInBild(c, k, dlBild.bloecke, 0.75); }
+        if (dlBild && dlBild.kreuz) { zeichneDlRasterInBild(c, k, dlBild.kreuz, 0.75); }
         // Sichtfeld (Ergebnis aus der 3D-Ansicht): ebenso, die 3D-Ansicht zeichnet es selbst
         var sichtImBild = !!(sichtKarte && karte.hasLayer(SICHTFELD2D.ebene) && !e.ohneSichtfeld);
         if (sichtImBild) {
@@ -7421,6 +7838,9 @@
           var wegStuecke = wegenetzBerechne(marker.getLatLng(), radien);
           if (wegStuecke) { bildWegenetz = sichtbareWegenetz(); zeichneWegenetzInBild(c, plan, k, pxProMm, bildWegenetz, wegStuecke); }
         }
+
+        // Durchlässigkeit: Umwegfaktor-Linien, Barrieren und Querungen über den Gebäuden, unter den Kreisen
+        if (dlImBild) { zeichneDlLinienInBild(c, pxProMm, k, dlBild); }
 
         // Entfernungskreise (nur mit gesuchter Adresse): die Linien über den Gebäuden
         var bildKreise = marker ? sichtbareKreise() : [];   // nur die zugeschalteten Kreise, und nur mit Adresse
@@ -7520,6 +7940,7 @@
                         (hoehenImBild ? "  ·  " + HOEHEN_QUELLE_TEXT.replace("&copy;", "©") : "") +
                         (versorgungImBild ? "  ·  " + VERSORGUNG_QUELLE_TEXT : "") +
                         (mischungImBild ? "  ·  " + MISCHUNG_QUELLE_TEXT : "") +
+                        (dlImBild ? "  ·  " + DL_QUELLE_TEXT : "") +
                         (oepnvImBild ? "  ·  Haltestellen: © OpenStreetMap-Mitwirkende" : "") +
                         (baeumeImBild ? "  ·  Bäume: © OpenStreetMap-Mitwirkende" : "") +
                         (starkregenImBild ? dienstQuellenText() : "") +
@@ -7538,7 +7959,7 @@
           untenSlot -= hQuelle + 2 * pxProMm;
         }
         if (zeige.legende) {
-          var eintraege = legendenEintraege({ markerImBild: markerImBild, fotoBild: fotoBild, gebaeude: !!gebaeude, hoehenImBild: hoehenImBild, versorgungImBild: versorgungImBild, mischungImBild: mischungImBild, bildKreise: bildKreise, kreiseImBild: kreiseImBild, bildWegenetz: bildWegenetz, oepnvImBild: oepnvImBild, baeumeImBild: baeumeImBild, sonnenImBild: sonnenImBild, sichtImBild: sichtImBild, starkregenImBild: starkregenImBild, starkregenBilder: starkregenBilder, bildEinrichtungen: bildEinrichtungen, bildMobilitaet: bildMobilitaet, bildSpiel: bildSpiel, luftImBild: luftImBild, grundG: grundG, taktImBild: taktImBild, bildFlaechen: bildFlaechen, bildSonne: bildSonne, zeichnungDa: zeichnungDa, vektor: !!quelle.vektor, live: false });
+          var eintraege = legendenEintraege({ markerImBild: markerImBild, fotoBild: fotoBild, gebaeude: !!gebaeude, hoehenImBild: hoehenImBild, versorgungImBild: versorgungImBild, mischungImBild: mischungImBild, dl: dlImBild ? dlBild : null, bildKreise: bildKreise, kreiseImBild: kreiseImBild, bildWegenetz: bildWegenetz, oepnvImBild: oepnvImBild, baeumeImBild: baeumeImBild, sonnenImBild: sonnenImBild, sichtImBild: sichtImBild, starkregenImBild: starkregenImBild, starkregenBilder: starkregenBilder, bildEinrichtungen: bildEinrichtungen, bildMobilitaet: bildMobilitaet, bildSpiel: bildSpiel, luftImBild: luftImBild, grundG: grundG, taktImBild: taktImBild, bildFlaechen: bildFlaechen, bildSonne: bildSonne, zeichnungDa: zeichnungDa, vektor: !!quelle.vektor, live: false });
           zeichneLegende(c, eintraege, plan.B - 6 * pxProMm, untenSlot, pxProMm);
         }
 
@@ -7665,6 +8086,46 @@
     // "bildKraeftig" ist die Stufe 0 bis 100 (0 = wie die normale Karte, 50 = Deckkraft × 1,6 + 0,2)
     var bildKraeftig = 0;
     function bildDeckkraft(d) { return bildKraeftig ? Math.min(1, d * (1 + 0.012 * bildKraeftig) + 0.004 * bildKraeftig) : d; }
+
+    // Durchlässigkeit des Wegenetzes im Bild: Wärmebilder (Zellenraster) und Linien (Umwegfaktor, Barrieren, Querungen)
+    function zeichneDlRasterInBild(c, k, v, deckkraft) {
+      var p0 = zuPixel(v.n, v.w, k.z), p1 = zuPixel(v.s, v.o, k.z);
+      c.save(); c.globalAlpha = deckkraft; c.imageSmoothingEnabled = false;
+      c.drawImage(v.canvas, (p0.x - k.links) * k.f, (p0.y - k.oben) * k.f, (p1.x - p0.x) * k.f, (p1.y - p0.y) * k.f);
+      c.restore();
+    }
+    function zeichneDlLinienInBild(c, pxProMm, k, dl) {
+      c.save(); c.lineCap = "round"; c.lineJoin = "round";
+      function punkt(la, lo) { var q = zuPixel(la, lo, k.z); return [(q.x - k.links) * k.f, (q.y - k.oben) * k.f]; }
+      if (dl.barr) {
+        ["strasse", "wasser", "bahn"].forEach(function (t) {
+          var st = DL_BARR_STIL[t];
+          c.beginPath();
+          dl.barr.typen[t].forEach(function (pts) {
+            for (var i = 0; i < pts.length; i += 2) { var q = punkt(pts[i], pts[i + 1]); if (i === 0) { c.moveTo(q[0], q[1]); } else { c.lineTo(q[0], q[1]); } }
+          });
+          c.strokeStyle = st.farbe; c.globalAlpha = 0.9; c.lineWidth = 0.7 * pxProMm;
+          c.setLineDash(st.strich ? [3 * pxProMm, 1.8 * pxProMm] : []);
+          c.stroke();
+        });
+        c.setLineDash([]); c.globalAlpha = 1;
+        ["bahn", "wasser"].forEach(function (t) {
+          c.strokeStyle = DL_BARR_STIL[t].farbe; c.fillStyle = "#ffffff"; c.lineWidth = 0.5 * pxProMm;
+          dl.barr.kreuz[t].forEach(function (p) { var q = punkt(p[0], p[1]); c.beginPath(); c.arc(q[0], q[1], 1.1 * pxProMm, 0, Math.PI * 2); c.fill(); c.stroke(); });
+        });
+      }
+      if (dl.umweg) {
+        [[ "#ffffff", 1.7, 0.8 ], [ null, 1.1, 1 ]].forEach(function (stil) {
+          dl.umweg.segs.forEach(function (liste, kl) {
+            if (!liste.length) { return; }
+            c.beginPath();
+            liste.forEach(function (s) { var q0 = punkt(s[0][0], s[0][1]), q1 = punkt(s[1][0], s[1][1]); c.moveTo(q0[0], q0[1]); c.lineTo(q1[0], q1[1]); });
+            c.strokeStyle = stil[0] || DL_UMWEG_KLASSEN[kl].farbe; c.globalAlpha = stil[2]; c.lineWidth = stil[1] * pxProMm; c.stroke();
+          });
+        });
+      }
+      c.restore();
+    }
 
     function zeichneWegenetzInBild(c, plan, k, pxProMm, zeiten, stuecke) {
       c.save();
@@ -8213,6 +8674,7 @@
       if (e === HOEHENKARTE) { return "hoehenkarte"; }
       if (e === VERSORGUNG) { return "versorgung"; }
       if (e === MISCHUNG) { return "mischung"; }
+      if (DL.indexOf(e) >= 0) { return "dl_" + e.id; }
       if (STARKREGEN.indexOf(e) >= 0) { return "starkregen_" + e.id; }
       if (UNTERGRUND.indexOf(e) >= 0) { return "untergrund_" + e.id; }
       if (EINRICHTUNGEN.indexOf(e) >= 0) { return "einrichtung_" + e.id; }
@@ -8335,7 +8797,7 @@
           if (!soll && karte.hasLayer(eintrag.ebene)) { karte.removeLayer(eintrag.ebene); }
         });
       } finally { sammelSchalten = false; }
-      aktualisiereFlaechen(); aktualisiereHoehen(); aktualisiereVersorgung(); aktualisiereMischung(); aktualisiereBaeume(); aktualisiereEinrichtungen(); aktualisiereMobilitaet(); aktualisiereTakt(); aktualisiereLuft(); aktualisiereSpiel(); aktualisiereGrund(); aktualisiereOepnv(); aktualisiereWegenetz(false); aktualisiereKreise(false); aktualisiereSonne(false);
+      aktualisiereFlaechen(); aktualisiereHoehen(); aktualisiereVersorgung(); aktualisiereMischung(); aktualisiereDl(false); aktualisiereBaeume(); aktualisiereEinrichtungen(); aktualisiereMobilitaet(); aktualisiereTakt(); aktualisiereLuft(); aktualisiereSpiel(); aktualisiereGrund(); aktualisiereOepnv(); aktualisiereWegenetz(false); aktualisiereKreise(false); aktualisiereSonne(false);
       synchronisiereAnalyseHaken();
 
       // 5b. Grundstück (Abschnitt 13): nur laden, wenn die Datei eines hatte
