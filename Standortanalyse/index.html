@@ -433,6 +433,15 @@
     }
     button.zweit:hover { color: var(--papier); background: var(--tinte); border-color: var(--tinte); }
 
+    /* Abschnitt "Grundstück": Zeilen mit Name und Wert, Beschriftung der Grundstücke auf der Karte */
+    .grundZeile { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px dotted var(--linie); font-size: 13px; line-height: 1.35; }
+    .grundZeile span { flex: 1 1 auto; }
+    .grundZeile strong { flex: 0 1 auto; text-align: right; font-weight: 600; }
+    .grundZeile.hervor strong { color: var(--rot); }
+    .grundLabel { background: none; border: none; }
+    .grundLabel span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 600 11px var(--schrift); color: #4a3470; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; pointer-events: none; }
+    .grundAbschnitt select, .grundAbschnitt input[type="text"] { width: 100%; }
+
     /* Griff in der Mitte des Rahmens auf der Karte */
     .rahmen-griff {
       width: 26px; height: 26px;
@@ -734,6 +743,7 @@
           <details class="analyseGruppe"><summary><span class="titel">Nutzungsarten</span><span class="anzahl"></span></summary><div id="analyseNutzung"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Lärm (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseLaerm"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Planung und Naturschutz (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseStadt"></div></details>
+          <details class="analyseGruppe"><summary><span class="titel">Grundstücke (Kataster, LGLN, Online-Dienst)</span><span class="anzahl"></span></summary><div id="analyseGrund"></div><p class="hinweis" style="margin:4px 0 0">Grundstücksgrenzen (Flurstücke) mit Fläche und Einfärbung nach der vorhandenen Überbauung (GRZ der Gebäude), aus dem Liegenschaftskataster des Landesamts LGLN (CC BY 4.0, ohne Eigentümerdaten). Sichtbar ab Zoomstufe 16, braucht Internet. Die Analyse eines einzelnen Grundstücks steht in „13 Grundstück“. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Flächennutzungsplan (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseFnp"></div><p class="hinweis" style="margin:4px 0 0">Geplante Nutzung der Flächen nach dem Flächennutzungsplan der Stadt (Stand Änderungen bis 05.07.2024). Er ist nur eine grobe Vorgabe und nicht grundstücksscharf; die Festsetzungen im Bebauungsplan gehen vor. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <p class="hinweis">Bei „ÖPNV“ zeigt ein Klick auf eine Haltestelle ihren Namen, die Linien und die Abfahrten; „Haltestellen nach Takt“ färbt sie nach der Häufigkeit (Fahrplan eines normalen Dienstags). Unter „Grün und Freiräume“ gibt es zusätzlich „Spielen und Bewegen“: Spielplätze (Klick zeigt Name und Zugang), der Einzugsbereich von 200 m um öffentliche Spielplätze sowie Fußball-, Basketball-, Skate-, Fitness- und Hundewiesen-Orte aus OpenStreetMap. Unter „Luftqualität“ steht die Messstation des Umweltbundesamts am Heiligengeistwall; ein Klick zeigt die Jahresmittelwerte der letzten Jahre. Unter „Verkehr und Mobilität“ stehen Radwege, Fahrradabstellanlagen, Parken, Carsharing und Ladestationen (ein Klick auf eine Ladestation zeigt Betreiber und Leistung). Die Themen (Fußweg, Boden, Grundwasser …) lassen sich mit einem Klick auf die Überschrift auf- und zuklappen; die rote Zahl daneben zeigt, wie viele Ebenen davon eingeschaltet sind. Fußweg und Sonnenstand brauchen eine gesuchte Adresse (der rote Punkt ist der Mittelpunkt). Die anderen Ebenen zeigen alle Orte in Oldenburg. „Einzelbäume“ zeigt die in OpenStreetMap erfassten Bäume (unvollständig); eigene Bäume zeichnest du mit dem Werkzeug „Baum“ in 06. „Starkregen“ ist die Hinweiskarte des Bundes (BKG) für Niedersachsen. „Boden“, „Geologie und Baugrund“, „Grundwasser“ sowie „Versiegelung und Altlasten“ sind Karten des Landesamts für Bergbau, Energie und Geologie (LBEG, NIBIS-Kartenserver). Alle diese Karten werden online geladen und brauchen Internet (auch beim Speichern des Bildes, das dann einen Moment länger dauert); sie sind eine Orientierung und keine Planungsgrundlage. Wo eine Karte nichts zeigt, hat das Land dort keine Daten (zum Beispiel ist die Bodenkarte in der bebauten Innenstadt leer). Unter „Legende“ siehst du die Farberklärung des Landesamts. „Alles einschalten“ schaltet diese Karten nicht ein, „Alles ausschalten“ schaltet sie aus. Lärm, Bebauungspläne, Naturschutz und Stadtbezirke sind offene Daten der Stadt Oldenburg (Datenlizenz Deutschland – Namensnennung 2.0), die Quelle steht automatisch im Bild. Die Lärmdaten sind groß und brauchen beim ersten Mal einen Moment. Alles Eingeschaltete erscheint auch im gespeicherten Bild und in der Legende.</p>
         </div>
@@ -1072,8 +1082,53 @@
         </div>
       </details>
 
+      <details class="abschnitt grundAbschnitt" id="grundAbschnitt">
+        <summary><span class="nr">13</span> Grundstück</summary>
+        <div class="inhalt">
+          <p class="hinweis" style="margin-top:0">Wähle ein Grundstück und sieh dir Fläche, vorhandene Überbauung (GRZ), geschätzte Geschossfläche (GFZ) und das mögliche Baufeld an. Die Grundstücksdaten kommen online vom Landesamt LGLN (Kataster).</p>
+          <div class="knopfreihe">
+            <button type="button" id="grundAmPunkt" class="zweit">Am roten Punkt</button>
+            <button type="button" id="grundKlick" class="zweit">In der Karte anklicken</button>
+          </div>
+          <div id="grundMeldung" class="meldung" aria-live="polite"></div>
+
+          <div id="grundDaten" hidden>
+            <div id="grundKopf"></div>
+
+            <div class="gruppentitel" style="margin-top:14px">Bestand</div>
+            <div id="grundBestand"></div>
+            <button type="button" id="grundHoehenKnopf" class="zweit" hidden>Gebäudehöhen laden (ca. 13 MB)</button>
+            <label for="grundBestandGeschosse" style="margin-top:10px">Geschosse im Bestand selbst eintragen (leer = aus den Gebäudehöhen schätzen)</label>
+            <input type="number" id="grundBestandGeschosse" min="1" max="12" step="1" autocomplete="off">
+
+            <div class="gruppentitel" style="margin-top:14px">Umgebung (80 m)</div>
+            <div id="grundUmgebung"></div>
+
+            <div class="gruppentitel" style="margin-top:14px">Zulässige Werte</div>
+            <label for="grundGebiet">Gebietsart (schlägt Obergrenzen nach der Baunutzungsverordnung vor)</label>
+            <select id="grundGebiet" autocomplete="off"></select>
+            <div class="gitter" style="margin-top:10px">
+              <div><label for="grundGrz">GRZ</label><input type="text" id="grundGrz" inputmode="decimal" autocomplete="off"></div>
+              <div><label for="grundGfz">GFZ</label><input type="text" id="grundGfz" inputmode="decimal" autocomplete="off"></div>
+              <div><label for="grundGeschosse">Geschosse (Studie)</label><input type="number" id="grundGeschosse" min="1" max="12" step="1" placeholder="automatisch" autocomplete="off"></div>
+              <div><label for="grundAbstand">Abstand zur Grenze (m)</label><input type="text" id="grundAbstand" inputmode="decimal" placeholder="automatisch" autocomplete="off"></div>
+            </div>
+            <p class="hinweis">Steht im Bebauungsplan etwas anderes, trage die Werte dort ein. Ohne Eintrag nimmt die App für den Abstand die Hälfte der Gebäudehöhe, mindestens 3 m.</p>
+
+            <div class="gruppentitel" style="margin-top:14px">Ergebnis</div>
+            <div id="grundErgebnis"></div>
+            <label class="haken" style="margin-top:10px"><input type="checkbox" id="grundBaufeldZeigen" autocomplete="off"> Baufeld in der Karte und im Bild zeigen</label>
+            <button type="button" id="grundUebernehmen" class="zweit" style="margin-top:6px">Baufeld als Baukörper übernehmen</button>
+            <div class="knopfreihe">
+              <button type="button" id="grundDatenblatt" class="zweit">Zahlen kopieren</button>
+              <button type="button" id="grundLoeschen" class="zweit">Auswahl aufheben</button>
+            </div>
+            <p class="hinweis">Orientierung für den Entwurf, keine amtliche Auskunft. Nicht berücksichtigt sind Baugrenzen und Festsetzungen des Bebauungsplans, Baulasten, Abstände zur Straße, Grenzbebauung und Sonderregeln der Bauordnung. Die GFZ ist eine Schätzung aus den Gebäudehöhen (Dachgeschosse zählen nicht mit). Versiegelte Flächen wie Zufahrten und Terrassen fehlen, die tatsächliche GRZ mit Nebenanlagen liegt deshalb höher.</p>
+          </div>
+        </div>
+      </details>
       <details class="abschnitt">
-        <summary><span class="nr">13</span> Hilfe</summary>
+        <summary><span class="nr">14</span> Hilfe</summary>
         <div class="inhalt hilfe">
           <h3>So gehst du vor</h3>
           <ol>
@@ -1087,6 +1142,7 @@
             <li><strong>Speichern</strong> (09): „Als Bild speichern“ (PNG) oder als PDF. Beim Drucken „100 %“ wählen, dann stimmt der Maßstab.</li>
             <li><strong>3D-Ansicht</strong> (10): „3D-Ansicht öffnen“. Datum und Uhrzeit wählen, der Schatten wandert mit. Ziehen dreht das Modell, Rechtsklick ziehen verschiebt, das Mausrad zoomt. Für einen eigenen Baukörper in „06 Zeichnen“ eine Fläche zeichnen, die Höhe eintragen und die 3D-Ansicht öffnen. Die Sonnenstunden (im Jahresmittel, mit Schatten von Gebäuden und Bäumen) berechnest du im Abschnitt „Sonnenstunden“ der 3D-Ansicht; das Ergebnis erscheint danach auch hier in der Karte. Bäume stehen im Abschnitt „Bäume“ der 3D-Ansicht. Eigene Bäume setzt du hier unter „06 Zeichnen“ mit dem Werkzeug „Baum“ (Höhe, Krone und Baumart darunter; der Kreis zeigt die Krone) oder direkt in der 3D-Ansicht. Im Abschnitt „Analysedaten“ der 3D-Ansicht schaltest du dieselben Ebenen wie in der Karte (sie liegen auf dem Boden, Haltestellen und Einrichtungen stehen als Pfähle). Im Abschnitt „Messen“ der 3D-Ansicht misst du Entfernungen, Strecken und Gebäudehöhen und prüfst, ob ein Punkt im Schatten liegt.</li>
           <li><strong>Entwurfsstrategie</strong> (11): Aus deiner Analyse entsteht ein fertiger Text für eine KI, die drei Entwurfsstrategien entwickelt. Adresse suchen, bei Bedarf eine Fläche „Grundstück“ zeichnen, Bauaufgabe eintragen, „Text erstellen“, dann kopieren und in die KI einfügen. Die Zahlen sind Näherungen aus offenen Daten, was die App nicht weiß, steht unter „Nicht vorhanden“.</li>
+          <li><strong>Grundstück</strong> (13): „Am roten Punkt“ wählt das Grundstück an der gesuchten Adresse, „In der Karte anklicken“ jedes andere (oder in der Karte auf ein Grundstück klicken, wenn die Ebene „Grundstücksgrenzen“ an ist). Du siehst Fläche, Nutzung, die vorhandene Überbauung (GRZ von Hauptgebäuden, Garagen und Nebengebäuden) und, sobald du die Gebäudehöhen lädst (einmalig ca. 13 MB), die geschätzte GFZ. Die Vergleichswerte der Umgebung (80 m) helfen, wenn kein Bebauungsplan gilt. Unter „Zulässige Werte“ wählst du die Gebietsart (die App schlägt die Obergrenzen der Baunutzungsverordnung vor) oder trägst GRZ, GFZ, Geschosse und Abstand aus dem Bebauungsplan ein. Daraus entstehen die zulässige Grund- und Geschossfläche, das Baufeld (Grundstück minus Abstand zur Grenze, begrenzt durch die GRZ) und eine Baukörper-Studie. „Baufeld als Baukörper übernehmen“ legt sie in „06 Zeichnen“ an, dann erscheint sie auch im Bild und in 3D. In „04 Analysedaten“ gibt es dazu die Ebenen „Grundstücksgrenzen mit Fläche“ und „nach Überbauung eingefärbt“ (ab Zoomstufe 16). Die Daten kommen online vom Landesamt LGLN (Kataster, ohne Eigentümer) und brauchen Internet. Das ist eine Orientierung, keine amtliche Auskunft: Baugrenzen und Festsetzungen des Bebauungsplans, Baulasten und Abstände zur Straße sind nicht berücksichtigt.</li>
           <li><strong>Fotos</strong> (12): Bis zu zwölf Standortfotos (JPG oder PNG) erscheinen als nummerierte Markierungen auf der Karte, auf Wunsch mit Sichtkegel in Blickrichtung. Hat das Foto GPS-Daten, setzt die App den Ort selbst, sonst klickst du auf den Standort. Ein Klick auf die Markierung zeigt das Foto. Im gespeicherten Bild stehen die Markierungen und unten eine Fotoleiste (Haken „Fotos“ in 09).</li>
           </ol>
 
@@ -1841,6 +1897,38 @@
     });
     function sichtbareSpiel() { return SPIEL.filter(function (g) { return karte.hasLayer(g.ebene); }); }
     function istSpielEbene(ebene) { return SPIEL.some(function (g) { return g.ebene === ebene; }); }
+    // Ebenen "Grundstücke": Grenzen mit Fläche und Einfärbung nach der Überbauung. Die Daten kommen online aus dem Liegenschaftskataster des
+    // Landesamts LGLN (Dienst "ALKIS vereinfacht", CC BY 4.0, ohne Eigentümer) und werden erst beim Zuschalten geladen (grundstueck.js).
+    // Sichtbar ab Zoomstufe 16. Die Analyse eines einzelnen Grundstücks (GRZ, GFZ, Baufeld) steht im Abschnitt "13 Grundstück".
+    var FLST = [
+      { id: "grenzen", name: "Grundstücksgrenzen mit Fläche",                          farbe: "#6a3d9a", legende: "Grundstücksgrenze mit Fläche (Flurstück, Kataster)" },
+      { id: "grz",     name: "Grundstücke nach Überbauung eingefärbt (GRZ)",           farbe: "#fe9929", flaeche: true, deckkraft: 0.55, legende: "Überbauung der Grundstücke (GRZ der Gebäude)" }
+    ].map(function (g) {
+      g.nichtAlle = true;               // lädt online viele Daten: nicht bei "Alles einschalten"
+      g.ebene = L.layerGroup();
+      g.ebene.getAttribution = function () { return "Grundstücke: &copy; LGLN, CC BY 4.0"; };
+      return g;
+    });
+    function sichtbareGrund() { return FLST.filter(function (g) { return karte.hasLayer(g.ebene); }); }
+    function istGrundEbene(ebene) { return FLST.some(function (g) { return g.ebene === ebene; }); }
+    var grundWahl = false;              // true: der nächste Klick in die Karte wählt ein Grundstück (Abschnitt 13)
+    var grundLadevorgang = null;
+    function ladeGrundstueck() {
+      if (window.grundstueck) { return Promise.resolve(window.grundstueck); }
+      if (!grundLadevorgang) {
+        grundLadevorgang = ladeSkriptReihe([{ adresse: "grundstueck.js", pruefung: function () { return !!window.grundstueck; } }])
+          .then(function () { return window.grundstueck; })
+          .catch(function (x) { grundLadevorgang = null; throw x; });
+      }
+      return grundLadevorgang;
+    }
+    var grundTimer = null;
+    function aktualisiereGrund() {
+      if (!sichtbareGrund().length) { if (window.grundstueck) { window.grundstueck.leereKarte(); } return; }
+      ladeGrundstueck().then(function (g) { g.zeichneKarte(); }).catch(function () {
+        setzeKartenStatus("Die Datei grundstueck.js fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
+      });
+    }
     // Ebene "Luftmessstation": die amtlichen Luftmessstationen im Stadtgebiet (zur Zeit nur "Oldenburg Heiligengeistwall", eine
     // Verkehrsstation) mit den Jahresmittelwerten der letzten Jahre. Daten: luft_oldenburg.js (Umweltbundesamt mit Daten der
     // Messnetze der Länder und des Bundes, einmal heruntergeladen mit Datenpflege\20_Luft_aktualisieren.ps1). Braucht kein Internet.
@@ -2199,6 +2287,7 @@
     baueAnalyseHaken("analyseEinrichtungen", EINRICHTUNGEN, function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseFlaechen", FLAECHEN.filter(function (g) { return g.quelle === "flaechen"; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseSpiel", SPIEL, function (g) { return g.name; });
+    baueAnalyseHaken("analyseGrund", FLST, function (g) { return g.name; });
     baueAnalyseHaken("analyseNutzung", FLAECHEN.filter(function (g) { return g.quelle === "nutzung"; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseLaerm", FLAECHEN.filter(function (g) { return g.quelle === "laerm"; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseStadt", FLAECHEN.filter(function (g) { return g.quelle === "stadt"; }), function (gruppe) { return gruppe.name; });
@@ -2372,6 +2461,10 @@
       clearTimeout(bebauungTimer);
       bebauungTimer = setTimeout(aktualisiereBebauung, 150);   // erst nach dem Verschieben, nicht währenddessen
     });
+    karte.on("moveend", function () {
+      clearTimeout(grundTimer);
+      if (typeof sichtbareGrund === "function" && sichtbareGrund().length) { grundTimer = setTimeout(aktualisiereGrund, 250); }
+    });
     karte.on("overlayadd", function (ereignis) {
       if (ereignis.layer === bebauungEbene) { gezeichneteGrenzen = null; aktualisiereBebauung(); }
       aktualisiereExportInfo();
@@ -2406,6 +2499,7 @@
       else if (ebene === TAKT.ebene) { aktualisiereTakt(); }
       else if (ebene === LUFT.ebene) { aktualisiereLuft(); }
       else if (istSpielEbene(ebene)) { aktualisiereSpiel(); }
+      else if (istGrundEbene(ebene)) { aktualisiereGrund(); }
       else if (istFlaechenEbene(ebene)) { aktualisiereFlaechen(); }
       else { return; }
       synchronisiereAnalyseHaken();
@@ -2414,8 +2508,9 @@
     karte.on("layerremove", function (ereignis) {
       if (sammelSchalten) { return; }
       var ebene = ereignis.layer;
-      if (!istKreisEbene(ebene) && !istSonnenEbene(ebene) && !istWegenetzEbene(ebene) && ebene !== OEPNV.ebene && ebene !== BAEUME2D.ebene && !istStarkregenEbene(ebene) && ebene !== SONNENSTUNDEN2D.ebene && !istEinrichtungsEbene(ebene) && !istMobilitaetEbene(ebene) && ebene !== TAKT.ebene && ebene !== LUFT.ebene && !istSpielEbene(ebene) && !istFlaechenEbene(ebene)) { return; }
+      if (!istKreisEbene(ebene) && !istSonnenEbene(ebene) && !istWegenetzEbene(ebene) && ebene !== OEPNV.ebene && ebene !== BAEUME2D.ebene && !istStarkregenEbene(ebene) && ebene !== SONNENSTUNDEN2D.ebene && !istEinrichtungsEbene(ebene) && !istMobilitaetEbene(ebene) && ebene !== TAKT.ebene && ebene !== LUFT.ebene && !istSpielEbene(ebene) && !istGrundEbene(ebene) && !istFlaechenEbene(ebene)) { return; }
       if (ebene.clearLayers) { ebene.clearLayers(); }
+      if (istGrundEbene(ebene)) { aktualisiereGrund(); }
       setzeKartenStatus("");
       aktualisiereBebauung();
       synchronisiereAnalyseHaken();
@@ -2426,7 +2521,7 @@
     // Abschnitts (Fußweg, Sonnenstand, ÖPNV, Einrichtungen, Grün und Freiräume) auf einmal. Die Bebauung gehört
     // nicht dazu. Dabei wird nicht für jede Ebene einzeln gezeichnet, sondern am Ende einmal für alle.
     function alleAnalyseEbenen() {
-      return [].concat(FLAECHEN, DIENSTE, [BAEUME2D], MOBILITAET, EINRICHTUNGEN, SPIEL, [TAKT, OEPNV, LUFT], WEGENETZ_ZEITEN, KREISE, SONNE);   // von unten nach oben
+      return [].concat(FLAECHEN, DIENSTE, FLST, [BAEUME2D], MOBILITAET, EINRICHTUNGEN, SPIEL, [TAKT, OEPNV, LUFT], WEGENETZ_ZEITEN, KREISE, SONNE);   // von unten nach oben
     }
     function schalteAlleAnalyseEbenen(an) {
       sammelSchalten = true;
@@ -2446,7 +2541,7 @@
       aktualisiereMobilitaet();
       aktualisiereTakt();
       aktualisiereLuft();
-      aktualisiereSpiel();
++
       aktualisiereOepnv();
       aktualisiereWegenetz(false);
       aktualisiereKreise(false);
@@ -2465,6 +2560,15 @@
       synchronisiereAnalyseHaken();
       aktualisiereExportInfo();
     }
+    (function () {
+      var ab = document.getElementById("grundAbschnitt");
+      ab.addEventListener("toggle", function () {
+        if (!ab.open) { return; }
+        ladeGrundstueck().then(function (g) { if (!g.ausgewaehlt() && marker) { g.amPunkt(true); } }).catch(function () {
+          document.getElementById("grundMeldung").textContent = "Die Datei grundstueck.js fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen."; document.getElementById("grundMeldung").className = "meldung fehler";
+        });
+      });
+    })();
     document.getElementById("analyseAlleAn").addEventListener("click", function () { schalteAlleAnalyseEbenen(true); });
     document.getElementById("analyseAlleAus").addEventListener("click", function () { schalteAlleAnalyseEbenen(false); });
 
@@ -2884,7 +2988,7 @@
 
     // Klicks auf Punkte sollen kein Fenster öffnen, solange ein Zeichen-, Mess- oder Einpass-Werkzeug aktiv ist
     function popupErlaubt() {
-      return (typeof zeichenWerkzeug === "undefined" || zeichenWerkzeug === "auswahl") && !(typeof planWahl !== "undefined" && planWahl) && !(typeof fotoWahl !== "undefined" && fotoWahl);
+      return (typeof zeichenWerkzeug === "undefined" || zeichenWerkzeug === "auswahl") && !(typeof planWahl !== "undefined" && planWahl) && !(typeof fotoWahl !== "undefined" && fotoWahl) && !(typeof grundWahl !== "undefined" && grundWahl);
     }
     function popupZeile(behaelter, text, fett) {
       var z = document.createElement(fett ? "strong" : "div");
@@ -4873,6 +4977,7 @@
       if (name !== "auswahl") { zeichenAuswahl = null; zeichenFelderVonAuswahl(); }
       if (planWahl && name !== "auswahl") { planAbbrechenWahl(); }
       if (fotoWahl && name !== "auswahl") { fotoWahlBeenden(true); }
+      if (grundWahl && name !== "auswahl" && window.grundstueck) { window.grundstueck.klickBeenden(); }
       zeichneAlles();
     }
     Array.prototype.forEach.call(document.querySelectorAll("[data-werkzeug]"), function (b) {
@@ -5246,6 +5351,7 @@
       exportMitteManuell = null;     // eine neue Adresse setzt den Rahmen wieder auf die Adresse
       aktualisiereRahmen();
       aktualisiereExportInfo();      // der Bildausschnitt hängt von der Adresse ab
+      if (window.grundstueck && document.getElementById("grundAbschnitt").open) { window.grundstueck.amPunkt(true); }   // Grundstück am neuen Punkt wählen (nur wenn der Abschnitt offen ist)
     }
 
     // Zeichnet die Liste unter dem Suchfeld neu
@@ -6198,6 +6304,11 @@
       var luftAbruf = (karte.hasLayer(LUFT.ebene) && !e.ohnePunkte) ? ladeLuftDaten() : Promise.resolve(null);
       luftAbruf = luftAbruf.catch(function () { mobilitaetFehler = true; return null; });
 
+      // Grundstücke (Online-Dienst des LGLN): Grenzen, Einfärbung, gewähltes Grundstück und Baufeld. Klappt das nicht, fehlen sie im Bild.
+      var grundFehler = false;
+      var grundAbruf = (sichtbareGrund().length || (window.grundstueck && window.grundstueck.ausgewaehlt())) ? ladeGrundstueck().then(function (g) { return g.vorbereitenBild(plan, mitte).then(function () { return g; }); }) : Promise.resolve(null);
+      grundAbruf = grundAbruf.catch(function () { grundFehler = true; return window.grundstueck || null; });
+
       // Flächen (Parks, Wald, Gewässer, Plätze) aus der lokalen Datei, nur wenn mindestens eine Gruppe zugeschaltet ist
       var flaechenFehler = false;
       function flaechenGruppenImBild() { return sichtbareFlaechen().filter(function (g) { return !(e.ohnePunkte && g.punkte); }); }
@@ -6209,7 +6320,7 @@
       var wegenetzAbruf = (marker && sichtbareWegenetz().length) ? ladeWegenetz() : Promise.resolve(null);
       wegenetzAbruf = wegenetzAbruf.catch(function () { wegenetzFehler = true; return null; });
 
-      return Promise.all([ladeAlleKacheln(liste, beiFortschritt), gebaeudeAbruf, kartenDaten, oepnvAbruf, einrichtungenAbruf, flaechenAbruf, wegenetzAbruf, baeumeAbruf, starkregenAbruf, mobilitaetAbruf, taktAbruf, luftAbruf, spielAbruf]).then(function (ergebnisse) {
+      return Promise.all([ladeAlleKacheln(liste, beiFortschritt), gebaeudeAbruf, kartenDaten, oepnvAbruf, einrichtungenAbruf, flaechenAbruf, wegenetzAbruf, baeumeAbruf, starkregenAbruf, mobilitaetAbruf, taktAbruf, luftAbruf, spielAbruf, grundAbruf]).then(function (ergebnisse) {
         var bilder = ergebnisse[0];
         var einzelBaeume = ergebnisse[7];
         var starkregenBilder = ergebnisse[8].filter(function (x) { return !!x.bild; });
@@ -6279,6 +6390,10 @@
           c.save(); c.globalAlpha = bildDeckkraft(x.gruppe.deckkraft); c.drawImage(x.bild, 0, 0, plan.B, plan.H); c.restore();
         });
 
+        // Grundstücke: Einfärbung nach der Überbauung unter den Gebäuden
+        var grundG = ergebnisse[13];
+        if (grundG) { grundG.zeichneInBild(c, plan, k, pxProMm, "fuell"); }
+
         // Gebäude in einheitlichem Grau (unter dem roten Punkt und den Beschriftungen)
         if (gebaeude) { zeichneGebaeudeInBild(c, gebaeude, k); }
 
@@ -6316,6 +6431,7 @@
         if (spielImBild) { zeichneSpielInBild(c, plan, k, pxProMm, bildSpiel, ergebnisse[12]); }
         var luftImBild = !!ergebnisse[11];
         if (luftImBild) { zeichneLuftInBild(c, plan, k, pxProMm, ergebnisse[11]); }
+        if (grundG) { grundG.zeichneInBild(c, plan, k, pxProMm, "linien"); }
 
         // Haltestellen (ÖPNV): Punkte über den Gebäuden, unter den Straßennamen
         // Einzelbäume: kleine grüne Punkte unter den Haltestellen
@@ -6392,6 +6508,7 @@
                         (taktImBild ? "  ·  " + FAHRPLAN_QUELLE_TEXT : "") +
                         (luftImBild ? "  ·  " + LUFT_QUELLE_TEXT : "") +
                         (spielImBild ? "  ·  " + SPIEL_QUELLE_TEXT : "") +
+                        (grundG ? grundG.quelle() : "") +
                         (bildWegenetz.length ? "  ·  Wegenetz: © OpenStreetMap-Mitwirkende" : "") +
                         (bildFlaechen.some(function (g) { return !g.stadt && !g.fnp; }) ? "  ·  Flächen: © OpenStreetMap-Mitwirkende" : "") +
                         (bildFlaechen.some(function (g) { return g.stadt; }) ? "  ·  Daten: " + STADT_QUELLE_TEXT : "") +
@@ -6438,6 +6555,7 @@
             else { eintraege.push({ art: "flaeche", farbe: g.farbe, deckkraft: Math.min(1, g.deckkraft + 0.25), rand: g.art === "flaeche" ? g.farbe : undefined, text: g.legende }); }
           });
           if (luftImBild) { eintraege.push({ art: "punkt", farbe: LUFT.farbe, rand: LUFT.rand, text: LUFT.legende }); }
+          if (grundG) { grundG.legende().forEach(function (e) { eintraege.push(e); }); }
           if (taktImBild) {
             TAKT.klassen.forEach(function (kl) { eintraege.push({ art: "punkt", farbe: kl.farbe, rand: TAKT.rand, text: "Haltestelle: " + kl.text }); });
           }
@@ -6480,7 +6598,7 @@
 
         return { leinwand: leinwand, fehlend: fehlend, von: liste.length,
                  mitGebaeuden: !!gebaeude, gebaeudeFehler: gebaeudeFehler, oepnvFehler: oepnvFehler,
-                 einrichtungenFehler: einrichtungenFehler, flaechenFehler: flaechenFehler, wegenetzFehler: wegenetzFehler, starkregenFehler: starkregenFehler, mobilitaetFehler: mobilitaetFehler };
+                 einrichtungenFehler: einrichtungenFehler, flaechenFehler: flaechenFehler, wegenetzFehler: wegenetzFehler, starkregenFehler: starkregenFehler, mobilitaetFehler: mobilitaetFehler, grundFehler: grundFehler };
       });
     }
 
@@ -7050,6 +7168,8 @@
         } else if (x.ergebnis.starkregenFehler) {
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Eine Online-Karte (Starkregen, Boden, Geologie, Grundwasser) konnte nicht geladen werden " +
             "(sie braucht Internet und ist manchmal überlastet) und fehlt im Bild. Bitte noch einmal versuchen.", "fehler");
+        } else if (x.ergebnis.grundFehler) {
+          zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Die Grundstücke konnten nicht geladen werden (Internet prüfen; der Bildausschnitt darf höchstens etwa 2,5 × 2,5 km groß sein) und fehlen im Bild.", "fehler");
         } else if (x.ergebnis.flaechenFehler) {
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Die Flächen konnten nicht geladen werden " +
             "(Datei flaechen_oldenburg.js oder nutzung_oldenburg.js fehlt oder ist beschädigt) und fehlen im Bild.", "fehler");
@@ -7088,6 +7208,7 @@
       if (e === TAKT) { return "takt"; }
       if (e === LUFT) { return "luft"; }
       if (SPIEL.indexOf(e) >= 0) { return "spiel_" + e.id; }
+      if (FLST.indexOf(e) >= 0) { return "grund_" + e.id; }
       if (MOBILITAET.indexOf(e) >= 0) { return "mobil_" + e.id; }
       if (e === BAEUME2D) { return "baeume"; }
       if (STARKREGEN.indexOf(e) >= 0) { return "starkregen_" + e.id; }
@@ -7130,6 +7251,7 @@
         exportMitte: exportMitteManuell ? { lat: exportMitteManuell.lat, lng: exportMitteManuell.lng } : null,
         zeichnung: zeichnung, zeichenNr: zeichenNr, zeichenZeigen: zeichenZeigen,
         baeumeAus: Object.keys(baumAus),
+        grundstueck: window.grundstueck ? window.grundstueck.zustand() : null,     // gewähltes Grundstück samt Eingaben (Abschnitt 13)
         plaene: [],                    // Reihenfolge wie im Stapel (zuerst = zuunterst)
         planGewaehlt: plaene.indexOf(eigenerPlan),
         fotos: [],
@@ -7211,8 +7333,12 @@
           if (!soll && karte.hasLayer(eintrag.ebene)) { karte.removeLayer(eintrag.ebene); }
         });
       } finally { sammelSchalten = false; }
-      aktualisiereFlaechen(); aktualisiereBaeume(); aktualisiereEinrichtungen(); aktualisiereMobilitaet(); aktualisiereTakt(); aktualisiereLuft(); aktualisiereSpiel(); aktualisiereOepnv(); aktualisiereWegenetz(false); aktualisiereKreise(false); aktualisiereSonne(false);
+      aktualisiereFlaechen(); aktualisiereBaeume(); aktualisiereEinrichtungen(); aktualisiereMobilitaet(); aktualisiereTakt(); aktualisiereLuft(); aktualisiereSpiel(); aktualisiereGrund(); aktualisiereOepnv(); aktualisiereWegenetz(false); aktualisiereKreise(false); aktualisiereSonne(false);
       synchronisiereAnalyseHaken();
+
+      // 5b. Grundstück (Abschnitt 13): nur laden, wenn die Datei eines hatte
+      if (p.grundstueck) { ladeGrundstueck().then(function (g) { g.stelleWiederHer(p.grundstueck); }).catch(function () {}); }
+      else if (window.grundstueck) { window.grundstueck.loesche(); }
 
       // 6. Zeichnung
       zeichnung = Array.isArray(p.zeichnung) ? p.zeichnung : [];

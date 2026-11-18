@@ -204,6 +204,13 @@
       }
       A.push(zeile("Bebauungsplan", bpl ? "Der Punkt liegt im Umriss eines rechtsverbindlichen Bebauungsplans (Stadt Oldenburg, Datenlizenz dl-de/by-2-0). Plannummer und Festsetzungen sind in den App-Daten NICHT enthalten und müssen beim Planungsamt geprüft werden." : "Der Punkt liegt in keinem Umriss eines Bebauungsplans in den Daten. Das heißt nicht, dass keine planungsrechtlichen Regeln gelten (zum Beispiel § 34 BauGB); das muss geprüft werden."));
 
+      // Grundstück aus dem amtlichen Kataster (Abschnitt "13 Grundstück"), falls dort eines gewählt ist
+      var gdb = window.grundstueck && window.grundstueck.datenblatt ? window.grundstueck.datenblatt() : null;
+      if (gdb) {
+        gdb.forEach(function (l, i) { A.push(i === 0 ? "- " + l : l); });
+        teile.quellen.push("Grundstücke und Gebäude (Kataster): © LGLN, CC BY 4.0");
+      }
+
       // Grundstück aus der Zeichnung
       var zeich = window.zeichnung || [];
       var flaechenObj = zeich.filter(function (o) { return o.art === "flaeche" && !o.mass && o.punkte && o.punkte.length >= 3; });
@@ -215,9 +222,9 @@
         var cl = 0, cg = 0; grund.punkte.forEach(function (p) { cl += p.lat; cg += p.lng; });
         cl /= grund.punkte.length; cg /= grund.punkte.length;
         A.push(zeile("Grundstück (vom Nutzer gezeichnet: „" + grund.name + "“)", "Fläche " + z(window.zeichenFlaecheQm(grund.punkte), 0) + " m², Umfang " + z(window.zeichenLaenge(grund.punkte, true), 0) + " m, " + grund.punkte.length + " Eckpunkte, umschließendes Rechteck ca. " + z(maxx - minx, 0) + " m (Ost–West) × " + z(maxy - miny, 0) + " m (Nord–Süd), Mitte " + z(O.abstand(cl, cg), 0) + " m vom roten Punkt (" + O.richtung(cl, cg) + "). Die Lage stammt aus deiner Zeichnung und ist nicht amtlich vermessen."));
-      } else {
+      } else if (!gdb) {
         A.push(zeile("Grundstück", "nicht angegeben (keine Fläche mit dem Namen „Grundstück“ gezeichnet). Grenzen, Größe und Zuschnitt sind unbekannt."));
-        teile.fehlt.push("Grundstücksgrenze, Fläche und Zuschnitt (zeichne in „06 Zeichnen“ eine Fläche und nenne sie „Grundstück“).");
+        teile.fehlt.push("Grundstücksgrenze, Fläche und Zuschnitt (wähle das Grundstück in „13 Grundstück“ oder zeichne in „06 Zeichnen“ eine Fläche und nenne sie „Grundstück“).");
       }
       // weitere gezeichnete Objekte
       var andere = flaechenObj.filter(function (o) { return o !== grund; });
