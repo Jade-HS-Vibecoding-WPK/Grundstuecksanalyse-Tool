@@ -992,11 +992,13 @@
     }
     c.restore();
   }
-  function legende() {
+  // live = true: Legende für die Karte auf dem Bildschirm (nach den eingeschalteten Ebenen), sonst für das gespeicherte Bild
+  function legende(live) {
     var e = [];
-    if (bildDaten) {
-      if (bildDaten.ebenen.indexOf(FLST[0]) >= 0) { e.push({ art: "linie", farbe: FLST[0].farbe, text: FLST[0].legende }); }
-      if (bildDaten.ebenen.indexOf(FLST[1]) >= 0) { GRZ_KLASSEN.forEach(function (k, i) { e.push({ art: "flaeche", farbe: k.farbe, deckkraft: 0.9, text: (i === 0 ? "Überbauung der Grundstücke (GRZ der Gebäude): " : "GRZ: ") + k.text }); }); }
+    var an = function (g) { return live ? karte.hasLayer(g.ebene) : !!bildDaten && bildDaten.ebenen.indexOf(g) >= 0; };
+    if (live || bildDaten) {
+      if (an(FLST[0])) { e.push({ art: "linie", farbe: FLST[0].farbe, text: FLST[0].legende }); }
+      if (an(FLST[1])) { GRZ_KLASSEN.forEach(function (k, i) { e.push({ art: "flaeche", farbe: k.farbe, deckkraft: 0.9, text: (i === 0 ? "Überbauung der Grundstücke (GRZ der Gebäude): " : "GRZ: ") + k.text }); }); }
     }
     if (S.f) { e.push({ art: "linie", farbe: "#c0392b", text: "Gewähltes Grundstück" }); }
     if (S.f && S.zeigeBaufeld && S.g && S.g.bauRingeGrad) { e.push({ art: "flaeche", farbe: "#c0392b", deckkraft: 0.4, rand: "#c0392b", text: "Baufeld (Studie: Abstand zur Grenze und GRZ)" }); }

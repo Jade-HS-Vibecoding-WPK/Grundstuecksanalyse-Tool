@@ -647,16 +647,45 @@
       color: var(--tinte);
     }
     .leaflet-control-layers-selector { accent-color: var(--rot); }
+    /* Ausklappbare Legende unter der Kartenauswahl */
+    .kartenLegende {
+      border-top: 1px solid var(--tinte);
+      color: var(--tinte);
+      font-size: 12px;
+      width: 0; min-width: 100%;      /* zugeklappt bestimmt die Legende nicht die Breite des Kastens */
+      box-sizing: border-box;
+    }
+    .kartenLegende[open] { width: auto; max-width: 290px; }
+    .kartenLegende summary {
+      cursor: pointer;
+      padding: 4px 10px;
+      letter-spacing: 0.04em;
+      user-select: none;
+      list-style: none;
+      font-weight: bold;
+    }
+    .kartenLegende summary::-webkit-details-marker { display: none; }
+    .kartenLegende summary::after { content: "+"; float: right; font-weight: normal; margin-left: 10px; }
+    .kartenLegende[open] summary { border-bottom: 1px solid #e3e0d8; }
+    .kartenLegende[open] summary::after { content: "\2212"; }
+    .kartenLegendeListe { max-height: 45vh; overflow-y: auto; padding: 4px 10px 6px; }
+    .kartenLegendeListe .zeile { display: flex; align-items: center; gap: 8px; margin: 3px 0; line-height: 1.25; }
+    .kartenLegendeListe .leer { color: #8a8a8a; font-size: 11px; }
+    .kartenLegendeListe .lm { flex: none; display: inline-block; width: 22px; height: 11px; box-sizing: border-box; }
+    .kartenLegendeListe .lm.punkt { width: 11px; height: 11px; margin: 0 5.5px; border: 1.5px solid #fff; border-radius: 50%; }
+    .kartenLegendeListe .lm.linie { height: 0; border-top: 2.5px solid #000; }
+    /* Dezenter KI-Hinweis ganz rechts in der Leiste oben */
     .ki-hinweis {
-      margin: 0;
-      padding: 3px 10px 4px;
-      font-size: 10px;
-      line-height: 1.2;
+      margin-left: auto;
+      align-self: center;
+      padding: 0 14px;
+      font-size: 11px;
+      letter-spacing: 0.02em;
       color: #8a8a8a;
-      border-top: 1px solid #e3e0d8;
-      text-align: right;
+      white-space: nowrap;
       user-select: none;
     }
+    @media (max-width: 520px) { .ki-hinweis { font-size: 10px; padding: 0 8px; white-space: normal; line-height: 1.1; text-align: right; } }
 
     .leaflet-control-scale-line {
       color: var(--tinte);
@@ -692,6 +721,7 @@
       <button type="button" role="tab" id="reiter3d" aria-selected="false" title="Zeigt die Umgebung als 3D-Modell mit Schatten">3D-Ansicht</button>
       <button type="button" id="reiter3dZu" class="reiter-zu" hidden title="3D-Ansicht schließen (gibt den Speicher frei)" aria-label="3D-Ansicht schließen">✕</button>
     </span>
+    <span class="ki-hinweis">*KI-generiert, kann Fehler enthalten</span>
   </nav>
   <div class="app">
 
@@ -1186,6 +1216,7 @@
           <ul>
             <li><strong>Seitenleiste einklappen:</strong> Der kleine Knopf mit dem Pfeil am linken Kartenrand blendet die Seitenleiste aus, dann nimmt die Karte die ganze Breite ein. Ein Klick auf den Knopf (der Pfeil zeigt dann nach rechts) holt sie zurück. Das geht genauso in der 3D-Ansicht.</li>
             <li><strong>Projekt sichern:</strong> Mit „Projekt speichern“ (ganz oben) legst du alles in einer Datei ab: Adresse, Karte, Ebenen, Plan, Zeichnung und Einstellungen. „Projekt öffnen“ holt es wieder. Zusätzlich sichert die App laufend im Browser und fragt beim nächsten Start, ob sie den letzten Stand wiederherstellen soll. Für Weitergeben und Aufheben ist die Projektdatei der sichere Weg.</li>
+            <li><strong>Legende:</strong> Unter der Kartenauswahl oben rechts lässt sich mit „Legende“ eine Liste aufklappen. Sie erklärt Farben und Zeichen aller eingeschalteten Ebenen, genau wie im gespeicherten Bild.</li>
             <li><strong>Punkte anklicken:</strong> Ein Klick auf eine Haltestelle zeigt Name, Linien und Abfahrten, ein Klick auf eine Einrichtung (Läden, Schulen, Ärzte, Freizeit) Name und Art, zum Beispiel „Bäckerei“ oder „Kita“. Das geht in der Karte und in der 3D-Ansicht, solange kein Zeichen- oder Messwerkzeug aktiv ist.</li>
             <li>Mit Esc brichst du das Zeichnen und das Einpassen ab.</li>
             <li>Die Quellenangabe (OpenStreetMap) ist Pflicht. Lass sie nur weg, wenn du sie anders nennst.</li>
@@ -2262,12 +2293,44 @@
       "Schwarzplan": karteSchwarzplan
     }, ueberlagerungen, { collapsed: false, position: "topright" }).addTo(karte);
 
-    // Dezenter KI-Hinweis unter der Kartenauswahl (nur auf dem Bildschirm, nicht im gespeicherten Bild)
-    (function () {
-      var hinweis = document.createElement("div");
-      hinweis.className = "ki-hinweis";
-      hinweis.textContent = "*KI-generiert, kann Fehler enthalten";
-      ebenenSchalter.getContainer().appendChild(hinweis);
+    // (Der dezente KI-Hinweis steht ganz rechts in der Reiterleiste oben, siehe `.ki-hinweis`; er gilt nur auf dem Bildschirm, nicht im gespeicherten Bild.)
+
+    // Ausklappbare Legende, in den Kasten der Kartenauswahl eingebaut (unter der Liste): zeigt, was die eingeschalteten
+    // Ebenen bedeuten (gleiche Einträge wie im gespeicherten Bild, gebaut von legendenEintraege). Sie wird beim Aufklappen, beim Darüberfahren
+    // und bei jeder Änderung der Ebenen neu aufgebaut.
+    var kartenLegende = (function () {
+      var box = document.createElement("details");
+      box.className = "kartenLegende";
+      var kopf = document.createElement("summary"); kopf.textContent = "Legende"; box.appendChild(kopf);
+      var liste = document.createElement("div"); liste.className = "kartenLegendeListe"; box.appendChild(liste);
+      ebenenSchalter.getContainer().appendChild(box);
+      var k = { box: box, liste: liste }, zeitgeber = null;
+      function muster(e) {
+        var m = document.createElement("span"); m.className = "lm " + e.art;
+        if (e.art === "punkt") { m.style.background = e.farbe; m.style.borderColor = e.rand || "#ffffff"; m.style.boxShadow = "0 0 0 0.5px #888"; }
+        else if (e.art === "linie") { m.style.borderTopColor = e.farbe; m.style.borderTopStyle = e.strich ? "dashed" : "solid"; }
+        else { m.style.background = e.farbe; m.style.opacity = e.deckkraft || 1; m.style.outline = e.rand ? "1px solid " + e.rand : "none"; }
+        return m;
+      }
+      function aufbauen() {
+        zeitgeber = null;
+        if (!k.box.open) { return; }
+        var eintraege = [];
+        try { eintraege = legendeBildschirmEintraege(); } catch (x) { eintraege = []; }
+        k.liste.textContent = "";
+        if (!eintraege.length) { var leer = document.createElement("div"); leer.className = "leer"; leer.textContent = "Noch keine Ebene eingeschaltet."; k.liste.appendChild(leer); return; }
+        eintraege.forEach(function (e) {
+          var z = document.createElement("div"); z.className = "zeile";
+          z.appendChild(muster(e));
+          var t = document.createElement("span"); t.textContent = e.text; z.appendChild(t);
+          k.liste.appendChild(z);
+        });
+      }
+      function bald() { if (!zeitgeber) { zeitgeber = setTimeout(aufbauen, 150); } }
+      k.box.addEventListener("toggle", aufbauen);
+      k.box.addEventListener("mouseenter", bald);
+      karte.on("layeradd layerremove", function () { if (k.box.open) { bald(); } });
+      return k;
     })();
 
     // Beim Wechsel der Hintergrundkarte: Im Schwarzplan die Gebäude einschalten und (wenn nötig) nah genug heranzoomen,
@@ -6237,6 +6300,84 @@
 
     // Legende unten rechts. "eintraege" = [{ art: "punkt"|"flaeche"|"linie", farbe, rand, text }].
     // "untenBei" ist die Unterkante, "rechts" der rechte Rand.
+    // Baut die Legendeneinträge (Muster, Farbe, Text) aus dem, was gerade gezeigt wird. Die Angaben `s` kommen entweder vom Export (gespeichertes Bild)
+    // oder vom Bildschirm (legendeBildschirmEintraege), damit die Legende in der Karte und im gespeicherten Bild gleich lautet.
+    function legendenEintraege(s) {
+      var markerImBild = s.markerImBild, fotoBild = s.fotoBild, gebaeude = s.gebaeude, bildKreise = s.bildKreise, kreiseImBild = s.kreiseImBild, bildWegenetz = s.bildWegenetz,
+          oepnvImBild = s.oepnvImBild, baeumeImBild = s.baeumeImBild, sonnenImBild = s.sonnenImBild, starkregenImBild = s.starkregenImBild, starkregenBilder = s.starkregenBilder,
+          bildEinrichtungen = s.bildEinrichtungen, bildMobilitaet = s.bildMobilitaet, bildSpiel = s.bildSpiel, luftImBild = s.luftImBild, grundG = s.grundG,
+          taktImBild = s.taktImBild, bildFlaechen = s.bildFlaechen, bildSonne = s.bildSonne, zeichnungDa = s.zeichnungDa;
+      var eintraege = [];
+      if (markerImBild) { eintraege.push({ art: "punkt", farbe: "#c0392b", text: "Standort" }); }
+      if (fotoBild) { eintraege.push({ art: "punkt", farbe: FOTO_FARBE, text: "Fotostandort (Nummer, Sichtkegel = Blickrichtung)" }); }
+      if (gebaeude) { eintraege.push({ art: "flaeche", farbe: gebaeudeFarbe(), text: "Gebäude" }); }
+      if (kreiseImBild) {
+        bildKreise.forEach(function (kreis) {
+          eintraege.push({ art: "linie", farbe: kreis.farbe, strich: kreis.strich.map(function (v) { return v / 3; }),
+                           text: kreis.minuten + " Min. zu Fuß (" + kreis.meter + " m, Luftlinie)" });
+        });
+      }
+      bildWegenetz.forEach(function (z) {
+        eintraege.push({ art: "flaeche", farbe: z.farbe, deckkraft: Math.min(1, z.deckkraft + 0.25), rand: z.farbe,
+                         text: z.minuten + " Min. zu Fuß nach Wegenetz (" + z.meter + " m)" });
+      });
+      if (oepnvImBild) { eintraege.push({ art: "punkt", farbe: OEPNV.farbe, rand: OEPNV.rand, text: "Haltestelle, Bahnhof (ÖPNV)" }); }
+      if (baeumeImBild) { eintraege.push({ art: "punkt", farbe: BAEUME2D.farbe, text: "Baum (OpenStreetMap)" }); }
+      if (sonnenImBild) {
+        SONNE_STUFEN.forEach(function (st, i) { eintraege.push({ art: "flaeche", farbe: sonnenFarbeHex(st[1]), deckkraft: 0.9, text: (i === 0 ? "Sonnenstunden pro Tag (Jahresmittel): " : "Sonne: ") + st[0] }); });
+      }
+      if (starkregenImBild) {
+        var regenImBild = starkregenBilder.filter(function (x) { return !x.gruppe.untergrund; });
+        regenImBild.forEach(function (x) { eintraege.push({ art: "flaeche", farbe: "#6e99ff", deckkraft: 0.9, text: x.gruppe.legende }); });
+        if (regenImBild.length) { STARKREGEN_KLASSEN.forEach(function (kl) { eintraege.push({ art: "flaeche", farbe: kl[0], deckkraft: 1, text: "Überflutungstiefe " + kl[1] }); }); }
+        // Boden, Geologie, Grundwasser: eine Zeile je Karte (die vielen Farben erklärt die Legende des Landesamts)
+        starkregenBilder.filter(function (x) { return x.gruppe.untergrund; }).forEach(function (x) {
+          eintraege.push({ art: "flaeche", farbe: x.gruppe.farbe, deckkraft: 0.9, text: x.gruppe.legende });
+        });
+      }
+      bildEinrichtungen.forEach(function (gruppe) { eintraege.push({ art: "punkt", farbe: gruppe.farbe, text: gruppe.legende }); });
+      bildMobilitaet.forEach(function (g) {
+        if (g.art === "linie") { eintraege.push({ art: "linie", farbe: g.farbe, strich: (g.strich || []).map(function (v) { return v / 3; }), text: g.legende }); }
+        else { eintraege.push({ art: "punkt", farbe: g.farbe, rand: g.rand, text: g.legende }); }
+      });
+      bildSpiel.forEach(function (g) {
+        if (g.art === "punkt") { eintraege.push({ art: "punkt", farbe: g.farbe, text: g.legende }); }
+        else { eintraege.push({ art: "flaeche", farbe: g.farbe, deckkraft: Math.min(1, g.deckkraft + 0.25), rand: g.art === "flaeche" ? g.farbe : undefined, text: g.legende }); }
+      });
+      if (luftImBild) { eintraege.push({ art: "punkt", farbe: LUFT.farbe, rand: LUFT.rand, text: LUFT.legende }); }
+      if (grundG) { grundG.legende(s.live).forEach(function (e) { eintraege.push(e); }); }
+      if (taktImBild) {
+        TAKT.klassen.forEach(function (kl) { eintraege.push({ art: "punkt", farbe: kl.farbe, rand: TAKT.rand, text: "Haltestelle: " + kl.text }); });
+      }
+      bildFlaechen.forEach(function (gruppe) {
+        if (gruppe.klassen) {
+          // eine Zeile je Klasse (Lärm: 55–59 dB usw.)
+          Object.keys(gruppe.klassen).forEach(function (klasse) {
+            eintraege.push({ art: "flaeche", farbe: gruppe.klassen[klasse][0], deckkraft: Math.min(1, gruppe.deckkraft + 0.25), text: gruppe.legende + ": " + gruppe.klassen[klasse][1] });
+          });
+        } else if (gruppe.punkte) {
+          eintraege.push({ art: "punkt", farbe: gruppe.farbe, text: gruppe.legende });
+        } else {
+          eintraege.push({ art: "flaeche", farbe: gruppe.farbe, deckkraft: Math.min(1, gruppe.deckkraft + 0.25), text: gruppe.legende,
+                           rand: gruppe.kontur ? gruppe.farbe : undefined });
+        }
+      });
+      bildSonne.forEach(function (tag) {
+        eintraege.push({ art: "linie", farbe: tag.farbe, text: "Sonne " + tag.datum + ": Aufgang, Mittag, Untergang" });
+      });
+      if (zeichnungDa) { zeichnungLegendenEintraege().forEach(function (eintrag) { eintraege.push(eintrag); }); }   // Objekte mit Namen
+      if (s.vektor) {
+        eintraege.push({ art: "flaeche", farbe: KARTEN_STIL.strassenFuell, rand: KARTEN_STIL.strassenRand, text: "Straße" });
+        // Sind die Flächen-Ebenen zugeschaltet, erklären deren Legendeneinträge Grün und Wasser schon
+        var gruppeAn = {};
+        bildFlaechen.forEach(function (g) { gruppeAn[g.id] = true; });
+        if (!gruppeAn.parks && !gruppeAn.wald) { eintraege.push({ art: "flaeche", farbe: KARTEN_STIL.gruen, text: "Grünfläche" }); }
+        if (!gruppeAn.wasser) { eintraege.push({ art: "flaeche", farbe: KARTEN_STIL.wasser, text: "Gewässer" }); }
+        eintraege.push({ art: "linie", farbe: KARTEN_STIL.bahn, text: "Bahn" });
+      }
+      return eintraege;
+    }
+
     function zeichneLegende(c, eintraege, rechts, untenBei, pxProMm) {
       if (!eintraege.length) { return 0; }
       c.save();
@@ -6287,6 +6428,26 @@
       });
       c.restore();
       return hoehe;
+    }
+
+    // Legendeneinträge für die Karte auf dem Bildschirm, nach den gerade eingeschalteten Ebenen (Gegenstück zum Export)
+    function legendeBildschirmEintraege() {
+      var an = function (l) { return karte.hasLayer(l); }, mitAdresse = !!marker;
+      var kreise = mitAdresse ? sichtbareKreise() : [], sonne = mitAdresse ? sichtbareSonne() : [], regen = sichtbareStarkregen();
+      return legendenEintraege({
+        markerImBild: mitAdresse,
+        fotoBild: fotoZeigenFeld.checked && fotos.some(function (f) { return f.lat !== null; }),
+        gebaeude: an(bebauungEbene),
+        bildKreise: kreise, kreiseImBild: kreise.length > 0,
+        bildWegenetz: mitAdresse ? sichtbareWegenetz() : [],
+        oepnvImBild: an(OEPNV.ebene), baeumeImBild: an(BAEUME2D.ebene),
+        sonnenImBild: !!(sonnenKarte && an(SONNENSTUNDEN2D.ebene)),
+        starkregenImBild: regen.length > 0, starkregenBilder: regen.map(function (g) { return { gruppe: g }; }),
+        bildEinrichtungen: sichtbareEinrichtungen(), bildMobilitaet: sichtbareMobilitaet(), bildSpiel: sichtbareSpiel(),
+        luftImBild: an(LUFT.ebene), grundG: window.grundstueck || null, taktImBild: an(TAKT.ebene),
+        bildFlaechen: sichtbareFlaechen(), bildSonne: sonne, zeichnungDa: zeichnungImBild(),
+        vektor: an(karteEigene), live: true
+      });
     }
 
     // Zeichnet den Maßstabsbalken unten links
@@ -6649,74 +6810,7 @@
           untenSlot -= hQuelle + 2 * pxProMm;
         }
         if (zeige.legende) {
-          var eintraege = [];
-          if (markerImBild) { eintraege.push({ art: "punkt", farbe: "#c0392b", text: "Standort" }); }
-          if (fotoBild) { eintraege.push({ art: "punkt", farbe: FOTO_FARBE, text: "Fotostandort (Nummer, Sichtkegel = Blickrichtung)" }); }
-          if (gebaeude) { eintraege.push({ art: "flaeche", farbe: gebaeudeFarbe(), text: "Gebäude" }); }
-          if (kreiseImBild) {
-            bildKreise.forEach(function (kreis) {
-              eintraege.push({ art: "linie", farbe: kreis.farbe, strich: kreis.strich.map(function (v) { return v / 3; }),
-                               text: kreis.minuten + " Min. zu Fuß (" + kreis.meter + " m, Luftlinie)" });
-            });
-          }
-          bildWegenetz.forEach(function (z) {
-            eintraege.push({ art: "flaeche", farbe: z.farbe, deckkraft: Math.min(1, z.deckkraft + 0.25), rand: z.farbe,
-                             text: z.minuten + " Min. zu Fuß nach Wegenetz (" + z.meter + " m)" });
-          });
-          if (oepnvImBild) { eintraege.push({ art: "punkt", farbe: OEPNV.farbe, rand: OEPNV.rand, text: "Haltestelle, Bahnhof (ÖPNV)" }); }
-          if (baeumeImBild) { eintraege.push({ art: "punkt", farbe: BAEUME2D.farbe, text: "Baum (OpenStreetMap)" }); }
-          if (sonnenImBild) {
-            SONNE_STUFEN.forEach(function (st, i) { eintraege.push({ art: "flaeche", farbe: sonnenFarbeHex(st[1]), deckkraft: 0.9, text: (i === 0 ? "Sonnenstunden pro Tag (Jahresmittel): " : "Sonne: ") + st[0] }); });
-          }
-          if (starkregenImBild) {
-            var regenImBild = starkregenBilder.filter(function (x) { return !x.gruppe.untergrund; });
-            regenImBild.forEach(function (x) { eintraege.push({ art: "flaeche", farbe: "#6e99ff", deckkraft: 0.9, text: x.gruppe.legende }); });
-            if (regenImBild.length) { STARKREGEN_KLASSEN.forEach(function (kl) { eintraege.push({ art: "flaeche", farbe: kl[0], deckkraft: 1, text: "Überflutungstiefe " + kl[1] }); }); }
-            // Boden, Geologie, Grundwasser: eine Zeile je Karte (die vielen Farben erklärt die Legende des Landesamts)
-            starkregenBilder.filter(function (x) { return x.gruppe.untergrund; }).forEach(function (x) {
-              eintraege.push({ art: "flaeche", farbe: x.gruppe.farbe, deckkraft: 0.9, text: x.gruppe.legende });
-            });
-          }
-          bildEinrichtungen.forEach(function (gruppe) { eintraege.push({ art: "punkt", farbe: gruppe.farbe, text: gruppe.legende }); });
-          bildMobilitaet.forEach(function (g) {
-            if (g.art === "linie") { eintraege.push({ art: "linie", farbe: g.farbe, strich: (g.strich || []).map(function (v) { return v / 3; }), text: g.legende }); }
-            else { eintraege.push({ art: "punkt", farbe: g.farbe, rand: g.rand, text: g.legende }); }
-          });
-          bildSpiel.forEach(function (g) {
-            if (g.art === "punkt") { eintraege.push({ art: "punkt", farbe: g.farbe, text: g.legende }); }
-            else { eintraege.push({ art: "flaeche", farbe: g.farbe, deckkraft: Math.min(1, g.deckkraft + 0.25), rand: g.art === "flaeche" ? g.farbe : undefined, text: g.legende }); }
-          });
-          if (luftImBild) { eintraege.push({ art: "punkt", farbe: LUFT.farbe, rand: LUFT.rand, text: LUFT.legende }); }
-          if (grundG) { grundG.legende().forEach(function (e) { eintraege.push(e); }); }
-          if (taktImBild) {
-            TAKT.klassen.forEach(function (kl) { eintraege.push({ art: "punkt", farbe: kl.farbe, rand: TAKT.rand, text: "Haltestelle: " + kl.text }); });
-          }
-          bildFlaechen.forEach(function (gruppe) {
-            if (gruppe.klassen) {
-              // eine Zeile je Klasse (Lärm: 55–59 dB usw.)
-              Object.keys(gruppe.klassen).forEach(function (klasse) {
-                eintraege.push({ art: "flaeche", farbe: gruppe.klassen[klasse][0], deckkraft: Math.min(1, gruppe.deckkraft + 0.25), text: gruppe.legende + ": " + gruppe.klassen[klasse][1] });
-              });
-            } else if (gruppe.punkte) {
-              eintraege.push({ art: "punkt", farbe: gruppe.farbe, text: gruppe.legende });
-            } else {
-              eintraege.push({ art: "flaeche", farbe: gruppe.farbe, deckkraft: Math.min(1, gruppe.deckkraft + 0.25), text: gruppe.legende,
-                               rand: gruppe.kontur ? gruppe.farbe : undefined });
-            }
-          });
-          bildSonne.forEach(function (tag) {
-            eintraege.push({ art: "linie", farbe: tag.farbe, text: "Sonne " + tag.datum + ": Aufgang, Mittag, Untergang" });
-          });
-          if (zeichnungDa) { zeichnungLegendenEintraege().forEach(function (eintrag) { eintraege.push(eintrag); }); }   // Objekte mit Namen
-          if (quelle.vektor) {
-            eintraege.push({ art: "flaeche", farbe: KARTEN_STIL.strassenFuell, rand: KARTEN_STIL.strassenRand, text: "Straße" });
-            // Sind die Flächen-Ebenen zugeschaltet, erklären deren Legendeneinträge Grün und Wasser schon
-            var gruppeAn = {};
-            bildFlaechen.forEach(function (g) { gruppeAn[g.id] = true; });
-            if (!gruppeAn.parks && !gruppeAn.wald) { eintraege.push({ art: "flaeche", farbe: KARTEN_STIL.gruen, text: "Grünfläche" }); }
-            if (!gruppeAn.wasser) { eintraege.push({ art: "flaeche", farbe: KARTEN_STIL.wasser, text: "Gewässer" }); }
-            eintraege.push({ art: "linie", farbe: KARTEN_STIL.bahn, text: "Bahn" });
-          }
+          var eintraege = legendenEintraege({ markerImBild: markerImBild, fotoBild: fotoBild, gebaeude: !!gebaeude, bildKreise: bildKreise, kreiseImBild: kreiseImBild, bildWegenetz: bildWegenetz, oepnvImBild: oepnvImBild, baeumeImBild: baeumeImBild, sonnenImBild: sonnenImBild, starkregenImBild: starkregenImBild, starkregenBilder: starkregenBilder, bildEinrichtungen: bildEinrichtungen, bildMobilitaet: bildMobilitaet, bildSpiel: bildSpiel, luftImBild: luftImBild, grundG: grundG, taktImBild: taktImBild, bildFlaechen: bildFlaechen, bildSonne: bildSonne, zeichnungDa: zeichnungDa, vektor: !!quelle.vektor, live: false });
           zeichneLegende(c, eintraege, plan.B - 6 * pxProMm, untenSlot, pxProMm);
         }
 
