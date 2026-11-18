@@ -1688,7 +1688,7 @@
     var eg = EINRICHTUNGEN.filter(function (g) { return karte.hasLayer(g.ebene); });
     if (eg.length) {
       jobs.push(ladeEinrichtungenDaten().then(function (d) {
-        eg.forEach(function (g) { d[g.id].forEach(function (p) { liste.push({ lat: p.lat, lng: p.lng, farbe: g.farbe, gross: false, info: { art: "text", text: g.legende } }); }); });
+        eg.forEach(function (g) { d[g.id].forEach(function (p) { liste.push({ lat: p.lat, lng: p.lng, farbe: g.farbe, gross: false, info: { art: "einr", p: p } }); }); });
       }));
     }
     var mg = MOBILITAET.filter(function (g) { return g.art === "punkt" && karte.hasLayer(g.ebene); });
@@ -1776,6 +1776,7 @@
     if (info.art === "halt") { inhalt = haltestellenPopup(info.h || fahrplanNaechste(info.lat, info.lng, 90)); }
     else if (info.art === "lader") { inhalt = ladestationPopup(info.p); }
     else if (info.art === "luft") { inhalt = luftPopup(info.s); }
+    else if (info.art === "einr") { inhalt = einrichtungPopup(info.p); }
     else if (info.art === "text") { inhalt = document.createElement("div"); inhalt.textContent = info.text; }
     if (!inhalt) { return; }
     var kasten = z.el("a3dPunktInfo"), zu = document.createElement("button");

@@ -1186,6 +1186,7 @@
           <ul>
             <li><strong>Seitenleiste einklappen:</strong> Der kleine Knopf mit dem Pfeil am linken Kartenrand blendet die Seitenleiste aus, dann nimmt die Karte die ganze Breite ein. Ein Klick auf den Knopf (der Pfeil zeigt dann nach rechts) holt sie zurück. Das geht genauso in der 3D-Ansicht.</li>
             <li><strong>Projekt sichern:</strong> Mit „Projekt speichern“ (ganz oben) legst du alles in einer Datei ab: Adresse, Karte, Ebenen, Plan, Zeichnung und Einstellungen. „Projekt öffnen“ holt es wieder. Zusätzlich sichert die App laufend im Browser und fragt beim nächsten Start, ob sie den letzten Stand wiederherstellen soll. Für Weitergeben und Aufheben ist die Projektdatei der sichere Weg.</li>
+            <li><strong>Punkte anklicken:</strong> Ein Klick auf eine Haltestelle zeigt Name, Linien und Abfahrten, ein Klick auf eine Einrichtung (Läden, Schulen, Ärzte, Freizeit) Name und Art, zum Beispiel „Bäckerei“ oder „Kita“. Das geht in der Karte und in der 3D-Ansicht, solange kein Zeichen- oder Messwerkzeug aktiv ist.</li>
             <li>Mit Esc brichst du das Zeichnen und das Einpassen ab.</li>
             <li>Die Quellenangabe (OpenStreetMap) ist Pflicht. Lass sie nur weg, wenn du sie anders nennst.</li>
             <li>Die Daten (Gebäude, Haltestellen, Einrichtungen …) sind ein Stand vom Tag des Herunterladens. Erneuern: Ordner „Datenpflege“, Datei LIESMICH.txt.</li>
@@ -2942,7 +2943,27 @@
     var alleEinrichtungen = null;      // { laeden: [{ lat, lng }], schulen: [...], aerzte: [...], freizeit: [...] }
     var einrichtungenLadevorgang = null;
 
-    // Lädt die Einrichtungsdatei (nur beim ersten Mal) und entpackt sie. Ein Punkt ist dort [Breite, Länge] in Millionstel Grad.
+    // Deutsche Bezeichnung der Art (OpenStreetMap-Wert in der Datei -> Text im Fenster beim Anklicken)
+    var EINRICHTUNG_ARTEN = {
+      supermarket: "Supermarkt", convenience: "Kleinladen", bakery: "Bäckerei", butcher: "Metzgerei", greengrocer: "Obst und Gemüse",
+      chemist: "Drogerie", department_store: "Kaufhaus", mall: "Einkaufszentrum",
+      school: "Schule", kindergarten: "Kindergarten", childcare: "Kita / Kinderbetreuung", college: "Berufs- oder Fachschule", university: "Hochschule",
+      doctors: "Arztpraxis", dentist: "Zahnarzt", clinic: "Klinik", hospital: "Krankenhaus", pharmacy: "Apotheke",
+      restaurant: "Restaurant", cafe: "Café", bar: "Bar", pub: "Kneipe", biergarten: "Biergarten", fast_food: "Imbiss",
+      library: "Bibliothek", theatre: "Theater", cinema: "Kino", arts_centre: "Kulturzentrum", museum: "Museum", gallery: "Galerie",
+      playground: "Spielplatz", sports_centre: "Sportzentrum", fitness_centre: "Fitnessstudio", stadium: "Stadion"
+    };
+    // Inhalt des Fensters einer Einrichtung (Name und Art); wird auch von der 3D-Ansicht benutzt
+    function einrichtungPopup(p) {
+      var art = EINRICHTUNG_ARTEN[p.art] || "Einrichtung";
+      var d = document.createElement("div");
+      d.style.maxWidth = "240px";
+      if (p.name) { popupZeile(d, p.name, true); popupZeile(d, art).style.marginTop = "2px"; }
+      else { popupZeile(d, art, true); popupZeile(d, "Ohne Namen in OpenStreetMap eingetragen.").style.cssText = "margin-top:2px;color:#666"; }
+      return d;
+    }
+
+    // Lädt die Einrichtungsdatei (nur beim ersten Mal) und entpackt sie. Ein Punkt ist dort [Breite, Länge, Art, Name] (Breite und Länge in Millionstel Grad, Name nur wenn bekannt).
     function ladeEinrichtungenDaten() {
       if (alleEinrichtungen) { return Promise.resolve(alleEinrichtungen); }
       if (einrichtungenLadevorgang) { return einrichtungenLadevorgang; }
@@ -2954,7 +2975,7 @@
             var ergebnis = {};
             EINRICHTUNGEN.forEach(function (gruppe) {
               ergebnis[gruppe.id] = daten.gruppen[gruppe.id].map(function (p) {
-                return { lat: p[0] * daten.einheit, lng: p[1] * daten.einheit };
+                return { lat: p[0] * daten.einheit, lng: p[1] * daten.einheit, art: p[2] || "", name: p[3] || "" };
               });
             });
             alleEinrichtungen = ergebnis;
@@ -2988,14 +3009,16 @@
         sichtbareEinrichtungen().forEach(function (gruppe) {
           gruppe.ebene.clearLayers();
           daten[gruppe.id].forEach(function (p) {
-            L.circleMarker([p.lat, p.lng], {
+            var m = L.circleMarker([p.lat, p.lng], {
               radius: EINRICHTUNG_RADIUS,
               color: "#ffffff",
               weight: 1.5,
               fillColor: gruppe.farbe,
               fillOpacity: 1,
-              interactive: false
+              interactive: true,
+              renderer: klickRenderer      // Klick: Name und Art
             }).addTo(gruppe.ebene);
+            m.on("click", function () { zeigePopup(m, einrichtungPopup(p)); });
           });
         });
         kreiseNachVorn();

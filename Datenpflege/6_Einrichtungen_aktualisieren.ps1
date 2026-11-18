@@ -70,18 +70,21 @@ $alle = New-Object System.Collections.Generic.List[object]
 foreach ($e in $antwort.elements) {
   if ($e.type -eq 'node') { $lat = [double]$e.lat; $lon = [double]$e.lon; $flaeche = 0 }
   else { if (-not $e.center) { continue }; $lat = [double]$e.center.lat; $lon = [double]$e.center.lon; $flaeche = 1 }
-  $gruppe = $null
+  $gruppe = $null; $art = ''
   foreach ($g in $gruppen) {
     foreach ($schluessel in $g.Tags.Keys) {
       $wert = $e.tags.$schluessel
-      if ($wert -and ($wert -match $g.Tags[$schluessel])) { $gruppe = $g.Name; break }
+      if ($wert -and ($wert -match $g.Tags[$schluessel])) { $gruppe = $g.Name; $art = [string]$wert; break }
     }
     if ($gruppe) { break }
   }
   if (-not $gruppe) { continue }
-  $alle.Add([pscustomobject]@{ Gruppe = $gruppe; Flaeche = $flaeche; Lat = $lat; Lon = $lon })
+  $bez = ''
+  if ($e.tags.name) { $bez = [string]$e.tags.name }
+  $alle.Add([pscustomobject]@{ Gruppe = $gruppe; Flaeche = $flaeche; Lat = $lat; Lon = $lon; Art = $art; Bez = $bez })
 }
 
+# Name und Art kommen mit in die Datei (fuer das Fenster beim Anklicken in der App)
 # Doppelte erkennen (Raster mit Zellen von etwa 40 m, geprueft wird in der Zelle und ihren Nachbarn)
 $meterProGradBreite = 111195.0
 $meterProGradLaenge = 111195.0 * [Math]::Cos(53.14 * [Math]::PI / 180)
@@ -118,7 +121,13 @@ $teileJs = New-Object System.Collections.Generic.List[string]
 foreach ($name in $ergebnis.Keys) {
   $zeilen = New-Object System.Collections.Generic.List[string]
   foreach ($p in $ergebnis[$name]) {
-    $zeilen.Add('[' + [long][Math]::Round($p.Lat * 1e6) + ',' + [long][Math]::Round($p.Lon * 1e6) + ']')
+    # [Breite, Laenge, Art (OpenStreetMap-Wert, z. B. bakery), Name]; der Name entfaellt, wenn OpenStreetMap keinen hat
+    $z = '[' + [long][Math]::Round($p.Lat * 1e6) + ',' + [long][Math]::Round($p.Lon * 1e6) + ',"' + $p.Art + '"'
+    if ($p.Bez) {
+      $bez = ($p.Bez -replace '[\x00-\x1f  ]', ' ').Replace('\', '\\').Replace('"', '\"')
+      $z += ',"' + $bez + '"'
+    }
+    $zeilen.Add($z + ']')
   }
   $teileJs.Add('"' + $name + '":[' + ($zeilen -join ',') + ']')
   Write-Host ("  {0}: {1}" -f $name, $zeilen.Count)
