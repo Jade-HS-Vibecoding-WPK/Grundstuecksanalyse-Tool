@@ -738,7 +738,7 @@
         </div>
       </details>
 
-      <details class="abschnitt">
+      <details class="abschnitt" id="kartenstilAbschnitt">
         <summary><span class="nr">03</span> Kartenstil</summary>
         <div class="inhalt">
           <label for="kontrast">Lesbarkeit der Hellgrau-Karte</label>
@@ -2412,6 +2412,15 @@
     }
     feldKontrast.addEventListener("change", wendeKartenfilterAn);
     wendeKartenfilterAn();
+
+    // Der Abschnitt "03 Kartenstil" ist nur für die Karte "Hellgrau (scharf)" da und erscheint nur, solange sie ausgewählt ist.
+    // (Die Nummern der anderen Abschnitte bleiben unverändert, weil Hilfe und Anleitung sich darauf beziehen.)
+    function aktualisiereKartenstilAbschnitt() {
+      var ab = document.getElementById("kartenstilAbschnitt");
+      if (ab) { ab.style.display = karte.hasLayer(karteHellgrauScharf) ? "" : "none"; }
+    }
+    karte.on("layeradd layerremove", function (e) { if (e.layer === karteHellgrauScharf) { aktualisiereKartenstilAbschnitt(); } });
+    aktualisiereKartenstilAbschnitt();
 
     // ---------- Ebene "Bebauung" (Gebäude als einheitlich graue Flächen) ----------
     // Die Gebäudeumrisse stehen in der Datei gebaeude_oldenburg.js (Daten von OpenStreetMap,
