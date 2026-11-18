@@ -175,6 +175,8 @@
         });
       }));
     }
+    // Gewähltes Grundstück (Abschnitt "13 Grundstück"): erst fertig rechnen lassen (Gebäude des Katasters, auf Wunsch die Höhen für die GFZ)
+    if (window.grundstueck && window.grundstueck.ausgewaehlt && window.grundstueck.ausgewaehlt()) { jobs.push(window.grundstueck.bereit(!!opt.hoehen)); }
     var regen = [];
     if (opt.starkregen) {
       schritt("Starkregen-Karte wird abgefragt …");
@@ -207,7 +209,8 @@
       // Grundstück aus dem amtlichen Kataster (Abschnitt "13 Grundstück"), falls dort eines gewählt ist
       var gdb = window.grundstueck && window.grundstueck.datenblatt ? window.grundstueck.datenblatt() : null;
       if (gdb) {
-        gdb.forEach(function (l, i) { A.push(i === 0 ? "- " + l : l); });
+        gdb.forEach(function (l) { A.push(l); });
+        K.grundstueck = window.grundstueck.daten();
         teile.quellen.push("Grundstücke und Gebäude (Kataster): © LGLN, CC BY 4.0");
       }
 
@@ -928,6 +931,11 @@ The result should enable a meaningful architectural decision between three genui
   function profilBewertung(t, adresse) {
     var K = t.kenn || {}, kacheln = [], staerken = [], achten = [], i;
     function kachel(wert, text) { if (kacheln.length < 6) { kacheln.push({ wert: wert, text: text }); } }
+    var G = K.grundstueck;
+    if (G) {
+      kachel(z(Math.round(G.A)) + " m²", "Grundstücksfläche (Kataster)");
+      if (G.grzGeb !== undefined) { kachel(z(G.grzGeb, 2), "GRZ im Bestand" + (G.grz ? " (angenommen zulässig " + z(G.grz, 2) + ")" : "")); }
+    }
     if (K.gebaeude400 !== undefined) { kachel(z(K.gebaeude400), "Gebäude im 400-m-Umkreis"); }
     if (K.ueberbaut400 !== undefined) { kachel(prozent(K.ueberbaut400), "überbaute Fläche im 400-m-Umkreis"); }
     if (K.traufeMedian !== undefined) { kachel(z(K.traufeMedian, 1) + " m", "Traufhöhe der Gebäude (Median)"); }
@@ -937,6 +945,10 @@ The result should enable a meaningful architectural decision between three genui
     if (K.hoeheDiff400 !== undefined && kacheln.length < 6) { kachel(z(K.hoeheDiff400, 1) + " m", "Höhenunterschied im 400-m-Umkreis"); }
 
     // Stärken
+    if (G && G.restGrund !== undefined && G.restGrund > 20) {
+      staerken.push("Das Grundstück ist nach den angenommenen Obergrenzen noch nicht ausgenutzt: etwa " + z(Math.round(G.restGrund / 10) * 10) + " m² Grundfläche" + (G.restGF !== undefined && G.restGF > 20 ? " und etwa " + z(Math.round(G.restGF / 10) * 10) + " m² Geschossfläche" : "") + " wären noch möglich.");
+    }
+    if (G && G.umgGrz !== undefined && G.grzGeb !== undefined && G.grzGeb <= G.umgGrz) { staerken.push("Die Überbauung des Grundstücks (GRZ " + z(G.grzGeb, 2) + ") liegt nicht über dem Median der Umgebung (" + z(G.umgGrz, 2) + "): Nachverdichtung fügt sich eher ein."); }
     if (K.busNaechste !== undefined && K.busNaechste <= 300) { staerken.push("Eine Bushaltestelle liegt nur etwa " + aufrunden10(K.busNaechste) + " m entfernt."); }
     if (K.takt400 !== undefined && K.takt400 >= 3) { staerken.push("Gute Anbindung: an der besten Haltestelle im 400-m-Umkreis fahren im Mittel etwa " + z(K.takt400, 1) + " Fahrten pro Stunde (" + K.linien400 + " Linien im Umkreis)."); }
     [["laeden", "Einkaufen", "ein Laden"], ["schulen", "Schule oder Kita", "eine Schule oder Kita"], ["aerzte", "Arzt oder Apotheke", "ein Arzt oder eine Apotheke"]].forEach(function (e) {
@@ -948,6 +960,8 @@ The result should enable a meaningful architectural decision between three genui
     if (K.ueberbaut400 !== undefined && K.ueberbaut400 >= 0.35 && K.ueberbaut400 <= 0.6) { staerken.push("Kompakte Bebauung (etwa " + prozent(K.ueberbaut400) + " überbaut) unterstützt kurze Wege."); }
 
     // Hinweise
+    if (G && G.restGrund !== undefined && G.restGrund < 0) { achten.push("Die vorhandene Überbauung (GRZ " + z(G.grzHaupt, 2) + " bei Hauptgebäuden) liegt über der angenommenen Obergrenze (" + z(G.grz, 2) + "): Bestandsschutz und Festsetzungen prüfen."); }
+    if (G && G.grz) { achten.push("Die zulässigen Werte des Grundstücks (GRZ " + z(G.grz, 2) + (G.gfz ? ", GFZ " + z(G.gfz, 2) : "") + ", " + (G.gebietName || "eigene Werte") + ") sind Annahmen und stammen nicht aus dem Bebauungsplan; die Festsetzungen beim Planungsamt prüfen."); }
     if (K.laermTag && K.laermTag.length) { achten.push("Straßenlärm am Standort: " + K.laermTag.join(", ") + " (ganzer Tag, Lärmkartierung der Stadt)."); }
     else if (K.laermAnteil400 !== undefined && K.laermAnteil400 > 0.3) { achten.push("In etwa " + prozent(K.laermAnteil400) + " des 400-m-Umkreises liegt Straßenlärm ab 55 dB vor; am Standort selbst nicht kartiert."); }
     var rg = K.regen && (K.regen.extrem || K.regen.agw);
@@ -975,6 +989,7 @@ The result should enable a meaningful architectural decision between three genui
     // Kurzfassung als Fließtext
     var s = [];
     s.push("Das Profil beschreibt den Standort" + (adresse ? " „" + adresse + "“" : "") + (K.bezirk ? " (" + K.bezirk + ")" : "") + " mit Daten aus einem Umkreis von 400 und 800 m (5 und 10 Minuten zu Fuß in Luftlinie).");
+    if (G) { s.push("Das gewählte Grundstück" + (G.adr ? " (" + G.adr + ")" : "") + " ist " + z(Math.round(G.A)) + " m² groß" + (G.grzGeb !== undefined ? "; die vorhandene Überbauung liegt bei einer GRZ von " + z(G.grzGeb, 2) + "." : ".") + (G.baufeld !== undefined ? " Das Baufeld (Abstand " + z(G.abstand, 1) + " m zur Grenze) hat etwa " + z(Math.round(G.baufeld)) + " m²." : "")); }
     if (K.gebaeude400 !== undefined) {
       s.push("Im 400-m-Umkreis stehen etwa " + z(K.gebaeude400) + " Gebäude (inklusive Nebengebäude), rund " + prozent(K.ueberbaut400) + " der Fläche sind überbaut" + (K.traufeMedian !== undefined ? "; die Traufhöhe liegt im Median bei " + z(K.traufeMedian, 1) + " m" : "") + ".");
     }

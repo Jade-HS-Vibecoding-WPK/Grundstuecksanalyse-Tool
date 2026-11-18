@@ -2198,7 +2198,7 @@
     ["Lärm (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "laerm"; }); }, function (g) { return g.name; }],
     ["Planung und Naturschutz (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "stadt"; }); }, function (g) { return g.name; }],
     ["Flächennutzungsplan (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "fnp"; }); }, function (g) { return g.name; }],
-    ["Grundstücke (Kataster, LGLN, Online-Dienst)", function () { return FLST; }, function (g) { return g.name; }]
+    ["Grundstücke (Kataster, LGLN, Online-Dienst)", function () { return FLST.concat(LIEGENSCHAFT); }, function (g) { return g.name; }]
   ];
 
   function analyseBauen() {

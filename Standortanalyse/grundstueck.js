@@ -865,31 +865,65 @@
   function quelle() { return (bildDaten || S.f) ? "  ·  Grundstücke und Gebäude: © LGLN (" + jahr + "), CC BY 4.0" : ""; }
 
   // ---------- Datenblatt für die Entwurfsstrategie ----------
-  function datenblatt() {
+  // Zahlen als Objekt (für Kacheln, Stärken und Hinweise im Standortprofil)
+  function daten() {
     var f = S.f, g = S.g;
     if (!f || !g) { return null; }
-    var z = [];
-    z.push("Grundstück (amtliches Kataster, LGLN): " + bezeichnung(f));
-    z.push("  Fläche: " + qm(g.A) + "; Nutzung im Kataster: " + (nutzText(f) || "nicht angegeben"));
+    var d = { adr: f.adr || "", nr: f.nr, gem: f.gem, flur: f.flur, A: g.A, nutzung: nutzText(f), gebiet: el("grundGebiet").value, grz: g.grz, gfz: g.gfz, grz2: g.grz2 };
+    var gebiet = GEBIETE[d.gebiet]; d.gebietName = gebiet ? gebiet.n : "";
     if (S.ber) {
-      z.push("  Bestand: Hauptgebäude " + S.ber.nHaupt + " (" + qm(g.bestHaupt) + "), Garagen und Nebengebäude " + qm(g.bestNeben) + ", Überdachungen und sonstige Bauwerke " + qm(g.bestSonst));
-      z.push("  Bestand GRZ (Hauptgebäude): " + zahlDe(g.grzHaupt, 2) + "; GRZ mit Nebengebäuden: " + zahlDe(g.grzGeb, 2));
-      if (hoehenIdx || lesenZahl("grundBestandGeschosse") > 0) { z.push("  Bestand GFZ (Schätzung aus Gebäudehöhen, Traufhöhe geteilt durch " + zahlDe(GESCHOSSHOEHE, 1) + " m): " + zahlDe(g.gfzBestand, 2) + " (Geschossfläche etwa " + qm(g.gfHaupt) + ")"); }
+      d.nHaupt = S.ber.nHaupt; d.bestHaupt = g.bestHaupt; d.bestNeben = g.bestNeben; d.bestSonst = g.bestSonst; d.grzHaupt = g.grzHaupt; d.grzGeb = g.grzGeb;
+      if (hoehenIdx || lesenZahl("grundBestandGeschosse") > 0) { d.gfzBestand = g.gfzBestand; d.gfHaupt = g.gfHaupt; }
     }
-    if (S.umg && S.umg.n) {
-      z.push("  Umgebung (" + UMGEBUNG_RADIUS + " m, " + S.umg.n + " Grundstücke mit Gebäuden): GRZ der Gebäude im Median " + zahlDe(median(S.umg.grz), 2) + (S.umg.ges.length ? ", Geschosse im Median " + zahlDe(median(S.umg.ges), 0) : ""));
-    }
+    if (S.umg && S.umg.n) { d.umgN = S.umg.n; d.umgGrz = median(S.umg.grz); d.umgGeschosse = S.umg.ges.length ? median(S.umg.ges) : null; }
     if (g.grz !== null) {
-      var gebiet = GEBIETE[el("grundGebiet").value];
-      z.push("  Angenommene Obergrenzen (" + (gebiet ? gebiet.n : "eigene Werte") + "; vom Nutzer einstellbar, nicht aus einem Bebauungsplan abgeleitet): GRZ " + zahlDe(g.grz, 2) + (g.gfz !== null ? ", GFZ " + zahlDe(g.gfz, 2) : ""));
-      z.push("  Zulässige Grundfläche " + qm(g.grz * g.A) + " (mit Garagen und Nebenanlagen bis GRZ " + zahlDe(g.grz2, 2) + ": " + qm(g.grz2 * g.A) + ")" + (g.gfz !== null ? "; zulässige Geschossfläche " + qm(g.gfz * g.A) : ""));
-      z.push("  Baufeld bei " + zahlDe(g.abstand, 1) + " m Abstand zur Grundstücksgrenze: " + qm(g.baufeldVoll) + (g.frei !== null && g.frei !== undefined ? ", davon frei vom Bestand " + qm(g.frei) : ""));
-      z.push("  Baukörper-Studie: " + qm(g.grundflaecheBau) + " Grundfläche, " + g.n + " Geschosse, " + zahlDe(g.H, 1) + " m Höhe, Geschossfläche " + qm(g.gfBau));
+      d.zulGrund = g.grz * g.A; d.zulGrund2 = g.grz2 * g.A; if (g.gfz !== null) { d.zulGF = g.gfz * g.A; }
+      if (S.ber) { d.restGrund = g.grz * g.A - g.bestHaupt; if (g.gfz !== null && d.gfHaupt !== undefined) { d.restGF = g.gfz * g.A - g.gfHaupt; } }
+      d.abstand = g.abstand; d.baufeld = g.baufeldVoll; d.frei = g.frei; d.n = g.n; d.H = g.H; d.grundBau = g.grundflaecheBau; d.gfBau = g.gfBau;
     }
-    z.push("  Hinweis: Orientierungswerte; Baugrenzen, Baulasten, Abstände zur Straße und Sonderregeln der Bauordnung sind nicht berücksichtigt.");
+    return d;
+  }
+  // Zeilen im Format des KI-Textes: Überschrift, darunter "  - Merkmal: Wert"
+  function datenblatt() {
+    var d = daten(), f = S.f;
+    if (!d) { return null; }
+    var z = ["Grundstück (amtliches Kataster, LGLN):"];
+    function p(l, w) { z.push("  - " + l + ": " + w); }
+    p("Lage", bezeichnung(f));
+    p("Fläche", qm(d.A));
+    p("Nutzung im Kataster", d.nutzung || "nicht angegeben");
+    if (d.bestHaupt !== undefined) {
+      p("Bestand: Hauptgebäude", d.nHaupt + " Gebäude, " + qm(d.bestHaupt));
+      p("Bestand: Garagen und Nebengebäude", qm(d.bestNeben));
+      p("Bestand: Überdachungen und sonstige Bauwerke", qm(d.bestSonst));
+      p("Bestand GRZ (Hauptgebäude)", zahlDe(d.grzHaupt, 2) + "; mit Garagen und Nebengebäuden " + zahlDe(d.grzGeb, 2));
+      if (d.gfzBestand !== undefined) { p("Bestand GFZ (Schätzung aus den Gebäudehöhen, Traufhöhe geteilt durch " + zahlDe(GESCHOSSHOEHE, 1) + " m je Geschoss)", zahlDe(d.gfzBestand, 2) + " (Geschossfläche etwa " + qm(d.gfHaupt) + ")"); }
+    }
+    if (d.umgN) { p("Umgebung (" + UMGEBUNG_RADIUS + " m, " + d.umgN + " Grundstücke mit Gebäuden)", "GRZ der Gebäude im Median " + zahlDe(d.umgGrz, 2) + (d.umgGeschosse !== null ? ", Geschosse im Median " + zahlDe(d.umgGeschosse, 0) : "")); }
+    if (d.grz !== null) {
+      p("Angenommene Obergrenzen (nicht aus einem Bebauungsplan, vom Nutzer einstellbar)", (d.gebietName || "eigene Werte") + ": GRZ " + zahlDe(d.grz, 2) + (d.gfz !== null ? ", GFZ " + zahlDe(d.gfz, 2) : ""));
+      p("Zulässige Grundfläche", qm(d.zulGrund) + " (mit Garagen und Nebenanlagen bis GRZ " + zahlDe(d.grz2, 2) + ": " + qm(d.zulGrund2) + ")");
+      if (d.restGrund !== undefined) { p("Noch nicht ausgenutzte Grundfläche", d.restGrund >= 0 ? qm(d.restGrund) : "keine, der Bestand liegt " + qm(-d.restGrund) + " darüber"); }
+      if (d.zulGF !== undefined) { p("Zulässige Geschossfläche", qm(d.zulGF) + (d.restGF !== undefined ? "; noch nicht ausgenutzt (Schätzung) " + (d.restGF >= 0 ? qm(d.restGF) : "keine") : "")); }
+      p("Baufeld bei " + zahlDe(d.abstand, 1) + " m Abstand zur Grundstücksgrenze", qm(d.baufeld) + (d.frei !== null && d.frei !== undefined ? ", davon frei vom Bestand " + qm(d.frei) : ""));
+      p("Baukörper-Studie", qm(d.grundBau) + " Grundfläche, " + d.n + " Geschosse, " + zahlDe(d.H, 1) + " m Höhe, Geschossfläche " + qm(d.gfBau));
+    }
+    z.push("  - (Orientierungswerte, keine amtliche Auskunft; Baugrenzen und Festsetzungen des Bebauungsplans, Baulasten, Abstände zur Straße und Sonderregeln der Bauordnung sind nicht berücksichtigt)");
     return z;
   }
-
+  // Wartet, bis die Gebäude des Grundstücks geladen sind (und auf Wunsch die Gebäudehöhen für die GFZ), damit der Entwurfstext vollständig ist
+  function bereit(mitHoehen) {
+    if (!S.f) { return Promise.resolve(); }
+    var f = S.f, start = Date.now();
+    function warteBestand() {
+      if (S.f !== f || S.ber || Date.now() - start > 10000) { return Promise.resolve(); }
+      return new Promise(function (ok) { setTimeout(ok, 150); }).then(warteBestand);
+    }
+    return warteBestand().then(function () {
+      if (!mitHoehen || hoehenIdx) { return null; }
+      return holeHoehen().then(function () { if (S.f === f) { aktualisiereAnzeige(); } return umgebungRechnen(S.token); }).catch(function () { /* ohne Höhen bleibt die GFZ ungeschätzt */ });
+    });
+  }
   // ---------- Oberfläche ----------
   function zustandSpeichern() {
     if (!S.f) { return null; }
@@ -939,6 +973,13 @@
       holeHoehen().then(function () { k.disabled = false; setzeMeldung(""); if (S.f) { aktualisiereAnzeige(); umgebungRechnen(S.token); } })
         .catch(function () { k.disabled = false; setzeMeldung("Die Gebäudehöhen konnten nicht geladen werden (Internet prüfen).", true); });
     });
+    el("grundZuEntwurf").addEventListener("click", function () {
+      var g = S.g; if (!g || g.grz === null) { return; }
+      var fl = el("entwurfFlaeche"), ge = el("entwurfGeschosse");
+      fl.value = String(Math.round(g.gfBau)); ge.value = g.n + " Geschosse (Studie, " + zahlDe(g.H, 1).replace(",0", "") + " m)";
+      fl.dispatchEvent(new Event("input")); ge.dispatchEvent(new Event("input"));
+      setzeMeldung("Geschossfläche und Geschosszahl der Studie stehen jetzt in „11 Entwurfsstrategie“. Das Grundstück selbst steht dort ohnehin im Standortteil.");
+    });
     el("grundLoeschen").addEventListener("click", loesche);
     el("grundDatenblatt").addEventListener("click", function () {
       var z = datenblatt(); if (!z) { return; }
@@ -950,7 +991,7 @@
 
   window.grundstueck = {
     zeichneKarte: zeichneKarte, leereKarte: leereKarte, amPunkt: amPunkt, waehle: waehleGrundstueck, stelleWiederHer: stelleWiederHer, zustand: zustandSpeichern, loesche: loesche,
-    vorbereitenBild: vorbereitenBild, zeichneInBild: zeichneInBild, legende: legende, imBild: imBild, quelle: quelle, datenblatt: datenblatt,
+    vorbereitenBild: vorbereitenBild, zeichneInBild: zeichneInBild, legende: legende, imBild: imBild, quelle: quelle, datenblatt: datenblatt, daten: daten, bereit: bereit,
     klickBeenden: klickBeenden, ausgewaehlt: function () { return S.f; },
     // für Tests
     _intern: { flst: flst, gebAlle: gebAlle, bebauung: bebauung, lok: lok, abstandsFeld: abstandsFeld, baufeld: baufeld, kontur: kontur, S: S, holeHoehen: holeHoehen, geschosse: geschosse }
