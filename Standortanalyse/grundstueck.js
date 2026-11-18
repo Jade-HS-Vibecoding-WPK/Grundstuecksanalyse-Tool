@@ -200,7 +200,7 @@
   // Anfragen machen ihn nicht schneller, sondern eher langsamer (12 Anfragen zugleich: 10 bis 20 s). Mehr Threads in der App helfen deshalb
   // beim Laden nicht. Was hilft: höchstens 3 Anfragen zugleich, die Kacheln in der Mitte des Fensters zuerst, nur die nötigen Eigenschaften,
   // Gebäude nur wenn sie gebraucht werden und jede Kachel für 14 Tage im Browser merken (IndexedDB), dann ist ein zweiter Besuch sofort da.
-  var MAX_PARALLEL = 3, laufend = 0, wartend = [], fokus = { lat: 53.14, lng: 8.21 };
+  var MAX_PARALLEL = 3, laufend = 0, wartend = [], fokus = { lat: STADT.mitte[0], lng: STADT.mitte[1] };
   var kachelF = new Map(), kachelG = new Map(), bereitG = new Set();
   function kachelMitte(i, j) { return { lat: (i + 0.5) * KACHEL_LA, lng: (j + 0.5) * KACHEL_LO }; }
   function kachelAbstand(i, j) { var m = kachelMitte(i, j); return Math.pow(m.lat - fokus.lat, 2) + Math.pow((m.lng - fokus.lng) * 0.6, 2); }

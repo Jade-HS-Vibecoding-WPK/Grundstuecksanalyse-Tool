@@ -2,7 +2,7 @@
 // Daten: (c) OpenStreetMap-Mitwirkende, Lizenz ODbL (https://www.openstreetmap.org/copyright). Stand: 2026-11-16
 // Format: Flaeche = Liste von Ringen (erster Ring = Aussenkante, weitere = Innenhoefe), Ring = [Breite, Laenge, Delta, Delta, ...].
 // Alle Werte in Millionstel Grad; ab dem zweiten Punkt als Abstand zum vorigen.
-var FLAECHEN_OLDENBURG = { einheit: 1e-6, stand: "2026-11-16",
+var FLAECHEN_DATEN = { einheit: 1e-6, stand: "2026-11-16",
 parks: [
 [[53047731,8066732,-428,-653,-483,-1570,4194,-3420,498,1298,-309,118,-206,161,-227,248,-220,346,-189,476,-236,495,-286,429]],
 [[53050042,8069388,-872,-2315,-1209,1362,-22,-58,292,-330,-482,-1117,-1019,1700,-302,317,-429,226,-964,532,-234,4,-2363,1155,-1083,857,442,1355,1311,-872,694,-479,19,94,-639,437,691,1840,50,-35,2804,-2922,-384,-999,-664,377,-14,-90,723,-381,832,2280,1445,-1462,85,-174]],

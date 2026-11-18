@@ -1,6 +1,6 @@
 // Baeume in Oldenburg (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\14_Baeume_aktualisieren.ps1.
 // Jeder Baum = [Breite, Laenge (Millionstel Grad), Hoehe in dm (0 = unbekannt), Kronenbreite in dm (0 = unbekannt), immergruen (0/1)].
-var BAEUME_OLDENBURG = {"einheit":1e-6,"stand":"2026-11-17","anzahl":12533,"baeume":[
+var BAEUME_DATEN = {"einheit":1e-6,"stand":"2026-11-17","anzahl":12533,"baeume":[
 [53146327,8214369,0,0,0],
 [53178878,8130950,0,0,0],
 [53128221,8223039,0,0,0],

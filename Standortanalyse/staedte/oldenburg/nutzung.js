@@ -2,7 +2,7 @@
 // Daten: (c) OpenStreetMap-Mitwirkende, Lizenz ODbL (https://www.openstreetmap.org/copyright). Stand: 2026-11-16
 // Format: Flaeche = Liste von Ringen (erster Ring = Aussenkante, weitere = Innenhoefe), Ring = [Breite, Laenge, Delta, Delta, ...].
 // Alle Werte in Millionstel Grad; ab dem zweiten Punkt als Abstand zum vorigen.
-var NUTZUNG_OLDENBURG = { einheit: 1e-6, stand: "2026-11-16",
+var NUTZUNG_DATEN = { einheit: 1e-6, stand: "2026-11-16",
 wohnen: [
 [[53057591,8061577,-706,737,-609,-1553,523,-524]],
 [[53060013,8061088,-450,498,309,786,462,-489]],

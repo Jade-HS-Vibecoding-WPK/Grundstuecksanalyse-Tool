@@ -2,7 +2,7 @@
 // Daten: © OpenStreetMap-Mitwirkende, Lizenz ODbL (https://www.openstreetmap.org/copyright). Stand: 2026-11-16
 // Format: Jedes Gebäude = Liste von Ringen (erster Ring = Außenkante, weitere = Innenhöfe).
 // Jeder Ring = [Breite, Länge, Δ Breite, Δ Länge, ...] in Millionstel Grad; ab dem zweiten Punkt als Abstand zum vorigen Punkt.
-var GEBAEUDE_OLDENBURG = { einheit: 1e-6, stand: "2026-11-16", anzahl: 79694, gebaeude: [
+var GEBAEUDE_DATEN = { einheit: 1e-6, stand: "2026-11-16", anzahl: 79694, gebaeude: [
 [[53061366,8060026,-156,117,-60,-220,61,-46,96,-71]],
 [[53056912,8060698,143,420,-124,117,-143,-420]],
 [[53057508,8060214,-46,50,-33,-84,46,-50]],

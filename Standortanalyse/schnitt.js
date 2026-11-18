@@ -565,7 +565,7 @@
     }).catch(function (x) {
       if (nr !== rechnungNr || !panel) { return; }
       if (window.console) { console.error("Schnitt:", x); }
-      meldung("Der Schnitt konnte nicht berechnet werden. " + esc(x && x.message ? x.message : "") + " Die Dateien hoehen_oldenburg.js, gelaende_oldenburg.js und ansicht3d.js müssen im selben Ordner wie index.html liegen.");
+      meldung("Der Schnitt konnte nicht berechnet werden. " + esc(x && x.message ? x.message : "") + " Die Dateien hoehen.js, gelaende.js und ansicht3d.js müssen im selben Ordner wie index.html liegen.");
     });
   }
 

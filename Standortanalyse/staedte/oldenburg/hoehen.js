@@ -1,6 +1,6 @@
 // Gebaeudehoehen der Stadt Oldenburg (Oldb): LGLN, 3D-Gebaeudemodell LoD2, Open Data, Lizenz CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.de). Erzeugt mit Datenpflege\13_Gebaeudehoehen_aktualisieren.ps1.
 // Jedes Gebaeude = [Traufhoehe, Firsthoehe, Dachklasse (0 flach, 1 Sattel, 2 Walm, 3 Zelt/Pyramide, 4 Pult), Winkel (Firstrichtung 0 bis 179 bzw. Neigungsrichtung beim Pultdach, Grad von Norden im Uhrzeigersinn), Ring, Ring, ...] ueber Grund, Hoehen in Dezimetern; Ring = [Breite, Laenge, Delta, Delta, ...] in Millionstel Grad (erster Ring = Aussenkante, weitere = Innenhoefe).
-var HOEHEN_OLDENBURG = {"einheit":1e-6,"version":2,"stand":"2026-11-17","anzahl":274109,"gebaeude":[
+var HOEHEN_DATEN = {"einheit":1e-6,"version":2,"stand":"2026-11-17","anzahl":274109,"gebaeude":[
 [128,148,1,96,[53065515,8045109,45,7,44,7,-15,280,-45,-7,-45,-7,8,-137]],
 [143,159,1,58,[53064533,8045302,-19,-51,3,-3,49,-53,52,-57,95,245,-53,57,-52,57]],
 [142,165,1,58,[53064431,8045242,10,-10,20,-21,29,-32,27,69,-3,3,-26,29,-2,1,-28,30,-3,-8]],

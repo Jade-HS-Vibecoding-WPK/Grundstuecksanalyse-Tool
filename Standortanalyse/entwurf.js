@@ -205,7 +205,7 @@
         A.push(zeile("Flächennutzungsplan der Stadt (geplante Nutzung, grob und nicht grundstücksscharf; Bebauungsplan und Festsetzungen gehen vor)", fnpTreffer.length ? fnpTreffer.join(", ") : "keine Darstellung am Standort in den Daten (zum Beispiel Straße oder Fläche ohne Eintrag)"));
         teile.quellen.push(window.FNP_QUELLE_TEXT);
       }
-      A.push(zeile("Bebauungsplan", bpl ? "Der Punkt liegt im Umriss eines rechtsverbindlichen Bebauungsplans (Stadt Oldenburg, Datenlizenz dl-de/by-2-0). Plannummer und Festsetzungen sind in den App-Daten NICHT enthalten und müssen beim Planungsamt geprüft werden." : "Der Punkt liegt in keinem Umriss eines Bebauungsplans in den Daten. Das heißt nicht, dass keine planungsrechtlichen Regeln gelten (zum Beispiel § 34 BauGB); das muss geprüft werden."));
+      A.push(zeile("Bebauungsplan", bpl ? "Der Punkt liegt im Umriss eines rechtsverbindlichen Bebauungsplans (Stadt " + STADT.name + ", Datenlizenz dl-de/by-2-0). Plannummer und Festsetzungen sind in den App-Daten NICHT enthalten und müssen beim Planungsamt geprüft werden." : "Der Punkt liegt in keinem Umriss eines Bebauungsplans in den Daten. Das heißt nicht, dass keine planungsrechtlichen Regeln gelten (zum Beispiel § 34 BauGB); das muss geprüft werden."));
 
       // Grundstück aus dem amtlichen Kataster (Abschnitt "13 Grundstück"), falls dort eines gewählt ist
       var gdb = window.grundstueck && window.grundstueck.datenblatt ? window.grundstueck.datenblatt() : null;
@@ -500,7 +500,7 @@
         laermZeilen.push("  - " + L[1] + " am roten Punkt: " + (amPunkt.length ? amPunkt.join(", ") : "keine Kartierung an dieser Stelle (unter der Schwelle von 55 dB tags bzw. 50 dB nachts oder keine kartierte Straße)") + "; Anteil der Fläche mit Kartierung: " + prozent(alle.a1) + " im 400-m-, " + prozent(alle.a2) + " im 800-m-Umkreis");
       });
       if (laermZeilen.length) {
-        B.push("Lärm (Lärmkartierung der Stadt Oldenburg, nur Straßenlärm; Schienen-, Gewerbe- und Fluglärm sind nicht enthalten):");
+        B.push("Lärm (Lärmkartierung der Stadt " + STADT.name + ", nur Straßenlärm; Schienen-, Gewerbe- und Fluglärm sind nicht enthalten):");
         laermZeilen.forEach(function (t) { B.push(t); });
         teile.quellen.push(window.STADT_QUELLE_TEXT);
       }
@@ -513,7 +513,7 @@
         sz.push("  - " + s[1] + ": " + (r.abstand === 0 ? "der Punkt liegt darin" : (r.abstand <= R2 ? "nächste Fläche ca. " + z(Math.round(r.abstand / 10) * 10) + " m entfernt" : "keine im 800-m-Umkreis")));
       });
       if (fl.naturdenkmale) { var nd = (fl.naturdenkmale || []).map(function (p) { return { lat: p.lat, lng: p.lng }; }); var ndg = punktGruppe(O, nd); sz.push("  - Naturdenkmale: " + z(ndg.n2) + " im 800-m-Umkreis, " + abstandText(ndg.naechste)); }
-      if (sz.length) { B.push("Schutzgebiete (Stadt Oldenburg; Näherung über Umrisse, ersetzt keine Auskunft der Naturschutzbehörde):"); sz.forEach(function (t) { B.push(t); }); }
+      if (sz.length) { B.push("Schutzgebiete (Stadt " + STADT.name + "; Näherung über Umrisse, ersetzt keine Auskunft der Naturschutzbehörde):"); sz.forEach(function (t) { B.push(t); }); }
 
       if (daten.luft && daten.luft.length) {
         var best = daten.luft.slice().sort(function (a, b) { return O.abstand(a.lat, a.lng) - O.abstand(b.lat, b.lng); })[0];
@@ -715,7 +715,7 @@ The result should enable a meaningful architectural decision between three genui
     var datum = t.stand.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" });
     var z_ = [];
     z_.push("HINWEIS FÜR DIE KI");
-    z_.push("Dieser Text besteht aus zwei Teilen: (1) EINGABEDATEN zu einem Standort in Oldenburg, die die Web-App „Standortanalyse Oldenburg“ am " + datum + " aus lokalen Datendateien und Angaben des Nutzers zusammengestellt hat, und (2) der ANWEISUNG weiter unten. Befolge die Anweisung und verwende die Eingabedaten als einzige faktische Grundlage. Antworte auf Deutsch. Was unter „Nicht vorhanden“ steht, ist unbekannt: Kennzeichne dazu getroffene Annahmen ausdrücklich als Annahmen.");
+    z_.push("Dieser Text besteht aus zwei Teilen: (1) EINGABEDATEN zu einem Standort in " + STADT.name + ", die die Web-App „Standortanalyse " + STADT.name + "“ am " + datum + " aus lokalen Datendateien und Angaben des Nutzers zusammengestellt hat, und (2) der ANWEISUNG weiter unten. Befolge die Anweisung und verwende die Eingabedaten als einzige faktische Grundlage. Antworte auf Deutsch. Was unter „Nicht vorhanden“ steht, ist unbekannt: Kennzeichne dazu getroffene Annahmen ausdrücklich als Annahmen.");
     z_.push("Die Zahlen stammen aus Open-Data-Dateien (Stand je Quelle unten) und sind Näherungen für den frühen Entwurf, keine amtliche Auskunft.");
     z_.push("");
     z_.push("==================== EINGABEDATEN ====================");
@@ -843,7 +843,7 @@ The result should enable a meaningful architectural decision between three genui
       objs[6 + 2 * i] = "<< /Length " + inhalt.length + " >>\nstream\n" + inhalt + "\nendstream";
     });
     var info = 5 + 2 * N;
-    objs[info] = "<< /Title (" + pdfText(titel) + ") /Producer (Standortanalyse Oldenburg) >>";
+    objs[info] = "<< /Title (" + pdfText(titel) + ") /Producer (Standortanalyse " + STADT.ascii + ") >>";
     var out = "%PDF-1.4\n", off = [];
     for (var o = 1; o <= info; o++) { off[o] = out.length; out += o + " 0 obj\n" + objs[o] + "\nendobj\n"; }
     var xref = out.length;
@@ -1147,12 +1147,12 @@ The result should enable a meaningful architectural decision between three genui
     if (m.fehlt.length) { ab.push(ueberschrift("", "Nicht vorhanden oder unbekannt", { vor: 14 })); ab.push(punkte(m.fehlt, FARBE_GRAU)); }
     ab.push(ueberschrift("", "Quellen", { vor: 14 }));
     m.quellen.forEach(function (q) { ab.push(p(r(q, { gr: 8.5, farbe: FARBE_GRAU }), { nach: 2 })); });
-    ab.push(p(r("Erstellt mit der App „Standortanalyse Oldenburg“ am " + m.datum + ". Alle Zahlen sind Näherungen aus offenen Daten und ersetzen keine amtliche Auskunft, Vermessung oder Genehmigung.", { gr: 8.5, kursiv: true, farbe: FARBE_GRAU }), { vor: 12 }));
+    ab.push(p(r("Erstellt mit der App „Standortanalyse " + STADT.name + "“ am " + m.datum + ". Alle Zahlen sind Näherungen aus offenen Daten und ersetzen keine amtliche Auskunft, Vermessung oder Genehmigung.", { gr: 8.5, kursiv: true, farbe: FARBE_GRAU }), { vor: 12 }));
 
     var dokument = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:document xmlns:w=\"" + W + "\" xmlns:r=\"" + R + "\"><w:body>" + ab.join("") +
       "<w:sectPr><w:footerReference w:type=\"default\" r:id=\"rId2\"/><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1134\" w:header=\"708\" w:footer=\"567\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>";
     var fuss = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:ftr xmlns:w=\"" + W + "\" xmlns:r=\"" + R + "\"><w:p><w:pPr><w:pBdr><w:top w:val=\"single\" w:sz=\"4\" w:space=\"4\" w:color=\"" + FARBE_LINIE + "\"/></w:pBdr><w:tabs><w:tab w:val=\"right\" w:pos=\"" + BR + "\"/></w:tabs></w:pPr>" +
-      r("Standortanalyse Oldenburg  ·  " + m.adresse, { gr: 8, farbe: FARBE_GRAU }) + "<w:r><w:tab/></w:r>" + r("Seite ", { gr: 8, farbe: FARBE_GRAU }) +
+      r("Standortanalyse " + STADT.name + "  ·  " + m.adresse, { gr: 8, farbe: FARBE_GRAU }) + "<w:r><w:tab/></w:r>" + r("Seite ", { gr: 8, farbe: FARBE_GRAU }) +
       "<w:fldSimple w:instr=\"PAGE\"><w:r><w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\" w:cs=\"Arial\"/><w:color w:val=\"" + FARBE_GRAU + "\"/><w:sz w:val=\"16\"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>";
     var styles = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:styles xmlns:w=\"" + W + "\"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\" w:cs=\"Arial\"/><w:sz w:val=\"21\"/><w:lang w:val=\"de-DE\"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after=\"80\" w:line=\"264\" w:lineRule=\"auto\"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type=\"paragraph\" w:default=\"1\" w:styleId=\"Normal\"><w:name w:val=\"Normal\"/><w:qFormat/></w:style></w:styles>";
     var typen = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
@@ -1288,13 +1288,13 @@ The result should enable a meaningful architectural decision between three genui
     if (m.fehlt.length) { ueberschrift("", "Nicht vorhanden oder unbekannt", 16, 30); aufzaehlung(m.fehlt, FARBE_GRAU); }
     ueberschrift("", "Quellen", 16, 24);
     m.quellen.forEach(function (q) { absatz(q, RAND, 8, false, FARBE_GRAU, 0, 2); });
-    absatz("Erstellt mit der App „Standortanalyse Oldenburg“ am " + m.datum + ". Alle Zahlen sind Näherungen aus offenen Daten und ersetzen keine amtliche Auskunft, Vermessung oder Genehmigung.", RAND, 8, false, FARBE_GRAU, 10, 0);
+    absatz("Erstellt mit der App „Standortanalyse " + STADT.name + "“ am " + m.datum + ". Alle Zahlen sind Näherungen aus offenen Daten und ersetzen keine amtliche Auskunft, Vermessung oder Genehmigung.", RAND, 8, false, FARBE_GRAU, 10, 0);
 
     // Fußzeile (erst jetzt, wenn die Seitenzahl feststeht)
     var N = seiten.length;
     seiten.forEach(function (s, i) {
       s.push({ k: "l", x1: RAND, y1: H - UNTEN + 14, x2: RAND + BR, y2: H - UNTEN + 14, farbe: rgb(FARBE_LINIE), d: 0.6 });
-      s.push({ k: "t", x: RAND, y: H - UNTEN + 27, t: "Standortanalyse Oldenburg  ·  " + m.adresse, fett: false, gr: 7.5, farbe: rgb(FARBE_GRAU) });
+      s.push({ k: "t", x: RAND, y: H - UNTEN + 27, t: "Standortanalyse " + STADT.name + "  ·  " + m.adresse, fett: false, gr: 7.5, farbe: rgb(FARBE_GRAU) });
       var fz = "Seite " + (i + 1) + " von " + N;
       s.push({ k: "t", x: RAND + BR - breite(fz, false, 7.5), y: H - UNTEN + 27, t: fz, fett: false, gr: 7.5, farbe: rgb(FARBE_GRAU) });
     });
@@ -1319,7 +1319,7 @@ The result should enable a meaningful architectural decision between three genui
       objs[6 + 2 * pi2] = "<< /Length " + inhalt.length + " >>\nstream\n" + inhalt + "\nendstream";
     });
     var info = 5 + 2 * N;
-    objs[info] = "<< /Title (" + pdfText("Standortprofil – " + m.adresse) + ") /Producer (Standortanalyse Oldenburg) >>";
+    objs[info] = "<< /Title (" + pdfText("Standortprofil – " + m.adresse) + ") /Producer (Standortanalyse " + STADT.ascii + ") >>";
     var out = "%PDF-1.4\n", off = [];
     for (var o = 1; o <= info; o++) { off[o] = out.length; out += o + " 0 obj\n" + objs[o] + "\nendobj\n"; }
     var xref = out.length;

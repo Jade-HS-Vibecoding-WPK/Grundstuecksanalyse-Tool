@@ -12,8 +12,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 
-  <!-- Liste aller Straßennamen in Oldenburg (für die Autokorrektur). Diese Datei muss im selben Ordner liegen. -->
-  <script src="strassen_oldenburg.js"></script>
+  <!-- Die Städte (staedte/staedte.js) und die Liste aller Straßennamen der gewählten Stadt (für die Autokorrektur) -->
+  <script src="staedte/staedte.js"></script>
+  <script>document.write('<script src="' + stadtDatei("strassen") + '"><\/script>');</script>
 
   <style>
     /* =====================================================================
@@ -126,6 +127,12 @@
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--grau);
+    }
+    /* Auswahl der Stadt (steht an der Stelle des Untertitels; erscheint nur, wenn es mehr als eine fertige Stadt gibt) */
+    select.stadtWahl {
+      width: auto; max-width: 100%; margin: 0; padding: 3px 22px 3px 8px;
+      font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--tinte);
+      background-color: var(--feld); border: 1px solid var(--tinte); border-radius: 0; cursor: pointer;
     }
 
     /* ---------- Einklappbare Abschnitte ---------- */
@@ -733,7 +740,7 @@
     <aside class="seitenleiste">
       <header class="kopf">
         <h1>Standortanalyse</h1>
-        <p class="untertitel">Oldenburg</p>
+        <p class="untertitel" id="stadtZeile"><span class="stadtName">Oldenburg</span></p>
         <!-- Projekt: alles (Adresse, Karte, Ebenen, Plan, Zeichnung, Einstellungen) in einer Datei sichern und wieder öffnen -->
         <div class="projektleiste">
           <button type="button" id="projektSpeichern" class="zweit" title="Alles in eine Datei speichern (JSON)">Projekt speichern</button>
@@ -755,7 +762,7 @@
         <summary><span class="nr">01</span> Standort</summary>
         <div class="inhalt">
           <form id="suchformular" autocomplete="off">
-            <label for="adresse">Adresse in Oldenburg</label>
+            <label for="adresse">Adresse in <span class="stadtName">Oldenburg</span></label>
             <input type="text" id="adresse" placeholder="z. B. Markt 1" spellcheck="false">
             <button type="submit" id="suchknopf">Adresse suchen</button>
           </form>
@@ -816,12 +823,12 @@
           <div class="gruppentitel" style="margin-top:8px">Spielen und Bewegen</div>
           <div id="analyseSpiel"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Nutzungsarten</span><span class="anzahl"></span></summary><div id="analyseNutzung"></div></details>
-          <details class="analyseGruppe"><summary><span class="titel">Lärm (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseLaerm"></div></details>
-          <details class="analyseGruppe"><summary><span class="titel">Planung und Naturschutz (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseStadt"></div></details>
+          <details class="analyseGruppe"><summary><span class="titel">Lärm (Stadt <span class="stadtName">Oldenburg</span>)</span><span class="anzahl"></span></summary><div id="analyseLaerm"></div></details>
+          <details class="analyseGruppe"><summary><span class="titel">Planung und Naturschutz (Stadt <span class="stadtName">Oldenburg</span>)</span><span class="anzahl"></span></summary><div id="analyseStadt"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Grundstücke (Kataster, LGLN, Online-Dienst)</span><span class="anzahl"></span></summary><div id="analyseGrund"></div><p class="hinweis" style="margin:4px 0 0">Grundstücksgrenzen (Flurstücke) mit Fläche und Einfärbung nach der vorhandenen Überbauung (GRZ der Gebäude), aus dem Liegenschaftskataster des Landesamts LGLN (CC BY 4.0, ohne Eigentümerdaten). Sichtbar ab Zoomstufe 16, braucht Internet. Dazu gibt es die amtliche Liegenschaftskarte (mit Flurstücksnummern und Hausnummern, ab Zoomstufe 17), schwarz-weiß durchsichtig oder in Farbe. Die Analyse eines einzelnen Grundstücks steht in „13 Grundstück“. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
-          <details class="analyseGruppe"><summary><span class="titel">Flächennutzungsplan (Stadt Oldenburg)</span><span class="anzahl"></span></summary><div id="analyseFnp"></div><p class="hinweis" style="margin:4px 0 0">Geplante Nutzung der Flächen nach dem Flächennutzungsplan der Stadt (Stand Änderungen bis 05.07.2024). Er ist nur eine grobe Vorgabe und nicht grundstücksscharf; die Festsetzungen im Bebauungsplan gehen vor. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
+          <details class="analyseGruppe"><summary><span class="titel">Flächennutzungsplan (Stadt <span class="stadtName">Oldenburg</span>)</span><span class="anzahl"></span></summary><div id="analyseFnp"></div><p class="hinweis" style="margin:4px 0 0">Geplante Nutzung der Flächen nach dem Flächennutzungsplan der Stadt (Stand Änderungen bis 05.07.2024). Er ist nur eine grobe Vorgabe und nicht grundstücksscharf; die Festsetzungen im Bebauungsplan gehen vor. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Bodenrichtwerte (Gutachterausschuss, LGLN)</span><span class="anzahl"></span></summary><div id="analyseBrw"></div><p class="hinweis" style="margin:4px 0 0">Bodenrichtwerte für Bauland (Stichtag 01.01.2026) in Euro je Quadratmeter Boden, aus BORIS Niedersachsen (Datenlizenz Deutschland – Namensnennung 2.0). Sie gelten für ein typisches Grundstück der Zone, nur für den Boden ohne Gebäude, und sind kein Verkehrswert. Der Wert steht als Zahl in jeder Zone. Zonen mit unterschiedlicher Nutzung können sich überlappen. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
-          <p class="hinweis">Bei „ÖPNV“ zeigt ein Klick auf eine Haltestelle ihren Namen, die Linien und die Abfahrten; „Haltestellen nach Takt“ färbt sie nach der Häufigkeit (Fahrplan eines normalen Dienstags). Unter „Grün und Freiräume“ gibt es zusätzlich „Spielen und Bewegen“: Spielplätze (Klick zeigt Name und Zugang), der Einzugsbereich von 200 m um öffentliche Spielplätze sowie Fußball-, Basketball-, Skate-, Fitness- und Hundewiesen-Orte aus OpenStreetMap. Unter „Tag- und Nachtnutzung“ siehst du, welche Orte tagsüber, abends und nachts aktiv sind (nach den Öffnungszeiten aus OpenStreetMap, sonst nach der Art geschätzt; ein Klick zeigt Zeiten und Herkunft). Unter „Luftqualität“ steht die Messstation des Umweltbundesamts am Heiligengeistwall; ein Klick zeigt die Jahresmittelwerte der letzten Jahre. Unter „Verkehr und Mobilität“ stehen Radwege, Fahrradabstellanlagen, Parken, Carsharing und Ladestationen (ein Klick auf eine Ladestation zeigt Betreiber und Leistung). Die Themen (Fußweg, Boden, Grundwasser …) lassen sich mit einem Klick auf die Überschrift auf- und zuklappen; die rote Zahl daneben zeigt, wie viele Ebenen davon eingeschaltet sind. Fußweg und Sonnenstand brauchen eine gesuchte Adresse (der rote Punkt ist der Mittelpunkt). Die anderen Ebenen zeigen alle Orte in Oldenburg. „Einzelbäume“ zeigt die in OpenStreetMap erfassten Bäume (unvollständig); eigene Bäume zeichnest du mit dem Werkzeug „Baum“ in 06. „Starkregen“ ist die Hinweiskarte des Bundes (BKG) für Niedersachsen. „Boden“, „Geologie und Baugrund“, „Grundwasser“ sowie „Versiegelung und Altlasten“ sind Karten des Landesamts für Bergbau, Energie und Geologie (LBEG, NIBIS-Kartenserver). Alle diese Karten werden online geladen und brauchen Internet (auch beim Speichern des Bildes, das dann einen Moment länger dauert); sie sind eine Orientierung und keine Planungsgrundlage. Wo eine Karte nichts zeigt, hat das Land dort keine Daten (zum Beispiel ist die Bodenkarte in der bebauten Innenstadt leer). Unter „Legende“ siehst du die Farberklärung des Landesamts; ein Klick auf das Legendenbild zeigt es in Originalgröße (die Seitenleiste wird dafür breiter und die Schrift gut lesbar), ein zweiter Klick noch größer, ein dritter macht es wieder klein. „Alles einschalten“ schaltet diese Karten nicht ein, „Alles ausschalten“ schaltet sie aus. Lärm, Bebauungspläne, Naturschutz und Stadtbezirke sind offene Daten der Stadt Oldenburg (Datenlizenz Deutschland – Namensnennung 2.0), die Quelle steht automatisch im Bild. Die Lärmdaten sind groß und brauchen beim ersten Mal einen Moment. Alles Eingeschaltete erscheint auch im gespeicherten Bild und in der Legende.</p>
+          <p class="hinweis">Bei „ÖPNV“ zeigt ein Klick auf eine Haltestelle ihren Namen, die Linien und die Abfahrten; „Haltestellen nach Takt“ färbt sie nach der Häufigkeit (Fahrplan eines normalen Dienstags). Unter „Grün und Freiräume“ gibt es zusätzlich „Spielen und Bewegen“: Spielplätze (Klick zeigt Name und Zugang), der Einzugsbereich von 200 m um öffentliche Spielplätze sowie Fußball-, Basketball-, Skate-, Fitness- und Hundewiesen-Orte aus OpenStreetMap. Unter „Tag- und Nachtnutzung“ siehst du, welche Orte tagsüber, abends und nachts aktiv sind (nach den Öffnungszeiten aus OpenStreetMap, sonst nach der Art geschätzt; ein Klick zeigt Zeiten und Herkunft). Unter „Luftqualität“ steht die Messstation des Umweltbundesamts am Heiligengeistwall; ein Klick zeigt die Jahresmittelwerte der letzten Jahre. Unter „Verkehr und Mobilität“ stehen Radwege, Fahrradabstellanlagen, Parken, Carsharing und Ladestationen (ein Klick auf eine Ladestation zeigt Betreiber und Leistung). Die Themen (Fußweg, Boden, Grundwasser …) lassen sich mit einem Klick auf die Überschrift auf- und zuklappen; die rote Zahl daneben zeigt, wie viele Ebenen davon eingeschaltet sind. Fußweg und Sonnenstand brauchen eine gesuchte Adresse (der rote Punkt ist der Mittelpunkt). Die anderen Ebenen zeigen alle Orte in <span class="stadtName">Oldenburg</span>. „Einzelbäume“ zeigt die in OpenStreetMap erfassten Bäume (unvollständig); eigene Bäume zeichnest du mit dem Werkzeug „Baum“ in 06. „Starkregen“ ist die Hinweiskarte des Bundes (BKG) für Niedersachsen. „Boden“, „Geologie und Baugrund“, „Grundwasser“ sowie „Versiegelung und Altlasten“ sind Karten des Landesamts für Bergbau, Energie und Geologie (LBEG, NIBIS-Kartenserver). Alle diese Karten werden online geladen und brauchen Internet (auch beim Speichern des Bildes, das dann einen Moment länger dauert); sie sind eine Orientierung und keine Planungsgrundlage. Wo eine Karte nichts zeigt, hat das Land dort keine Daten (zum Beispiel ist die Bodenkarte in der bebauten Innenstadt leer). Unter „Legende“ siehst du die Farberklärung des Landesamts; ein Klick auf das Legendenbild zeigt es in Originalgröße (die Seitenleiste wird dafür breiter und die Schrift gut lesbar), ein zweiter Klick noch größer, ein dritter macht es wieder klein. „Alles einschalten“ schaltet diese Karten nicht ein, „Alles ausschalten“ schaltet sie aus. Lärm, Bebauungspläne, Naturschutz und Stadtbezirke sind offene Daten der Stadt <span class="stadtName">Oldenburg</span> (Datenlizenz Deutschland – Namensnennung 2.0), die Quelle steht automatisch im Bild. Die Lärmdaten sind groß und brauchen beim ersten Mal einen Moment. Alles Eingeschaltete erscheint auch im gespeicherten Bild und in der Legende.</p>
         </div>
       </details>
 
@@ -1293,18 +1300,44 @@
     }
 
     // ---------- 1. Karte aufbauen ----------
-    // Startansicht: Innenstadt von Oldenburg
-    var START_MITTE = [53.1435, 8.2146];
-    var START_ZOOM = 14;
+    // Stadt: Name in die Texte setzen und, wenn es mehr als eine fertige Stadt gibt, die Auswahl anbieten.
+    // Ein Wechsel lädt die Seite neu (?stadt=...), dann gelten überall die Dateien und Einstellungen der neuen Stadt.
+    (function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".stadtName"), function (e) { e.textContent = STADT.name; });
+      var titelFeld = document.getElementById("titel");
+      if (titelFeld && /^Standortanalyse \S+$/.test(titelFeld.value)) { titelFeld.value = "Standortanalyse " + STADT.name; }
+      var fertige = Object.keys(STAEDTE).map(function (k) { return STAEDTE[k]; }).filter(function (s) { return s.bereit || s === STADT; });
+      var zeile = document.getElementById("stadtZeile");
+      if (fertige.length < 2 || !zeile) { return; }
+      var wahl = document.createElement("select");
+      wahl.id = "stadtWahl"; wahl.className = "stadtWahl"; wahl.title = "Stadt wählen"; wahl.setAttribute("aria-label", "Stadt wählen");
+      fertige.forEach(function (s) {
+        var o = document.createElement("option"); o.value = s.id; o.textContent = s.name; wahl.appendChild(o);
+      });
+      wahl.value = STADT.id;
+      wahl.addEventListener("change", function () {
+        var neu = wahl.value;
+        var leer = true;
+        try { leer = projektIstLeer(projektSammeln(false)); } catch (e) { leer = true; }
+        if (!leer && !window.confirm("Beim Wechsel der Stadt wird die Seite neu geladen. Was du gezeichnet oder hochgeladen hast, geht dabei verloren, wenn du es nicht vorher mit „Projekt speichern“ sicherst.\n\nTrotzdem zu " + STAEDTE[neu].name + " wechseln?")) { wahl.value = STADT.id; return; }
+        try { localStorage.setItem("standortanalyse_stadt", neu); } catch (e) { /* egal */ }
+        location.href = location.pathname + "?stadt=" + encodeURIComponent(neu);
+      });
+      zeile.textContent = ""; zeile.appendChild(wahl);
+    })();
+
+    // Startansicht: Innenstadt der gewählten Stadt (Einstellungen der Städte: staedte/staedte.js)
+    var START_MITTE = STADT.mitte;
+    var START_ZOOM = STADT.zoom;
 
     var karte = L.map("karte", {
       center: START_MITTE,
       zoom: START_ZOOM,
       zoomControl: true,
       zoomAnimation: false, // beim Zoomen wird sofort neu gezeichnet (nötig für die eigene Karte)
-      // Die Karte lässt sich nur im Stadtgebiet von Oldenburg (plus etwa 2 km Rand) bewegen, denn nur dafür
+      // Die Karte lässt sich nur im Stadtgebiet der gewählten Stadt (plus etwa 2 km Rand) bewegen, denn nur dafür
       // gibt es Daten. So landet man nie auf einer leeren Fläche. Auch das Herauszoomen ist begrenzt.
-      maxBounds: [[53.03, 8.03], [53.245, 8.375]],
+      maxBounds: STADT.grenzen,
       maxBoundsViscosity: 1.0,   // am Rand ist Schluss (kein Gummiband)
       minZoom: 12,
       maxZoom: 20,
@@ -1324,7 +1357,7 @@
     var URL_STRASSEN = "https://tile.openstreetmap.de/{z}/{x}/{y}.png";
 
     // ---------- Eigene Karte (ohne Symbole) ----------
-    // Diese Karte wird von der App selbst gezeichnet, aus den Daten in karte_oldenburg.js
+    // Diese Karte wird von der App selbst gezeichnet, aus den Daten in karte.js
     // (Straßen, Bahn, Gewässer, Grün von OpenStreetMap). Es gibt keine Kartenbilder und keine Symbole,
     // und alles bleibt in jedem Maßstab scharf. Die Datei wird erst geladen, wenn die Karte gewählt wird.
     var KARTEN_STIL = {
@@ -1395,19 +1428,19 @@
       karteLadevorgang = new Promise(function (fertig, fehler) {
         function entpacken() {
           try {
-            karteDaten = entpackeKarte(KARTE_OLDENBURG);
-            window.KARTE_OLDENBURG = null;     // Rohdaten werden nicht mehr gebraucht
+            karteDaten = entpackeKarte(KARTE_DATEN);
+            window.KARTE_DATEN = null;     // Rohdaten werden nicht mehr gebraucht
             fertig(karteDaten);
           } catch (e) { karteLadevorgang = null; e.art = "lesen"; fehler(e); }
         }
-        if (typeof KARTE_OLDENBURG !== "undefined" && KARTE_OLDENBURG) { entpacken(); return; }
+        if (typeof KARTE_DATEN !== "undefined" && KARTE_DATEN) { entpacken(); return; }
 
         // Laden mit einem zweiten Versuch (anderer Adressenzusatz umgeht einen kaputten Zwischenspeicher oder einen Verbindungsabbruch)
         function laden(versuch) {
           var skript = document.createElement("script");
-          skript.src = versuch === 0 ? "karte_oldenburg.js" : "karte_oldenburg.js?neu=" + Date.now();
+          skript.src = versuch === 0 ? stadtDatei("karte") : stadtDatei("karte") + "?neu=" + Date.now();
           skript.onload = function () {
-            if (typeof KARTE_OLDENBURG === "undefined" || !KARTE_OLDENBURG) {          // Datei kam an, enthält aber keine Kartendaten (abgeschnitten oder durch eine Sperre ersetzt)
+            if (typeof KARTE_DATEN === "undefined" || !KARTE_DATEN) {          // Datei kam an, enthält aber keine Kartendaten (abgeschnitten oder durch eine Sperre ersetzt)
               if (skript.parentNode) { skript.parentNode.removeChild(skript); }
               if (versuch === 0) { laden(1); return; }
               karteLadevorgang = null; var f = new Error("Die Kartendatei kam leer oder unvollständig an"); f.art = "leer"; fehler(f); return;
@@ -1757,10 +1790,10 @@
               ladeanzeige.classList.remove("sichtbar");
               if (window.console) { console.error("Startkarte:", fehler); }
               var art = fehler && fehler.art;
-              setzeKartenStatus(art === "netz" ? "Die Kartendatei (karte_oldenburg.js) konnte nicht geladen werden. Bitte die Verbindung prüfen und die Seite neu laden (Strg+F5). Fehlt die Datei, muss sie im selben Ordner wie index.html liegen."
-                : art === "leer" ? "Die Kartendatei (karte_oldenburg.js) kam unvollständig an. Bitte die Seite neu laden (Strg+F5). Hilft das nicht, blockiert ein Netzwerk oder ein Browser-Zusatz die große Datei."
-                : art === "lesen" ? "Die Kartendatei (karte_oldenburg.js) konnte nicht gelesen werden (" + (fehler.message || "unbekannter Fehler") + "). Bitte die Seite neu laden (Strg+F5)."
-                : "Die Kartendatei (karte_oldenburg.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
+              setzeKartenStatus(art === "netz" ? "Die Kartendatei (karte.js) konnte nicht geladen werden. Bitte die Verbindung prüfen und die Seite neu laden (Strg+F5). Fehlt die Datei, muss sie im selben Ordner wie index.html liegen."
+                : art === "leer" ? "Die Kartendatei (karte.js) kam unvollständig an. Bitte die Seite neu laden (Strg+F5). Hilft das nicht, blockiert ein Netzwerk oder ein Browser-Zusatz die große Datei."
+                : art === "lesen" ? "Die Kartendatei (karte.js) konnte nicht gelesen werden (" + (fehler.message || "unbekannter Fehler") + "). Bitte die Seite neu laden (Strg+F5)."
+                : "Die Kartendatei (karte.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
             });
         }
         this._neuZeichnen();
@@ -1906,7 +1939,7 @@
 
     // Ebenen "Fußweg nach Wegenetz": wie weit man in 5 bzw. 10 Minuten wirklich kommt, entlang der echten Wege (nicht in
     // Luftlinie wie bei den Kreisen). Gerechnet wird mit denselben 80 m pro Minute. Das Wegenetz steht in der Datei
-    // wegenetz_oldenburg.js (OpenStreetMap, einmal heruntergeladen) und wird beim ersten Zuschalten geladen.
+    // wegenetz.js (OpenStreetMap, einmal heruntergeladen) und wird beim ersten Zuschalten geladen.
     // Dargestellt als durchscheinendes Band (WEGENETZ_BREITE_M breit) um die erreichbaren Wege plus dünne Linie.
     var WEGENETZ_BREITE_M = 50;
     var WEGENETZ_ZEITEN = [
@@ -1934,7 +1967,7 @@
     }
 
     // Ebene "ÖPNV": alle Bushaltestellen, Bahnhöfe und Haltepunkte als farbige Punkte ohne Symbole und ohne Namen.
-    // Die Punkte stehen in der Datei oepnv_oldenburg.js (OpenStreetMap, einmal heruntergeladen). Die Datei ist klein
+    // Die Punkte stehen in der Datei oepnv.js (OpenStreetMap, einmal heruntergeladen). Die Datei ist klein
     // und wird beim ersten Zuschalten geladen. Die Ebene braucht keine Adresse.
     var OEPNV = {
       name: "ÖPNV",
@@ -1948,7 +1981,7 @@
     OEPNV.ebene.getAttribution = function () { return "Haltestellen: &copy; OpenStreetMap-Mitwirkende"; };
 
     // Ebenen "Einrichtungen": vier getrennt schaltbare Gruppen als farbige Punkte ohne Symbole und ohne Namen.
-    // Die Punkte stehen in der Datei einrichtungen_oldenburg.js (OpenStreetMap, einmal heruntergeladen).
+    // Die Punkte stehen in der Datei einrichtungen.js (OpenStreetMap, einmal heruntergeladen).
     // Die Datei wird beim ersten Zuschalten einer Gruppe geladen. Die Ebenen brauchen keine Adresse.
     // "id" ist der Name der Gruppe in der Datei, "legende" der Text in der Legende des gespeicherten Bildes.
     var EINRICHTUNGEN = [
@@ -1956,7 +1989,7 @@
       { id: "schulen",  name: "Schulen und Kitas",    farbe: "#9a5b1e", legende: "Schulen, Kitas, Hochschulen" },
       { id: "aerzte",   name: "Ärzte und Apotheken",  farbe: "#2e8b3d", legende: "Ärzte, Kliniken, Apotheken" },
       { id: "freizeit", name: "Freizeit und Kultur",  farbe: "#b0309e", legende: "Freizeit, Kultur, Gastronomie" },
-      // Tag- und Nachtnutzung (Datei zeiten_oldenburg.js, Einteilung in ladeEinrichtungenDaten): wann ein Ort aktiv ist, nach den
+      // Tag- und Nachtnutzung (Datei zeiten.js, Einteilung in ladeEinrichtungenDaten): wann ein Ort aktiv ist, nach den
       // Öffnungszeiten aus OpenStreetMap, sonst nach der Art. "bit" ist das Zeitfenster (1 tagsüber, 2 abends, 4 nachts).
       { id: "zeit_tag",    name: "Tagsüber aktiv (10–16 Uhr)",  farbe: "#f0c419", legende: "Tagsüber aktiv (10–16 Uhr)",  zeit: true, bit: 1, nichtAlle: true },
       { id: "zeit_abend",  name: "Abends aktiv (18–23 Uhr)",    farbe: "#e8590c", legende: "Abends aktiv (18–23 Uhr)",    zeit: true, bit: 2, nichtAlle: true },
@@ -1970,11 +2003,11 @@
     var EINRICHTUNG_RADIUS = 5;   // Radius auf dem Bildschirm in Pixeln
 
     // Ebenen "Verkehr und Mobilität": Radwege, Fahrradabstellanlagen, Parken und Sharing (OpenStreetMap) sowie Ladestationen für
-    // Elektroautos (Bundesnetzagentur). Alles steht in der Datei mobilitaet_oldenburg.js (einmal heruntergeladen, Programme
+    // Elektroautos (Bundesnetzagentur). Alles steht in der Datei mobilitaet.js (einmal heruntergeladen, Programme
     // 17_ und 18_ in Datenpflege) und wird beim ersten Zuschalten geladen. Linien (art "linie") oder Punkte (art "punkt").
     var MOBILITAET_OSM_TEXT = "Radwege, Parken, Sharing: © OpenStreetMap-Mitwirkende";
     var MOBILITAET_LADER_TEXT = "Ladestationen: © Bundesnetzagentur.de (CC BY 4.0)";
-    // Straßennetz (Datei strassennetz_oldenburg.js, Programm 26 in Datenpflege): zwei Ebenen, in denen jede Straße nach einem Merkmal gefärbt ist
+    // Straßennetz (Datei strassennetz.js, Programm 26 in Datenpflege): zwei Ebenen, in denen jede Straße nach einem Merkmal gefärbt ist
     // (Höchstgeschwindigkeit bzw. Straßenart). Die Klassen stehen hier, die Zuordnung der Straßen macht ladeStrassennetzDaten.
     var STRASSEN_QUELLE_TEXT = "Straßennetz: © OpenStreetMap-Mitwirkende";
     var TEMPO_KLASSEN = [
@@ -2019,7 +2052,7 @@
     function istMobilitaetEbene(ebene) { return MOBILITAET.some(function (g) { return g.ebene === ebene; }); }
 
     // Ebenen "Spielen und Bewegen" (Teil von "Grün und Freiräume"): Spielplätze als Flächen, ihr Einzugsbereich (200 m um öffentliche
-    // Spielplätze, Luftlinie, als ein Band ohne dunklere Überlappungen) und Bewegungsorte als Punkte. Daten: spielplaetze_oldenburg.js
+    // Spielplätze, Luftlinie, als ein Band ohne dunklere Überlappungen) und Bewegungsorte als Punkte. Daten: spielplaetze.js
     // (OpenStreetMap, einmal heruntergeladen mit Datenpflege\21_Spielplaetze_aktualisieren.ps1). Die Stadt hat keine offenen Spielplatzdaten.
     var SPIEL_QUELLE_TEXT = "Spielplätze, Bewegungsorte: © OpenStreetMap-Mitwirkende";
     var SPIEL_EINZUG_METER = 200;
@@ -2072,7 +2105,7 @@
       });
     }
     // Ebene "Luftmessstation": die amtlichen Luftmessstationen im Stadtgebiet (zur Zeit nur "Oldenburg Heiligengeistwall", eine
-    // Verkehrsstation) mit den Jahresmittelwerten der letzten Jahre. Daten: luft_oldenburg.js (Umweltbundesamt mit Daten der
+    // Verkehrsstation) mit den Jahresmittelwerten der letzten Jahre. Daten: luft.js (Umweltbundesamt mit Daten der
     // Messnetze der Länder und des Bundes, einmal heruntergeladen mit Datenpflege\20_Luft_aktualisieren.ps1). Braucht kein Internet.
     var LUFT_QUELLE_TEXT = "Luftdaten: Umweltbundesamt mit Daten der Messnetze der Länder und des Bundes";
     var LUFT = {
@@ -2082,7 +2115,7 @@
     LUFT.ebene.getAttribution = function () { return "Luftdaten: &copy; Umweltbundesamt, Daten der Messnetze der Länder und des Bundes"; };
     var LUFT_GRENZWERTE = { no2: 40, pm10: 40, pm25: 25 };       // Grenzwerte für das Jahresmittel in µg/m³ (EU, bis 2029)
     var LUFT_RICHTWERTE = { no2: 10, pm10: 15, pm25: 5 };        // Richtwerte der Weltgesundheitsorganisation 2021
-    // Ebene "Haltestellen nach Takt": die Haltestellen aus dem Fahrplan (fahrplan_oldenburg.js, gtfs.de / DELFI, CC BY 4.0),
+    // Ebene "Haltestellen nach Takt": die Haltestellen aus dem Fahrplan (fahrplan.js, gtfs.de / DELFI, CC BY 4.0),
     // gefärbt nach den Abfahrten pro Stunde an einem normalen Dienstag zwischen 6 und 20 Uhr. Je stärker die Farbe, desto häufiger.
     var FAHRPLAN_QUELLE_TEXT = "Fahrplan: gtfs.de / DELFI e.V. (CC BY 4.0)";
     var TAKT = {
@@ -2102,7 +2135,7 @@
       return TAKT.klassen[TAKT.klassen.length - 1];
     }
 
-    // Ebene "Bäume": alle in OpenStreetMap erfassten Einzelbäume (Datei baeume_oldenburg.js, auch für die 3D-Ansicht) als grüne Punkte.
+    // Ebene "Bäume": alle in OpenStreetMap erfassten Einzelbäume (Datei baeume.js, auch für die 3D-Ansicht) als grüne Punkte.
     // Laubbäume hellgrün, Nadel- und immergrüne Bäume dunkelgrün. Eigene Bäume (Werkzeug "Baum") sind Teil der Zeichnung.
     var BAEUME2D = {
       name: "Einzelbäume (OpenStreetMap)",
@@ -2260,7 +2293,7 @@
     }
 
     // Ebene "Gebäude nach Traufhöhe" (Höhenkarte): jedes Gebäude in der Farbe seiner Höhenklasse. Die Höhen stammen aus dem
-    // 3D-Gebäudemodell des LGLN (Datei hoehen_oldenburg.js, wie in der 3D-Ansicht; die Traufhöhe ist auf den Boden bezogen).
+    // 3D-Gebäudemodell des LGLN (Datei hoehen.js, wie in der 3D-Ansicht; die Traufhöhe ist auf den Boden bezogen).
     // Die Datei (ca. 13 MB mit dem Gelände) wird erst beim Zuschalten geladen. Sie liegt über der normalen Bebauung.
     var HOEHEN_KLASSEN = [
       { bis: 4,        farbe: "#fff2b3", text: "unter 4 m" },
@@ -2274,7 +2307,7 @@
     var HOEHENKARTE = { name: "Gebäude nach Traufhöhe (LGLN)", flaeche: true, farbe: "#e0562a", deckkraft: 0.75, nichtAlle: true, ebene: L.layerGroup() };
     HOEHENKARTE.ebene.getAttribution = function () { return HOEHEN_QUELLE_TEXT; };
     // Ebene "Grünversorgung": Wohngebiete (Nutzungsart Wohnen) nach der Gehentfernung auf dem Wegenetz bis zum nächsten Park, Spielplatz oder Wald
-    // (Datei gruenversorgung_oldenburg.js, Programm 27 in Datenpflege). Wird beim Zuschalten im Browser berechnet (Rasterzellen von 20 m).
+    // (Datei gruenversorgung.js, Programm 27 in Datenpflege). Wird beim Zuschalten im Browser berechnet (Rasterzellen von 20 m).
     var VERSORGUNG_MAX_M = 300;           // so weit darf der nächste Park zu Fuß entfernt sein
     var VERSORGUNG_ZELLE_M = 20;
     var VERSORGUNG_KLASSEN = [
@@ -2299,7 +2332,7 @@
     var MISCHUNG = { name: "Nutzungsmischung (Wärmebild, 100-m-Raster)", flaeche: true, farbe: "#fee08b", deckkraft: 0.75, nichtAlle: true, ebene: L.layerGroup() };
     MISCHUNG.ebene.getAttribution = function () { return "Nutzungsmischung: &copy; OpenStreetMap-Mitwirkende"; };
     var mischungErgebnis = null;          // { canvas, s, w, n, o, anteile: [%, ...] }
-    // Gruppe "Durchlässigkeit des Wegenetzes": vier Ebenen, gerechnet im Browser aus dem Wegenetz (wegenetz_oldenburg.js) und der Kartendatei
+    // Gruppe "Durchlässigkeit des Wegenetzes": vier Ebenen, gerechnet im Browser aus dem Wegenetz (wegenetz.js) und der Kartendatei
     // (Bahn, Gewässer, Hauptstraßen): Kreuzungsdichte, Blockgrößen, Umwegfaktor ab dem roten Punkt, Barrieren mit Querungen.
     var DL_QUELLE_TEXT = "Durchlässigkeit: © OpenStreetMap-Mitwirkende";
     var DL_KREUZ_KLASSEN = [
@@ -2336,7 +2369,7 @@
     DL.forEach(function (d) { d.ebene.getAttribution = function () { return "Durchlässigkeit: &copy; OpenStreetMap-Mitwirkende"; }; });
     var dlErgebnis = { kreuz: null, bloecke: null, barr: null, umweg: null };     // Ergebnisse (werden beim ersten Zuschalten gerechnet)
     function istDlEbene(ebene) { return DL.some(function (d) { return d.ebene === ebene; }); }
-    // Gruppe "Wer wohnt dort? (Zensus 2022)": Ergebnisse des Zensus 2022 im 100-m-Gitter (Datei zensus_oldenburg.js, Programm 28 in Datenpflege),
+    // Gruppe "Wer wohnt dort? (Zensus 2022)": Ergebnisse des Zensus 2022 im 100-m-Gitter (Datei zensus.js, Programm 28 in Datenpflege),
     // je Merkmal eine Ebene. Datenlizenz Deutschland - Namensnennung - Version 2.0; die Zahlen sind durch ein Geheimhaltungsverfahren leicht verändert.
     var ZENSUS_QUELLE_TEXT = "Zensus 2022: © Statistische Ämter des Bundes und der Länder, 2024, dl-de/by-2-0";
     function zensusEbene(id, name, titel, einheit, spalte, dez, grenzen, farben, klammer) {
@@ -2414,7 +2447,7 @@
       if (!hoehenListe) {
         setzeKartenStatus("Gebäudehöhen werden geladen (beim ersten Mal ca. 13 MB) …");
         ladeHoehenDaten().then(function () { setzeKartenStatus(""); aktualisiereHoehen(); })
-          .catch(function () { setzeKartenStatus("Die Gebäudehöhen konnten nicht geladen werden. Die Dateien hoehen_oldenburg.js, gelaende_oldenburg.js und ansicht3d.js müssen im selben Ordner wie index.html liegen.", true); });
+          .catch(function () { setzeKartenStatus("Die Gebäudehöhen konnten nicht geladen werden. Die Dateien hoehen.js, gelaende.js und ansicht3d.js müssen im selben Ordner wie index.html liegen.", true); });
         return;
       }
       var sichtbar = karte.getBounds();
@@ -2441,26 +2474,26 @@
     function istEinrichtungsEbene(ebene) { return EINRICHTUNGEN.some(function (g) { return g.ebene === ebene; }); }
 
     // Ebenen "Grün und Freiräume" und "Nutzungsarten": getrennt schaltbare Flächen-Gruppen, kräftig und durchscheinend gefärbt.
-    // Die Flächen stehen in zwei Dateien (OpenStreetMap, einmal heruntergeladen): flaechen_oldenburg.js (Grün und Freiräume)
-    // und nutzung_oldenburg.js (Nutzungsarten). Jede Datei wird beim ersten Zuschalten einer ihrer Gruppen geladen.
+    // Die Flächen stehen in zwei Dateien (OpenStreetMap, einmal heruntergeladen): flaechen.js (Grün und Freiräume)
+    // und nutzung.js (Nutzungsarten). Jede Datei wird beim ersten Zuschalten einer ihrer Gruppen geladen.
     // Die Ebenen brauchen keine Adresse und liegen unter den Gebäuden.
     // "quelle" sagt, in welcher Datei die Gruppe steht, "id" ist ihr Name in der Datei, "legende" der Text in der Legende
     // des gespeicherten Bildes, "deckkraft" wie stark die Farbe deckt (0 bis 1).
     var FLAECHEN_DECKKRAFT = 0.5;
     // Weitere Dateien mit offenen Daten der Stadt Oldenburg (Lizenz dl-de/by-2.0, Quelle muss genannt werden):
-    // stadt_oldenburg.js (Bebauungspläne, Naturschutz, Stadtbezirke) und laerm_oldenburg.js (Lärmkartierung, groß).
+    // stadt.js (Bebauungspläne, Naturschutz, Stadtbezirke) und laerm.js (Lärmkartierung, groß).
     // Diese Dateien haben einen etwas anderen Aufbau (siehe ladeFlaechenQuelle): { gruppen: { id: { f | p, a } } }.
     var FLAECHEN_QUELLEN = {
-      flaechen: { datei: "flaechen_oldenburg.js", variable: "FLAECHEN_OLDENBURG", daten: null, vorgang: null },
-      nutzung:  { datei: "nutzung_oldenburg.js",  variable: "NUTZUNG_OLDENBURG",  daten: null, vorgang: null },
-      stadt:    { datei: "stadt_oldenburg.js",    variable: "STADT_OLDENBURG",    daten: null, vorgang: null },
-      laerm:    { datei: "laerm_oldenburg.js",    variable: "LAERM_OLDENBURG",    daten: null, vorgang: null },
-      fnp:      { datei: "fnp_oldenburg.js",      variable: "FNP_OLDENBURG",      daten: null, vorgang: null },
-      brw:      { datei: "bodenrichtwerte_oldenburg.js", variable: "BODENRICHTWERTE_OLDENBURG", daten: null, vorgang: null }
+      flaechen: { datei: stadtDatei("flaechen"), variable: "FLAECHEN_DATEN", daten: null, vorgang: null },
+      nutzung:  { datei: stadtDatei("nutzung"),  variable: "NUTZUNG_DATEN",  daten: null, vorgang: null },
+      stadt:    { datei: stadtDatei("stadt"),    variable: "STADT_DATEN",    daten: null, vorgang: null },
+      laerm:    { datei: stadtDatei("laerm"),    variable: "LAERM_DATEN",    daten: null, vorgang: null },
+      fnp:      { datei: stadtDatei("fnp"),      variable: "FNP_DATEN",      daten: null, vorgang: null },
+      brw:      { datei: stadtDatei("bodenrichtwerte"), variable: "BODENRICHTWERTE_DATEN", daten: null, vorgang: null }
     };
     var BRW_QUELLE_TEXT = "Bodenrichtwerte: © LGLN / Gutachterausschuss (BORIS Niedersachsen), Datenlizenz Deutschland – Namensnennung 2.0";
-    var STADT_QUELLE_TEXT = "Stadt Oldenburg (Oldb), Datenlizenz Deutschland – Namensnennung 2.0";
-    var FNP_QUELLE_TEXT = "Flächennutzungsplan: Stadt Oldenburg (Oldb), Stand Änderungen bis 05.07.2024, Datenlizenz Deutschland – Zero 2.0";
+    var STADT_QUELLE_TEXT = STADT.stadtQuelle;
+    var FNP_QUELLE_TEXT = STADT.fnpQuelle;
     // Weitere Eigenschaften einer Gruppe (alle freiwillig):
     //   klassen: { Klasse: [Farbe, Text] }  Farbe nach Klasse (Attribut der Fläche), z. B. beim Lärm
     //   gebuendelt: true                     alle Flächen einer Klasse als ein Mehrfach-Vieleck zeichnen (viele kleine Teile, schnell)
@@ -2760,7 +2793,7 @@
     aktualisiereKartenstilAbschnitt();
 
     // ---------- Ebene "Bebauung" (Gebäude als einheitlich graue Flächen) ----------
-    // Die Gebäudeumrisse stehen in der Datei gebaeude_oldenburg.js (Daten von OpenStreetMap,
+    // Die Gebäudeumrisse stehen in der Datei gebaeude.js (Daten von OpenStreetMap,
     // einmal heruntergeladen). Die Datei ist groß und wird deshalb erst geladen, wenn die Ebene
     // zum ersten Mal eingeschaltet wird. Danach geht alles ohne Internet und ohne Wartezeit.
     var BEBAUUNG_FARBE = "#3a3a3a";   // ein einheitliches Grau für alle Gebäude
@@ -2813,22 +2846,22 @@
       gebaeudeLadevorgang = new Promise(function (fertig, fehler) {
         function entpacken() {
           try {
-            alleGebaeude = entpackeGebaeude(GEBAEUDE_OLDENBURG);
-            window.GEBAEUDE_OLDENBURG = null;   // die Rohdaten werden nicht mehr gebraucht
+            alleGebaeude = entpackeGebaeude(GEBAEUDE_DATEN);
+            window.GEBAEUDE_DATEN = null;   // die Rohdaten werden nicht mehr gebraucht
             fertig(alleGebaeude);
           } catch (e) {
             gebaeudeLadevorgang = null;
             fehler(e);
           }
         }
-        if (typeof GEBAEUDE_OLDENBURG !== "undefined" && GEBAEUDE_OLDENBURG) { entpacken(); return; }
+        if (typeof GEBAEUDE_DATEN !== "undefined" && GEBAEUDE_DATEN) { entpacken(); return; }
 
         var skript = document.createElement("script");
-        skript.src = "gebaeude_oldenburg.js";
+        skript.src = stadtDatei("gebaeude");
         skript.onload = entpacken;
         skript.onerror = function () {
           gebaeudeLadevorgang = null;
-          fehler(new Error("Datei gebaeude_oldenburg.js nicht gefunden"));
+          fehler(new Error("Datei gebaeude.js nicht gefunden"));
         };
         document.head.appendChild(skript);
       });
@@ -2888,7 +2921,7 @@
         ladeGebaeudeDaten()
           .then(function () { setzeKartenStatus(""); aktualisiereBebauung(); })
           .catch(function () {
-            setzeKartenStatus("Die Gebäudedatei (gebaeude_oldenburg.js) fehlt oder ist beschädigt. " +
+            setzeKartenStatus("Die Gebäudedatei (gebaeude.js) fehlt oder ist beschädigt. " +
               "Sie muss im selben Ordner wie index.html liegen.", true);
           });
         return;
@@ -3185,7 +3218,7 @@
       kreiseNachVorn();
     }
 
-    // ---------- Ebene "ÖPNV" (Haltestellen und Bahnhöfe aus der lokalen Datei oepnv_oldenburg.js) ----------
+    // ---------- Ebene "ÖPNV" (Haltestellen und Bahnhöfe aus der lokalen Datei oepnv.js) ----------
     var alleHaltestellen = null;       // [{ lat, lng, bahn }]
     var oepnvLadevorgang = null;
 
@@ -3198,7 +3231,7 @@
       oepnvLadevorgang = new Promise(function (fertig, fehler) {
         function auswerten() {
           try {
-            var daten = OEPNV_OLDENBURG;
+            var daten = OEPNV_DATEN;
             alleHaltestellen = daten.punkte.map(function (p) {
               return { lat: p[0] * daten.einheit, lng: p[1] * daten.einheit, bahn: p[2] === 1 };
             });
@@ -3208,14 +3241,14 @@
             fehler(e);
           }
         }
-        if (typeof OEPNV_OLDENBURG !== "undefined" && OEPNV_OLDENBURG) { auswerten(); return; }
+        if (typeof OEPNV_DATEN !== "undefined" && OEPNV_DATEN) { auswerten(); return; }
 
         var skript = document.createElement("script");
-        skript.src = "oepnv_oldenburg.js";
+        skript.src = stadtDatei("oepnv");
         skript.onload = auswerten;
         skript.onerror = function () {
           oepnvLadevorgang = null;
-          fehler(new Error("Datei oepnv_oldenburg.js nicht gefunden"));
+          fehler(new Error("Datei oepnv.js nicht gefunden"));
         };
         document.head.appendChild(skript);
       });
@@ -3248,12 +3281,12 @@
         });
         kreiseNachVorn();
       }).catch(function () {
-        setzeKartenStatus("Die Haltestellendatei (oepnv_oldenburg.js) fehlt oder ist beschädigt. " +
+        setzeKartenStatus("Die Haltestellendatei (oepnv.js) fehlt oder ist beschädigt. " +
           "Sie muss im selben Ordner wie index.html liegen.", true);
       });
     }
 
-    // ---------- Ebene "Bäume" (Einzelbäume aus der lokalen Datei baeume_oldenburg.js, wird auch von der 3D-Ansicht benutzt) ----------
+    // ---------- Ebene "Bäume" (Einzelbäume aus der lokalen Datei baeume.js, wird auch von der 3D-Ansicht benutzt) ----------
     var alleBaeume = null;      // [{ lat, lng, h (Meter, 0 = unbekannt), k (Kronenbreite, 0 = unbekannt), ig (immergrün) }]
     var baeumeLadevorgang = null;
     function ladeBaeumeDaten() {
@@ -3262,16 +3295,16 @@
       baeumeLadevorgang = new Promise(function (fertig, fehler) {
         function auswerten() {
           try {
-            var roh = BAEUME_OLDENBURG, e = roh.einheit;
+            var roh = BAEUME_DATEN, e = roh.einheit;
             alleBaeume = roh.baeume.map(function (b) { return { lat: b[0] * e, lng: b[1] * e, h: b[2] / 10, k: b[3] / 10, ig: b[4] === 1 }; });
             fertig(alleBaeume);
           } catch (x) { baeumeLadevorgang = null; fehler(x); }
         }
-        if (typeof BAEUME_OLDENBURG !== "undefined" && BAEUME_OLDENBURG) { auswerten(); return; }
+        if (typeof BAEUME_DATEN !== "undefined" && BAEUME_DATEN) { auswerten(); return; }
         var skript = document.createElement("script");
-        skript.src = "baeume_oldenburg.js";
+        skript.src = stadtDatei("baeume");
         skript.onload = auswerten;
-        skript.onerror = function () { baeumeLadevorgang = null; fehler(new Error("Datei baeume_oldenburg.js nicht gefunden")); };
+        skript.onerror = function () { baeumeLadevorgang = null; fehler(new Error("Datei baeume.js nicht gefunden")); };
         document.head.appendChild(skript);
       });
       return baeumeLadevorgang;
@@ -3298,11 +3331,11 @@
         });
         kreiseNachVorn();
       }).catch(function () {
-        setzeKartenStatus("Die Baumdatei (baeume_oldenburg.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
+        setzeKartenStatus("Die Baumdatei (baeume.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
       });
     }
 
-    // ---------- Ebenen "Einrichtungen" (Läden, Schulen, Ärzte, Freizeit aus der lokalen Datei einrichtungen_oldenburg.js) ----------
+    // ---------- Ebenen "Einrichtungen" (Läden, Schulen, Ärzte, Freizeit aus der lokalen Datei einrichtungen.js) ----------
     var alleEinrichtungen = null;      // { laeden: [{ lat, lng }], schulen: [...], aerzte: [...], freizeit: [...] }
     var einrichtungenLadevorgang = null;
 
@@ -3441,14 +3474,14 @@
       });
     }
 
-    // Lädt die Einrichtungsdateien (nur beim ersten Mal) und entpackt sie. Ein Punkt ist in einrichtungen_oldenburg.js [Breite, Länge, Art, Name]
-    // (Breite und Länge in Millionstel Grad, Name nur wenn bekannt); zeiten_oldenburg.js hat [Breite, Länge, Art (Kürzel:Wert), Name, Öffnungszeiten].
+    // Lädt die Einrichtungsdateien (nur beim ersten Mal) und entpackt sie. Ein Punkt ist in einrichtungen.js [Breite, Länge, Art, Name]
+    // (Breite und Länge in Millionstel Grad, Name nur wenn bekannt); zeiten.js hat [Breite, Länge, Art (Kürzel:Wert), Name, Öffnungszeiten].
     function ladeEinrichtungenDaten() {
       if (alleEinrichtungen) { return Promise.resolve(alleEinrichtungen); }
       if (einrichtungenLadevorgang) { return einrichtungenLadevorgang; }
 
-      einrichtungenLadevorgang = Promise.all([holeDatenSkript("einrichtungen_oldenburg.js", "EINRICHTUNGEN_OLDENBURG"), holeDatenSkript("zeiten_oldenburg.js", "ZEITEN_OLDENBURG")]).then(function () {
-        var daten = EINRICHTUNGEN_OLDENBURG, ergebnis = {};
+      einrichtungenLadevorgang = Promise.all([holeDatenSkript(stadtDatei("einrichtungen"), "EINRICHTUNGEN_DATEN"), holeDatenSkript(stadtDatei("zeiten"), "ZEITEN_DATEN")]).then(function () {
+        var daten = EINRICHTUNGEN_DATEN, ergebnis = {};
         EINRICHTUNGEN.forEach(function (gruppe) {
           if (gruppe.zeit) { return; }
           ergebnis[gruppe.id] = daten.gruppen[gruppe.id].map(function (p) {
@@ -3456,7 +3489,7 @@
           });
         });
         // Tag- und Nachtnutzung: jeder Ort kommt in alle Zeitfenster, in denen er aktiv ist
-        var zd = ZEITEN_OLDENBURG, orte = zd.p.map(function (p) {
+        var zd = ZEITEN_DATEN, orte = zd.p.map(function (p) {
           var typ = p[2], maske = p[4] ? zeitMaske(p[4]) : null, exakt = maske !== null;
           if (!exakt) { maske = ZEIT_STANDARD[typ] || 1; }
           return { lat: p[0] * zd.einheit, lng: p[1] * zd.einheit, art: typ, artText: zeitBezeichnung(typ), name: p[3] || "", oh: p[4] || "", m: maske, exakt: exakt, zeit: true };
@@ -3497,12 +3530,12 @@
         });
         kreiseNachVorn();
       }).catch(function () {
-        setzeKartenStatus("Eine Einrichtungsdatei (einrichtungen_oldenburg.js oder zeiten_oldenburg.js) fehlt oder ist beschädigt. " +
+        setzeKartenStatus("Eine Einrichtungsdatei (einrichtungen.js oder zeiten.js) fehlt oder ist beschädigt. " +
           "Sie muss im selben Ordner wie index.html liegen.", true);
       });
     }
 
-    // ---------- Ebenen "Verkehr und Mobilität" und "Haltestellen nach Takt" (Dateien mobilitaet_oldenburg.js und fahrplan_oldenburg.js) ----------
+    // ---------- Ebenen "Verkehr und Mobilität" und "Haltestellen nach Takt" (Dateien mobilitaet.js und fahrplan.js) ----------
     var alleMobilitaet = null;      // { radweg: { linien: [[[lat, lng], ...], ...] }, parkplatz: { punkte: [{ lat, lng, kw, n, betreiber, adresse }] }, ... }
     var mobilitaetVorgang = null;
     function ladeMobilitaetDaten() {
@@ -3511,7 +3544,7 @@
       mobilitaetVorgang = new Promise(function (fertig, fehler) {
         function auswerten() {
           try {
-            var roh = MOBILITAET_OLDENBURG, e = roh.einheit, aus = {};
+            var roh = MOBILITAET_DATEN, e = roh.einheit, aus = {};
             Object.keys(roh.gruppen).forEach(function (id) {
               var g = roh.gruppen[id], d = {};
               if (g.l) {      // Linien: [Breite, Länge, Delta, Delta, ...] in Millionstel Grad
@@ -3528,11 +3561,11 @@
             fertig(aus);
           } catch (x) { mobilitaetVorgang = null; fehler(x); }
         }
-        if (typeof MOBILITAET_OLDENBURG !== "undefined" && MOBILITAET_OLDENBURG) { auswerten(); return; }
+        if (typeof MOBILITAET_DATEN !== "undefined" && MOBILITAET_DATEN) { auswerten(); return; }
         var skript = document.createElement("script");
-        skript.src = "mobilitaet_oldenburg.js";
+        skript.src = stadtDatei("mobilitaet");
         skript.onload = auswerten;
-        skript.onerror = function () { mobilitaetVorgang = null; fehler(new Error("Datei mobilitaet_oldenburg.js nicht gefunden")); };
+        skript.onerror = function () { mobilitaetVorgang = null; fehler(new Error("Datei mobilitaet.js nicht gefunden")); };
         document.head.appendChild(skript);
       });
       return mobilitaetVorgang;
@@ -3546,7 +3579,7 @@
       strassenNetzVorgang = new Promise(function (fertig, fehler) {
         function auswerten() {
           try {
-            var roh = STRASSENNETZ_OLDENBURG, e = roh.einheit;
+            var roh = STRASSENNETZ_DATEN, e = roh.einheit;
             var tempo = TEMPO_KLASSEN.map(function () { return []; }), art = STRASSEN_KLASSEN.map(function () { return []; });
             roh.w.forEach(function (z) {      // [Tempo, Art, Breite, Länge, Delta, Delta, ...]
               var la = 0, lo = 0, pkt = [];
@@ -3555,20 +3588,20 @@
               if (art[z[1] - 1]) { art[z[1] - 1].push(pkt); }
             });
             strassenNetz = { tempo: { klassen: tempo }, strassenart: { klassen: art } };
-            window.STRASSENNETZ_OLDENBURG = null;
+            window.STRASSENNETZ_DATEN = null;
             fertig(strassenNetz);
           } catch (x) { strassenNetzVorgang = null; fehler(x); }
         }
-        if (typeof STRASSENNETZ_OLDENBURG !== "undefined" && STRASSENNETZ_OLDENBURG) { auswerten(); return; }
+        if (typeof STRASSENNETZ_DATEN !== "undefined" && STRASSENNETZ_DATEN) { auswerten(); return; }
         var skript = document.createElement("script");
-        skript.src = "strassennetz_oldenburg.js";
+        skript.src = stadtDatei("strassennetz");
         skript.onload = auswerten;
-        skript.onerror = function () { strassenNetzVorgang = null; fehler(new Error("Datei strassennetz_oldenburg.js nicht gefunden")); };
+        skript.onerror = function () { strassenNetzVorgang = null; fehler(new Error("Datei strassennetz.js nicht gefunden")); };
         document.head.appendChild(skript);
       });
       return strassenNetzVorgang;
     }
-    // Lädt für die genannten Gruppen die nötigen Dateien (mobilitaet_oldenburg.js und/oder strassennetz_oldenburg.js) und gibt alles unter den Namen der Gruppen zurück
+    // Lädt für die genannten Gruppen die nötigen Dateien (mobilitaet.js und/oder strassennetz.js) und gibt alles unter den Namen der Gruppen zurück
     function ladeMobilitaetFuer(gruppen) {
       var brauchtOsm = gruppen.some(function (g) { return !g.netz; }), brauchtNetz = gruppen.some(function (g) { return g.netz; });
       return Promise.all([brauchtOsm ? ladeMobilitaetDaten() : {}, brauchtNetz ? ladeStrassennetzDaten() : {}]).then(function (r) {
@@ -3587,10 +3620,10 @@
       fahrplanVorgang = new Promise(function (fertig, fehler) {
         function auswerten() {
           try {
-            var roh = FAHRPLAN_OLDENBURG, e = roh.einheit;
+            var roh = FAHRPLAN_DATEN, e = roh.einheit;
             fahrplanGitter = {};
             fahrplanHalte = roh.haltestellen.map(function (h) {
-              var s = { lat: h[0] * e, lng: h[1] * e, name: h[2].replace(/^Oldenburg\(Oldb\)\s*/, ""), abf: h[3], spitze: h[4], linien: h[5] };
+              var s = { lat: h[0] * e, lng: h[1] * e, name: h[2].replace(STADT.haltestellenVorsatz, ""), abf: h[3], spitze: h[4], linien: h[5] };
               var schl = Math.floor(s.lat / 0.001) + "_" + Math.floor(s.lng / 0.0016);
               (fahrplanGitter[schl] = fahrplanGitter[schl] || []).push(s);
               return s;
@@ -3599,11 +3632,11 @@
             fertig(fahrplanHalte);
           } catch (x) { fahrplanVorgang = null; fehler(x); }
         }
-        if (typeof FAHRPLAN_OLDENBURG !== "undefined" && FAHRPLAN_OLDENBURG) { auswerten(); return; }
+        if (typeof FAHRPLAN_DATEN !== "undefined" && FAHRPLAN_DATEN) { auswerten(); return; }
         var skript = document.createElement("script");
-        skript.src = "fahrplan_oldenburg.js";
+        skript.src = stadtDatei("fahrplan");
         skript.onload = auswerten;
-        skript.onerror = function () { fahrplanVorgang = null; fehler(new Error("Datei fahrplan_oldenburg.js nicht gefunden")); };
+        skript.onerror = function () { fahrplanVorgang = null; fehler(new Error("Datei fahrplan.js nicht gefunden")); };
         document.head.appendChild(skript);
       });
       return fahrplanVorgang;
@@ -3689,7 +3722,7 @@
         });
         kreiseNachVorn();
       }).catch(function () {
-        setzeKartenStatus("Die Datei mobilitaet_oldenburg.js oder strassennetz_oldenburg.js fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
+        setzeKartenStatus("Die Datei mobilitaet.js oder strassennetz.js fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
       });
     }
 
@@ -3707,11 +3740,11 @@
         });
         kreiseNachVorn();
       }).catch(function () {
-        setzeKartenStatus("Die Fahrplandatei (fahrplan_oldenburg.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
+        setzeKartenStatus("Die Fahrplandatei (fahrplan.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
       });
     }
 
-    // ---------- Ebene "Luftmessstation" (Datei luft_oldenburg.js) ----------
+    // ---------- Ebene "Luftmessstation" (Datei luft.js) ----------
     var luftStationen = null, luftVorgang = null;
     function ladeLuftDaten() {
       if (luftStationen) { return Promise.resolve(luftStationen); }
@@ -3719,7 +3752,7 @@
       luftVorgang = new Promise(function (fertig, fehler) {
         function auswerten() {
           try {
-            var roh = LUFT_OLDENBURG, e = roh.einheit;
+            var roh = LUFT_DATEN, e = roh.einheit;
             luftStationen = roh.stationen.map(function (s) {
               return { lat: s[0] * e, lng: s[1] * e, name: s[2], code: s[3], art: s[4], strasse: s[5], seit: s[6], stand: roh.stand,
                        jahre: s[7].map(function (j) { return { jahr: j[0], no2: j[1], pm10: j[2], pm25: j[3], tage: j[4] }; }) };
@@ -3727,11 +3760,11 @@
             fertig(luftStationen);
           } catch (x) { luftVorgang = null; fehler(x); }
         }
-        if (typeof LUFT_OLDENBURG !== "undefined" && LUFT_OLDENBURG) { auswerten(); return; }
+        if (typeof LUFT_DATEN !== "undefined" && LUFT_DATEN) { auswerten(); return; }
         var skript = document.createElement("script");
-        skript.src = "luft_oldenburg.js";
+        skript.src = stadtDatei("luft");
         skript.onload = auswerten;
-        skript.onerror = function () { luftVorgang = null; fehler(new Error("Datei luft_oldenburg.js nicht gefunden")); };
+        skript.onerror = function () { luftVorgang = null; fehler(new Error("Datei luft.js nicht gefunden")); };
         document.head.appendChild(skript);
       });
       return luftVorgang;
@@ -3772,10 +3805,10 @@
         });
         kreiseNachVorn();
       }).catch(function () {
-        setzeKartenStatus("Die Luftdatei (luft_oldenburg.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
+        setzeKartenStatus("Die Luftdatei (luft.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
       });
     }
-    // ---------- Ebenen "Spielen und Bewegen" (Datei spielplaetze_oldenburg.js) ----------
+    // ---------- Ebenen "Spielen und Bewegen" (Datei spielplaetze.js) ----------
     var spielDaten = null, spielVorgang = null;   // { spielplaetze: [{ lat, lng, name, zugang, fl, ring: [[lat, lng], ...] | null }], orte: { fussball: [{ lat, lng, art, name }], ... } }
     function ladeSpielDaten() {
       if (spielDaten) { return Promise.resolve(spielDaten); }
@@ -3783,7 +3816,7 @@
       spielVorgang = new Promise(function (fertig, fehler) {
         function auswerten() {
           try {
-            var roh = SPIEL_OLDENBURG, e = roh.einheit, aus = { spielplaetze: [], orte: {} };
+            var roh = SPIEL_DATEN, e = roh.einheit, aus = { spielplaetze: [], orte: {} };
             aus.spielplaetze = roh.spielplaetze.map(function (s) {
               var ring = null;
               if (s[5] && s[5].length) {
@@ -3797,11 +3830,11 @@
             fertig(aus);
           } catch (x) { spielVorgang = null; fehler(x); }
         }
-        if (typeof SPIEL_OLDENBURG !== "undefined" && SPIEL_OLDENBURG) { auswerten(); return; }
+        if (typeof SPIEL_DATEN !== "undefined" && SPIEL_DATEN) { auswerten(); return; }
         var skript = document.createElement("script");
-        skript.src = "spielplaetze_oldenburg.js";
+        skript.src = stadtDatei("spielplaetze");
         skript.onload = auswerten;
-        skript.onerror = function () { spielVorgang = null; fehler(new Error("Datei spielplaetze_oldenburg.js nicht gefunden")); };
+        skript.onerror = function () { spielVorgang = null; fehler(new Error("Datei spielplaetze.js nicht gefunden")); };
         document.head.appendChild(skript);
       });
       return spielVorgang;
@@ -3863,16 +3896,16 @@
         });
         kreiseNachVorn();
       }).catch(function () {
-        setzeKartenStatus("Die Datei spielplaetze_oldenburg.js fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
+        setzeKartenStatus("Die Datei spielplaetze.js fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
       });
     }
     // ---------- Ebenen "Fußweg nach Wegenetz" (Erreichbarkeit entlang der echten Wege) ----------
-    // Aus der Datei wegenetz_oldenburg.js wird ein Wegenetz (Knoten = Kreuzungen und Wegpunkte, Kanten = Wegstücke) aufgebaut.
+    // Aus der Datei wegenetz.js wird ein Wegenetz (Knoten = Kreuzungen und Wegpunkte, Kanten = Wegstücke) aufgebaut.
     // Die Adresse wird auf das nächste Wegstück gesetzt (der Weg dorthin in Luftlinie zählt mit), dann rechnet ein
     // Kürzeste-Wege-Verfahren (Dijkstra), wie weit man mit 80 m pro Minute kommt. Alles läuft im Browser, ohne Internet.
     var WEGENETZ_ANSCHLUSS_MAX_M = 300;          // so weit darf die Adresse vom nächsten Weg entfernt sein
     var WEGE_M_PRO_GRAD = 111195;                // Meter pro Breitengrad
-    var WEGE_COS = Math.cos(53.14 * Math.PI / 180);   // Längengrade sind hier so viel kürzer (für Oldenburg gleichbleibend genug)
+    var WEGE_COS = Math.cos(STADT.breite * Math.PI / 180);   // Längengrade sind hier so viel kürzer (für ein Stadtgebiet gleichbleibend genug)
     var wegenetz = null;                         // aufgebautes Netz
     var wegenetzVorgang = null;
     var wegenetzErgebnis = null;                 // { schluessel, stuecke: { 400: [...], 800: [...] } } für die zuletzt berechnete Adresse
@@ -3938,14 +3971,14 @@
       if (wegenetzVorgang) { return wegenetzVorgang; }
       wegenetzVorgang = new Promise(function (fertig, fehler) {
         function aufbauen() {
-          try { wegenetz = baueWegenetz(window.WEGENETZ_OLDENBURG); window.WEGENETZ_OLDENBURG = null; fertig(wegenetz); }
+          try { wegenetz = baueWegenetz(window.WEGENETZ_DATEN); window.WEGENETZ_DATEN = null; fertig(wegenetz); }
           catch (e) { wegenetzVorgang = null; fehler(e); }
         }
-        if (window.WEGENETZ_OLDENBURG) { aufbauen(); return; }
+        if (window.WEGENETZ_DATEN) { aufbauen(); return; }
         var skript = document.createElement("script");
-        skript.src = "wegenetz_oldenburg.js";
+        skript.src = stadtDatei("wegenetz");
         skript.onload = aufbauen;
-        skript.onerror = function () { wegenetzVorgang = null; fehler(new Error("Datei wegenetz_oldenburg.js nicht gefunden")); };
+        skript.onerror = function () { wegenetzVorgang = null; fehler(new Error("Datei wegenetz.js nicht gefunden")); };
         document.head.appendChild(skript);
       });
       return wegenetzVorgang;
@@ -4100,7 +4133,7 @@
         kreiseNachVorn();
       }).catch(function (fehler) {
         if (window.console) { console.error("Wegenetz konnte nicht berechnet werden:", fehler); }
-        setzeKartenStatus("Die Wegenetz-Datei (wegenetz_oldenburg.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
+        setzeKartenStatus("Die Wegenetz-Datei (wegenetz.js) fehlt oder ist beschädigt. Sie muss im selben Ordner wie index.html liegen.", true);
       });
     }
     karte.on("zoomend", function () { if (sichtbareWegenetz().length) { aktualisiereWegenetz(false); } });
@@ -4113,7 +4146,7 @@
       gruenVorgang = new Promise(function (fertig, fehler) {
         function auswerten() {
           try {
-            var roh = GRUENVERSORGUNG_OLDENBURG, e = roh.einheit;
+            var roh = GRUENVERSORGUNG_DATEN, e = roh.einheit;
             gruenFlaechen = roh.f.map(function (z) {      // [Art, Breite, Länge, Delta, Delta, ...]
               var ring = new Float64Array(z.length - 1), la = 0, lo = 0, s = 90, w = 180, n = -90, o = -180;
               for (var i = 1; i < z.length; i += 2) {
@@ -4123,15 +4156,15 @@
               }
               return { art: z[0], ring: ring, s: s, w: w, n: n, o: o };
             });
-            window.GRUENVERSORGUNG_OLDENBURG = null;
+            window.GRUENVERSORGUNG_DATEN = null;
             fertig(gruenFlaechen);
           } catch (x) { gruenVorgang = null; fehler(x); }
         }
-        if (typeof GRUENVERSORGUNG_OLDENBURG !== "undefined" && GRUENVERSORGUNG_OLDENBURG) { auswerten(); return; }
+        if (typeof GRUENVERSORGUNG_DATEN !== "undefined" && GRUENVERSORGUNG_DATEN) { auswerten(); return; }
         var skript = document.createElement("script");
-        skript.src = "gruenversorgung_oldenburg.js";
+        skript.src = stadtDatei("gruenversorgung");
         skript.onload = auswerten;
-        skript.onerror = function () { gruenVorgang = null; fehler(new Error("Datei gruenversorgung_oldenburg.js nicht gefunden")); };
+        skript.onerror = function () { gruenVorgang = null; fehler(new Error("Datei gruenversorgung.js nicht gefunden")); };
         document.head.appendChild(skript);
       });
       return gruenVorgang;
@@ -4374,7 +4407,7 @@
           zeigen(); aktualisiereExportInfo();
         }).catch(function (fehler) {
           if (window.console) { console.error("Nutzungsmischung konnte nicht berechnet werden:", fehler); }
-          setzeKartenStatus("Die Nutzungsmischung konnte nicht berechnet werden. Die Dateien nutzung_oldenburg.js, einrichtungen_oldenburg.js und zeiten_oldenburg.js müssen im selben Ordner wie index.html liegen.", true);
+          setzeKartenStatus("Die Nutzungsmischung konnte nicht berechnet werden. Die Dateien nutzung.js, einrichtungen.js und zeiten.js müssen im selben Ordner wie index.html liegen.", true);
         });
       }, 30);
     }
@@ -4398,7 +4431,7 @@
           zeigen(); aktualisiereExportInfo();
         }).catch(function (fehler) {
           if (window.console) { console.error("Grünversorgung konnte nicht berechnet werden:", fehler); }
-          setzeKartenStatus("Die Grünversorgung konnte nicht berechnet werden. Die Dateien wegenetz_oldenburg.js, nutzung_oldenburg.js und gruenversorgung_oldenburg.js müssen im selben Ordner wie index.html liegen.", true);
+          setzeKartenStatus("Die Grünversorgung konnte nicht berechnet werden. Die Dateien wegenetz.js, nutzung.js und gruenversorgung.js müssen im selben Ordner wie index.html liegen.", true);
         });
       }, 30);
     }
@@ -4766,7 +4799,7 @@
           dlZeichnen(); aktualisiereExportInfo();
         }).catch(function (fehler) {
           if (window.console) { console.error("Durchlässigkeit konnte nicht berechnet werden:", fehler); }
-          setzeKartenStatus("Die Durchlässigkeit des Wegenetzes konnte nicht berechnet werden. Die Dateien wegenetz_oldenburg.js und karte_oldenburg.js müssen im selben Ordner wie index.html liegen.", true);
+          setzeKartenStatus("Die Durchlässigkeit des Wegenetzes konnte nicht berechnet werden. Die Dateien wegenetz.js und karte.js müssen im selben Ordner wie index.html liegen.", true);
         });
       }, 30);
     }
@@ -4779,7 +4812,7 @@
       zensusVorgang = new Promise(function (fertig, fehler) {
         function aufbauen() {
           try {
-            var roh = window.ZENSUS_OLDENBURG, z = roh.z, n = z.length, e = roh.einheit;
+            var roh = window.ZENSUS_DATEN, z = roh.z, n = z.length, e = roh.einheit;
             var lat = new Float64Array(n), lng = new Float64Array(n), w = [], flags = new Uint8Array(n), la = 0, lo = 0, i, s;
             for (s = 2; s <= 9; s++) { w[s] = new Float32Array(n); }
             for (i = 0; i < n; i++) {
@@ -4793,16 +4826,16 @@
               if (!l) { l = []; gitter.set(key, l); } l.push(i);
               if (lat[i] < sn) { sn = lat[i]; } if (lat[i] > ss) { ss = lat[i]; } if (lng[i] < sw) { sw = lng[i]; } if (lng[i] > so) { so = lng[i]; }
             }
-            window.ZENSUS_OLDENBURG = null;
+            window.ZENSUS_DATEN = null;
             zensusDaten = { n: n, lat: lat, lng: lng, w: w, flags: flags, gx: gx, gy: gy, gitter: gitter, s: sn, n2: ss, w2: sw, o: so };
             fertig(zensusDaten);
           } catch (x) { zensusVorgang = null; fehler(x); }
         }
-        if (window.ZENSUS_OLDENBURG) { aufbauen(); return; }
+        if (window.ZENSUS_DATEN) { aufbauen(); return; }
         var skript = document.createElement("script");
-        skript.src = "zensus_oldenburg.js";
+        skript.src = stadtDatei("zensus");
         skript.onload = aufbauen;
-        skript.onerror = function () { zensusVorgang = null; fehler(new Error("Datei zensus_oldenburg.js nicht gefunden")); };
+        skript.onerror = function () { zensusVorgang = null; fehler(new Error("Datei zensus.js nicht gefunden")); };
         document.head.appendChild(skript);
       });
       return zensusVorgang;
@@ -4838,7 +4871,7 @@
     }
     function zensusFehler(fehler) {
       if (window.console) { console.error("Zensus konnte nicht geladen werden:", fehler); }
-      setzeKartenStatus("Die Zensus-Daten konnten nicht geladen werden. Die Datei zensus_oldenburg.js muss im selben Ordner wie index.html liegen.", true);
+      setzeKartenStatus("Die Zensus-Daten konnten nicht geladen werden. Die Datei zensus.js muss im selben Ordner wie index.html liegen.", true);
     }
     function aktualisiereZensus() {
       ZENSUS.forEach(function (g) { if (!karte.hasLayer(g.ebene)) { g.ebene.clearLayers(); } });
@@ -4917,7 +4950,7 @@
       }, 0);
     });
 
-    // ---------- Ebenen "Grün und Freiräume" und "Nutzungsarten" (Flächen aus den lokalen Dateien flaechen_oldenburg.js und nutzung_oldenburg.js) ----------
+    // ---------- Ebenen "Grün und Freiräume" und "Nutzungsarten" (Flächen aus den lokalen Dateien flaechen.js und nutzung.js) ----------
 
     // Lädt eine der beiden Flächendateien (nur beim ersten Mal) und entpackt sie. Das Format der Ringe ist dasselbe wie bei
     // den Gebäuden. Ergebnis: { gruppenName: [{ ringe, s, w, n, o }, ...], ... } für alle Gruppen dieser Datei.
@@ -5069,7 +5102,7 @@
         (function naechste(k) { if (k < reihe.length) { zeichneGruppe(reihe[k], function () { naechste(k + 1); }); } })(0);
       }).catch(function (fehler) {
         if (window.console) { console.error("Flächen konnten nicht gezeichnet werden:", fehler); }   // Hilfe bei der Fehlersuche
-        setzeKartenStatus("Eine Flächendatei (flaechen_oldenburg.js, nutzung_oldenburg.js, stadt_oldenburg.js oder laerm_oldenburg.js) fehlt oder ist beschädigt. " +
+        setzeKartenStatus("Eine Flächendatei (flaechen.js, nutzung.js, stadt.js oder laerm.js) fehlt oder ist beschädigt. " +
           "Sie muss im selben Ordner wie index.html liegen.", true);
       });
     }
@@ -5900,7 +5933,7 @@
           fotoMarkenNeu(); waehleFoto(f); karte.panTo([f.lat, f.lng]);
         } else {
           waehleFoto(f);
-          f.info += ex ? " Der Aufnahmeort im Foto liegt außerhalb von Oldenburg." : "";
+          f.info += ex ? " Der Aufnahmeort im Foto liegt außerhalb von " + STADT.name + "." : "";
           fotoWahlStarten("ort", f);
         }
         fotoListeBauen(); fotoGeaendert();
@@ -6730,8 +6763,8 @@
     }
 
     // ---------- 2. Adresssuche ----------
-    // Suchbereich: grob das Stadtgebiet Oldenburg (West, Süd, Ost, Nord)
-    var SUCHBEREICH = "8.08,53.06,8.34,53.22";
+    // Suchbereich: grob das Stadtgebiet der gewählten Stadt (West, Süd, Ost, Nord)
+    var SUCHBEREICH = STADT.suchbereich.join(",");
 
     var marker = null; // der rote Punkt auf der Karte
     var aktuelleAnzeige = ""; // Text der zuletzt angezeigten Adresse
@@ -6802,7 +6835,7 @@
       var aOhneLeer = a.replace(/[\s\-]/g, "");
       var woerter = falte(fuerSuche(eingabeText)).split(/[\s,\-]+/)
         .map(function (w) { return w.replace(/\./g, ""); })
-        .filter(function (w) { return w && w !== "oldenburg"; });
+        .filter(function (w) { return w && w !== falte(STADT.ortszusatz); });
 
       if (!woerter.length) { return false; }
 
@@ -6946,7 +6979,7 @@
     function sucheMitNominatim(anfrage) {
       return holeJson("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5" +
           "&addressdetails=1&accept-language=de&countrycodes=de" +
-          "&bounded=1&viewbox=8.08,53.22,8.34,53.06" +
+          "&bounded=1&viewbox=" + STADT.suchbereich[0] + "," + STADT.suchbereich[3] + "," + STADT.suchbereich[2] + "," + STADT.suchbereich[1] +
           "&q=" + encodeURIComponent(anfrage))
         .then(function (treffer) {
           return treffer.map(function (o) {
@@ -7032,7 +7065,7 @@
       var gesammelt = [];
 
       function versuche(i) {
-        return sucheAdresse(varianten[i] + " Oldenburg", text).then(function (ergebnis) {
+        return sucheAdresse(varianten[i] + " " + STADT.ortszusatz, text).then(function (ergebnis) {
           if (ergebnis.ort) { return ergebnis; }
           gesammelt = gesammelt.concat(ergebnis.vorschlaege);
 
@@ -7100,7 +7133,7 @@
       var gesucht = falte(getippt.replace(/[\s\-]/g, ""));
 
       // Ohne Straßenliste oder bei zu kurzer Eingabe können wir nichts raten
-      if (typeof STRASSEN_OLDENBURG === "undefined" || gesucht.length < 4) {
+      if (typeof STRASSEN_DATEN === "undefined" || gesucht.length < 4) {
         return Promise.resolve([]);
       }
 
@@ -7109,7 +7142,7 @@
 
       // Alle Straßen der Liste mit der Eingabe vergleichen
       var aehnliche = [];
-      STRASSEN_OLDENBURG.forEach(function (name) {
+      STRASSEN_DATEN.forEach(function (name) {
         var vergleich = falte(name.replace(/[\s\-]/g, ""));
         var d;
         if (vergleich.indexOf(gesucht) === 0 && vergleich !== gesucht) {
@@ -7130,7 +7163,7 @@
       // Für die zwei ähnlichsten Straßen eine echte Adresse mit der getippten Nummer suchen
       return Promise.all(aehnliche.slice(0, 2).map(function (s) {
         var anfrage = s.name + (nummer ? " " + nummer : "");
-        return sucheAdresse(anfrage + " Oldenburg", anfrage)
+        return sucheAdresse(anfrage + " " + STADT.ortszusatz, anfrage)
           .then(function (ergebnis) { return ergebnis.ort; })
           .catch(function () { return null; });
       })).then(function (orte) {
@@ -8778,7 +8811,8 @@
       });
       var asciiTitel = titel.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/Ä/g, "Ae")
         .replace(/Ö/g, "Oe").replace(/Ü/g, "Ue").replace(/ß/g, "ss").replace(/[^\x20-\x7E]/g, "?").replace(/[()\\]/g, "");
-      objekt(6, function () { schreibe("<< /Title (" + asciiTitel + ") /Producer (Standortanalyse Oldenburg) >>\n"); });
+      var asciiProd = STADT.name.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").replace(/[^\x20-\x7E]/g, "?");
+      objekt(6, function () { schreibe("<< /Title (" + asciiTitel + ") /Producer (Standortanalyse " + asciiProd + ") >>\n"); });
 
       var xrefStart = laenge;
       var tabelle = "xref\n0 7\n0000000000 65535 f \n";
@@ -8846,19 +8880,19 @@
             "Bitte noch einmal versuchen.", "fehler");
         } else if (x.ergebnis.gebaeudeFehler) {
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Die Bebauung konnte nicht geladen werden " +
-            "(Datei gebaeude_oldenburg.js fehlt oder ist beschädigt) und fehlt im Bild.", "fehler");
+            "(Datei gebaeude.js fehlt oder ist beschädigt) und fehlt im Bild.", "fehler");
         } else if (x.ergebnis.oepnvFehler) {
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Die Haltestellen konnten nicht geladen werden " +
-            "(Datei oepnv_oldenburg.js fehlt oder ist beschädigt) und fehlen im Bild.", "fehler");
+            "(Datei oepnv.js fehlt oder ist beschädigt) und fehlen im Bild.", "fehler");
         } else if (x.ergebnis.einrichtungenFehler) {
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Die Einrichtungen konnten nicht geladen werden " +
-            "(Datei einrichtungen_oldenburg.js fehlt oder ist beschädigt) und fehlen im Bild.", "fehler");
+            "(Datei einrichtungen.js fehlt oder ist beschädigt) und fehlen im Bild.", "fehler");
         } else if (x.ergebnis.mobilitaetFehler) {
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Die Daten zu Verkehr und Mobilität oder zum Fahrplan konnten nicht geladen werden " +
-            "(Datei mobilitaet_oldenburg.js oder fahrplan_oldenburg.js fehlt oder ist beschädigt) und fehlen im Bild.", "fehler");
+            "(Datei mobilitaet.js oder fahrplan.js fehlt oder ist beschädigt) und fehlen im Bild.", "fehler");
         } else if (x.ergebnis.wegenetzFehler) {
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Das Wegenetz konnte nicht geladen werden " +
-            "(Datei wegenetz_oldenburg.js fehlt oder ist beschädigt) und fehlt im Bild.", "fehler");
+            "(Datei wegenetz.js fehlt oder ist beschädigt) und fehlt im Bild.", "fehler");
         } else if (x.ergebnis.starkregenFehler) {
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Eine Online-Karte (Starkregen, Boden, Geologie, Grundwasser) konnte nicht geladen werden " +
             "(sie braucht Internet und ist manchmal überlastet) und fehlt im Bild. Bitte noch einmal versuchen.", "fehler");
@@ -8866,7 +8900,7 @@
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Die Grundstücke konnten nicht geladen werden (Internet prüfen; der Bildausschnitt darf höchstens etwa 2,5 × 2,5 km groß sein) und fehlen im Bild.", "fehler");
         } else if (x.ergebnis.flaechenFehler) {
           zeigeExportMeldung("Gespeichert als " + dateiname + ". Achtung: Die Flächen konnten nicht geladen werden " +
-            "(Datei flaechen_oldenburg.js oder nutzung_oldenburg.js fehlt oder ist beschädigt) und fehlen im Bild.", "fehler");
+            "(Datei flaechen.js oder nutzung.js fehlt oder ist beschädigt) und fehlen im Bild.", "fehler");
         } else {
           zeigeExportMeldung("Gespeichert als " + dateiname + "." + druckHinweis, "ok");
         }
@@ -8939,6 +8973,7 @@
       PROJEKT_HAKEN.forEach(function (id) { felder[id] = document.getElementById(id).checked; });
       var projekt = {
         format: PROJEKT_FORMAT, version: PROJEKT_VERSION, gespeichert: new Date().toISOString(),
+        stadt: STADT.id,
         adresse: marker ? { anzeige: aktuelleAnzeige, lat: marker.getLatLng().lat, lng: marker.getLatLng().lng } : null,
         karte: {
           lat: z.lat, lng: z.lng, zoom: karte.getZoom(),
@@ -9165,6 +9200,12 @@
           zeigeProjektMeldung("Diese Projektdatei stammt aus einer neueren Version der App und kann hier nicht geöffnet werden.", "fehler");
           return null;
         }
+        var projektStadt = p.stadt || "oldenburg";       // Dateien aus der Zeit vor der Stadtauswahl sind aus Oldenburg
+        if (projektStadt !== STADT.id) {
+          var andere = STAEDTE[projektStadt];
+          zeigeProjektMeldung("Dieses Projekt gehört zu " + (andere ? andere.name : "einer anderen Stadt") + ". Bitte oben in der Seitenleiste zuerst die Stadt wechseln und das Projekt dann erneut öffnen.", "fehler");
+          return null;
+        }
         zeigeProjektMeldung("Projekt wird geöffnet …");
         return projektAnwenden(p).then(function (planFehler) {
           zeigeProjektMeldung(planFehler ? "Projekt „" + datei.name + "“ geöffnet. Achtung: " + planFehler : "Projekt „" + datei.name + "“ geöffnet.", planFehler ? "fehler" : "ok");
@@ -9236,7 +9277,7 @@
       var kasten = document.getElementById("wiederherstellen");
       function beginnen() { autoAn = true; }
       idbLies("zustand").then(function (z) {
-        if (!z || z.format !== PROJEKT_FORMAT || projektIstLeer(z)) { beginnen(); return; }
+        if (!z || z.format !== PROJEKT_FORMAT || projektIstLeer(z) || (z.stadt || "oldenburg") !== STADT.id) { beginnen(); return; }   // gesicherter Stand einer anderen Stadt: nicht anbieten
         var wann = z.gespeichert ? new Date(z.gespeichert).toLocaleString("de-DE", { dateStyle: "medium", timeStyle: "short" }) : "";
         document.getElementById("wiederherstellenText").textContent =
           "Die App hat deinen letzten Stand" + (wann ? " vom " + wann : "") + " automatisch gesichert. Möchtest du ihn wiederherstellen?";
@@ -9331,8 +9372,8 @@
     // Die Dateien der 3D-Ansicht: alle werden gleichzeitig geladen, laufen aber in dieser Reihenfolge (three.js zuerst, der Programmteil nach den Daten)
     var ANSICHT3D_DATEIEN = [
       { adresse: "three/three.min.js", pruefung: function () { return !!window.THREE; } },
-      { adresse: "hoehen_oldenburg.js", pruefung: function () { return !!window.HOEHEN_OLDENBURG || !!window.hoehenGeladen; } },
-      { adresse: "gelaende_oldenburg.js", pruefung: function () { return !!window.GELAENDE_OLDENBURG; } },
+      { adresse: stadtDatei("hoehen"), pruefung: function () { return !!window.HOEHEN_DATEN || !!window.hoehenGeladen; } },
+      { adresse: stadtDatei("gelaende"), pruefung: function () { return !!window.GELAENDE_DATEN; } },
       { adresse: "ansicht3d.js", pruefung: function () { return !!window.ansicht3d; } }
     ];
     function ladeSkriptReihe(liste) {
@@ -9451,7 +9492,7 @@
           zeigeReiter("3d");
         }).catch(function () {
           reiter3d.textContent = "3D-Ansicht";
-          feld.textContent = "Die 3D-Ansicht konnte nicht geladen werden. Es fehlt eine Datei im Ordner „Standortanalyse“ (three, hoehen_oldenburg.js oder ansicht3d.js).";
+          feld.textContent = "Die 3D-Ansicht konnte nicht geladen werden. Es fehlt eine Datei im Ordner „Standortanalyse“ (three, hoehen.js oder ansicht3d.js).";
           feld.className = "meldung fehler";
         });
       }

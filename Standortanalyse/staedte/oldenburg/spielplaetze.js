@@ -1,7 +1,7 @@
 // Spielplaetze und Bewegungsorte in Oldenburg (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\21_Spielplaetze_aktualisieren.ps1
 // Spielplatz = [Breite, Laenge (Mitte, Millionstel Grad), Name, Zugang (0 oeffentlich, 1 eingeschraenkt), Flaeche in m2, Umriss [Breite, Laenge, Delta, Delta, ...] oder 0]
 // Ort = [Breite, Laenge, Art, Name]
-var SPIEL_OLDENBURG = {"stand":"2026-11-17","einheit":1e-6,"spielplaetze":[
+var SPIEL_DATEN = {"stand":"2026-11-17","einheit":1e-6,"spielplaetze":[
 [53065923,8077173,"",0,0,0],
 [53051105,8259013,"",0,0,0],
 [53121839,8092982,"",0,0,0],

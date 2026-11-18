@@ -1,6 +1,6 @@
 // Haltestellen in Oldenburg mit Abfahrten (Dienstag, 6 bis 20 Uhr) und Linien. Quelle: gtfs.de (Local Transit Germany), Daten bereitgestellt von DELFI e.V., CC BY 4.0. Erzeugt mit Datenpflege\19_Fahrplan_aktualisieren.ps1
 // Jede Haltestelle = [Breite, Laenge (Millionstel Grad), Name, Abfahrten 6 bis 20 Uhr, meiste Abfahrten in einer Stunde, Linien]
-var FAHRPLAN_OLDENBURG = {"stand":"2026-11-17","tag":"2026-11-24","einheit":1e-6,"haltestellen":[
+var FAHRPLAN_DATEN = {"stand":"2026-11-17","tag":"2026-11-24","einheit":1e-6,"haltestellen":[
 [53174686,8178809,"Oldenburg(Oldb) Fliegerhorst",78,6,"310, 322"],
 [53125494,8200086,"Oldenburg(Oldb) Adalbert-Stifter-Straße",107,9,"314"],
 [53111761,8257888,"Oldenburg(Oldb) August-Wilhelm-Kühnholz-Straße",213,16,"305, 313, 313E"],

@@ -1,7 +1,7 @@
 // Waelder in Oldenburg (landuse=forest, natural=wood) fuer die 3D-Ansicht
 // Daten: (c) OpenStreetMap-Mitwirkende, Lizenz ODbL (https://www.openstreetmap.org/copyright). Stand: 2026-11-17
 // Format: Flaeche = Liste von Ringen (erster Ring = Aussenkante, weitere = Lichtungen), Ring = [Breite, Laenge, Delta, Delta, ...] in Millionstel Grad.
-var WAELDER_OLDENBURG = { einheit: 1e-6, stand: "2026-11-17", wald: [
+var WAELDER_DATEN = { einheit: 1e-6, stand: "2026-11-17", wald: [
 [[53053054,8069211,188,440,-879,936,-186,-350,671,-500,-64,-193,187,-146,-37,-98]],
 [[53061066,8062391,-205,208,-248,-680,202,-214]],
 [[53072775,8073963,-344,178,-110,351,-193,62,-178,-290,-259,86,-13,-222,310,-116,282,-528,340,91,-250,-588,-373,427,-74,40,-533,632,306,801,16,77,1303,-460]],

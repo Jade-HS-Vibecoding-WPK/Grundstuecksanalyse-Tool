@@ -1,6 +1,6 @@
 /* =====================================================================
    3D-Ansicht (Schattenstudie)
-   Wird erst beim ersten Öffnen geladen (zusammen mit three/three.min.js und hoehen_oldenburg.js).
+   Wird erst beim ersten Öffnen geladen (zusammen mit three/three.min.js und hoehen.js).
    Zeigt die Umgebung als Modell mit vereinfachten Dachformen (Gebäudehöhen und Dachformen: LGLN, CC BY 4.0), die eigenen Baukörper aus der
    Zeichnung (Flächen mit Höhe) und den Schatten der Sonne zu einem wählbaren Tag und einer Uhrzeit.
    Greift auf die Daten der Hauptseite zu (marker, zeichnung, erstelleKartenbild, ...).
@@ -72,7 +72,7 @@
   // ---------- Daten ----------
   function entpacke() {
     if (gebaeudeListe) { return gebaeudeListe; }
-    var roh = window.HOEHEN_OLDENBURG;
+    var roh = window.HOEHEN_DATEN;
     var e = roh.einheit;
     var ab = roh.version >= 2 ? 4 : 2;      // ab Version 2: [Traufe, First, Dachklasse, Winkel, Ring, ...]
     gebaeudeListe = roh.gebaeude.map(function (g) {
@@ -91,7 +91,7 @@
       for (var j = 0; j < a.length; j += 2) { cla += a[j]; clo += a[j + 1]; }
       return { t: g[0] / 10, f: g[1] / 10, cls: ab === 4 ? g[2] : 0, ang: ab === 4 ? g[3] : 0, ringe: ringe, lat: cla / n, lng: clo / n };
     });
-    window.HOEHEN_OLDENBURG = null;
+    window.HOEHEN_DATEN = null;
     return gebaeudeListe;
   }
 
@@ -360,7 +360,7 @@
     '        <li>Mit Esc beendest du erst die laufende Messung, dann das Werkzeug, dann die 3D-Ansicht.</li>',
     '        <li>Die Messungen gelten nur, solange die 3D-Ansicht offen ist. Speichere vorher ein Bild.</li>',
     '        <li>Die Uhrzeit ist die Ortszeit (im Sommer mit Sommerzeit).</li>',
-    '        <li>Dächer sind vereinfacht: Sattel-, Walm-, Zelt- und Pultdächer nach den Landesdaten, ohne Gauben, Krüppelwalme und Mansarden; unregelmäßige Grundrisse und Gebäude mit Innenhof bleiben flach. In „03 Modell“ kannst du auf flache Klötze umschalten. Das Gelände (Haken „Gelände“ in 03) folgt dem Höhenmodell des Landes im 5-m-Raster: Deiche und Böschungen erscheinen etwas weicher als in Wirklichkeit, Brücken, Tunnel und Wasserflächen sind nicht eigens modelliert; Schatten, Schattenprüfung, Sonnenstunden und die Dateien (SVG, PDF, DXF) berücksichtigen das Gelände. In Oldenburg ist es flach (im Stadtgebiet etwa −2 bis 31 m über NHN), der Unterschied ist daher klein. Die Bäume sind nur die, die OpenStreetMap kennt (viele Straßenbäume fehlen), mit geschätzter Höhe und Krone, und werfen im Winter nur einen schwachen Schatten. Wälder sind grobe Blöcke mit einheitlicher Höhe. Die Gebäudehöhen sind amtliche Messwerte (LGLN) mit etwa 1 bis 5 m Genauigkeit.</li>',
+    '        <li>Dächer sind vereinfacht: Sattel-, Walm-, Zelt- und Pultdächer nach den Landesdaten, ohne Gauben, Krüppelwalme und Mansarden; unregelmäßige Grundrisse und Gebäude mit Innenhof bleiben flach. In „03 Modell“ kannst du auf flache Klötze umschalten. Das Gelände (Haken „Gelände“ in 03) folgt dem Höhenmodell des Landes im 5-m-Raster: Deiche und Böschungen erscheinen etwas weicher als in Wirklichkeit, Brücken, Tunnel und Wasserflächen sind nicht eigens modelliert; Schatten, Schattenprüfung, Sonnenstunden und die Dateien (SVG, PDF, DXF) berücksichtigen das Gelände. Im Flachland ist der Höhenunterschied meist klein (in Oldenburg im Stadtgebiet etwa −2 bis 31 m über NHN). Die Bäume sind nur die, die OpenStreetMap kennt (viele Straßenbäume fehlen), mit geschätzter Höhe und Krone, und werfen im Winter nur einen schwachen Schatten. Wälder sind grobe Blöcke mit einheitlicher Höhe. Die Gebäudehöhen sind amtliche Messwerte (LGLN) mit etwa 1 bis 5 m Genauigkeit.</li>',
     '        <li>Schwere Rechnungen (Modell aufbauen, Sonnenstunden, SVG, PDF und DXF) verteilt die App auf mehrere Prozessorkerne, damit die Seite dabei möglichst nicht einfriert. Geht das in deinem Browser nicht, rechnet sie wie früher allein, nur etwas langsamer.</li>',
     '        <li>Bei den Ausschnitten 3 und 5 km lässt die App sehr kleine Gebäude weg und die Schatten sind gröber. Für genaue Schattenstudien nimm höchstens 800 m.</li>',
     '      </ul>',
@@ -629,7 +629,7 @@
     zeichne();
   }
 
-  // ---------- Gelände (Digitales Geländemodell 1 m des LGLN, auf 5 m Raster, Datei gelaende_oldenburg.js) ----------
+  // ---------- Gelände (Digitales Geländemodell 1 m des LGLN, auf 5 m Raster, Datei gelaende.js) ----------
   var QUELLE_GELAENDE = "Gelände: LGLN (DGM1), CC BY 4.0";
   var gelaendeDaten = null, gelaendeVorgang = null;
   // Lädt die Datei (nur beim ersten Mal): Base64 -> entpacken ("deflate-raw") -> Zeilen aus Differenzen zurückrechnen (Dezimeter über NHN)
@@ -639,7 +639,7 @@
     gelaendeVorgang = new Promise(function (fertig, fehler) {
       function auswerten() {
         try {
-          var roh = window.GELAENDE_OLDENBURG;
+          var roh = window.GELAENDE_DATEN;
           if (typeof DecompressionStream === "undefined") { throw new Error("Der Browser kann die Gelände-Datei nicht entpacken (DecompressionStream fehlt)."); }
           var bin = atob(roh.daten), bytes = new Uint8Array(bin.length);
           for (var i = 0; i < bin.length; i++) { bytes[i] = bin.charCodeAt(i); }
@@ -647,16 +647,16 @@
             var d = new Int16Array(buf), W = roh.breite, H = roh.hoehe;
             for (var j = 0; j < H; j++) { var s = 0, o = j * W; for (var k = 0; k < W; k++) { s = (s + d[o + k]) << 16 >> 16; d[o + k] = s; } }
             gelaendeDaten = { h: d, W: W, H: H, e0: roh.e0, n1: roh.n1, schritt: roh.schritt, stand: roh.stand, min: roh.min, max: roh.max };
-            window.GELAENDE_OLDENBURG = null;
+            window.GELAENDE_DATEN = null;
             fertig(gelaendeDaten);
           }, function (x) { gelaendeVorgang = null; fehler(x); });
         } catch (x) { gelaendeVorgang = null; fehler(x); }
       }
-      if (window.GELAENDE_OLDENBURG) { auswerten(); return; }
+      if (window.GELAENDE_DATEN) { auswerten(); return; }
       var skript = document.createElement("script");
-      skript.src = "gelaende_oldenburg.js";
+      skript.src = stadtDatei("gelaende");
       skript.onload = auswerten;
-      skript.onerror = function () { gelaendeVorgang = null; fehler(new Error("Datei gelaende_oldenburg.js nicht gefunden")); };
+      skript.onerror = function () { gelaendeVorgang = null; fehler(new Error("Datei gelaende.js nicht gefunden")); };
       document.head.appendChild(skript);
     });
     return gelaendeVorgang;
@@ -1638,7 +1638,7 @@
     return gelaendeLaden().then(function (G) { hoehenKorrigieren(G); gelaendeEinrichten(z, relief ? G : null); }, function (x) {
       gelaendeEinrichten(z, null);
       z.el("a3dGelaende").checked = false;
-      z.gelFehler = " Das Gelände konnte nicht geladen werden (" + (x && x.message ? x.message : "Datei gelaende_oldenburg.js fehlt oder ist beschädigt") + "), das Modell steht auf ebenem Boden und die Gebäudehöhen sind dann um die Geländehöhe (in Oldenburg etwa 0 bis 20 m) zu hoch.";
+      z.gelFehler = " Das Gelände konnte nicht geladen werden (" + (x && x.message ? x.message : "Datei gelaende.js fehlt oder ist beschädigt") + "), das Modell steht auf ebenem Boden und die Gebäudehöhen sind dann um die Geländehöhe (im Stadtgebiet meist einige Meter) zu hoch.";
     });
   }
   // Höhen in der Gebäudedatei (Traufe, First) sind Höhen über NHN, nicht über dem Boden (geprüft: sie steigen mit der Geländehöhe, Traufe minus
@@ -1961,7 +1961,7 @@
       messSchattenAktualisieren();
       zeichne();
     }).catch(function () {
-      if (zustand === z) { z.el("a3dBaumInfo").textContent = "Die Baumdatei (baeume_oldenburg.js) fehlt oder ist beschädigt. Sie muss im Ordner „Standortanalyse“ liegen."; }
+      if (zustand === z) { z.el("a3dBaumInfo").textContent = "Die Baumdatei (baeume.js) fehlt oder ist beschädigt. Sie muss im Ordner „Standortanalyse“ liegen."; }
     });
   }
 
@@ -2114,17 +2114,17 @@
     waldLadevorgang = new Promise(function (fertig, fehler) {
       function auswerten() {
         try {
-          var roh = window.WAELDER_OLDENBURG;
+          var roh = window.WAELDER_DATEN;
           waldDaten = entpackeGebaeude({ einheit: roh.einheit, gebaeude: roh.wald });     // gleiche Umwandlung wie bei den Gebäuden
-          window.WAELDER_OLDENBURG = null;
+          window.WAELDER_DATEN = null;
           fertig(waldDaten);
         } catch (x) { waldLadevorgang = null; fehler(x); }
       }
-      if (window.WAELDER_OLDENBURG) { auswerten(); return; }
+      if (window.WAELDER_DATEN) { auswerten(); return; }
       var skript = document.createElement("script");
-      skript.src = "waelder_oldenburg.js";
+      skript.src = stadtDatei("waelder");
       skript.onload = auswerten;
-      skript.onerror = function () { waldLadevorgang = null; fehler(new Error("Datei waelder_oldenburg.js nicht gefunden")); };
+      skript.onerror = function () { waldLadevorgang = null; fehler(new Error("Datei waelder.js nicht gefunden")); };
       document.head.appendChild(skript);
     });
     return waldLadevorgang;
@@ -2184,7 +2184,7 @@
       messSchattenAktualisieren();
       zeichne();
     }).catch(function () {
-      if (zustand === z) { z.el("a3dWaldInfo").textContent = "Die Walddatei (waelder_oldenburg.js) fehlt oder ist beschädigt. Sie muss im Ordner „Standortanalyse“ liegen."; }
+      if (zustand === z) { z.el("a3dWaldInfo").textContent = "Die Walddatei (waelder.js) fehlt oder ist beschädigt. Sie muss im Ordner „Standortanalyse“ liegen."; }
     });
   }
 
@@ -2239,9 +2239,9 @@
     ["Geologie und Baugrund (LBEG, Online-Dienst)", function () { return GEOLOGIE; }, function (g) { return g.name; }],
     ["Grundwasser (LBEG, Online-Dienst)", function () { return GRUNDWASSER; }, function (g) { return g.name; }],
     ["Versiegelung und Altlasten (LBEG, Online-Dienst)", function () { return VERSIEGELUNG; }, function (g) { return g.name; }],
-    ["Lärm (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "laerm"; }); }, function (g) { return g.name; }],
-    ["Planung und Naturschutz (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "stadt"; }); }, function (g) { return g.name; }],
-    ["Flächennutzungsplan (Stadt Oldenburg)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "fnp"; }); }, function (g) { return g.name; }],
+    ["Lärm (Stadt " + STADT.name + ")", function () { return FLAECHEN.filter(function (g) { return g.quelle === "laerm"; }); }, function (g) { return g.name; }],
+    ["Planung und Naturschutz (Stadt " + STADT.name + ")", function () { return FLAECHEN.filter(function (g) { return g.quelle === "stadt"; }); }, function (g) { return g.name; }],
+    ["Flächennutzungsplan (Stadt " + STADT.name + ")", function () { return FLAECHEN.filter(function (g) { return g.quelle === "fnp"; }); }, function (g) { return g.name; }],
     ["Bodenrichtwerte (Gutachterausschuss, LGLN)", function () { return FLAECHEN.filter(function (g) { return g.quelle === "brw"; }); }, function (g) { return g.name; }],
     ["Grundstücke (Kataster, LGLN, Online-Dienst)", function () { return FLST.concat(LIEGENSCHAFT); }, function (g) { return g.name; }]
   ];
@@ -4087,7 +4087,7 @@
   function beschriftungZeichnen(c, B, H, u) {
     var z = zustand, d = z.datum, s = z.stand;
     var zeilen = [
-      { t: "Standortanalyse Oldenburg · 3D-Schattenstudie", fett: true },
+      { t: "Standortanalyse " + STADT.name + " · 3D-Schattenstudie", fett: true },
       { t: datumText(d.j, d.m, d.t) + ", " + uhrzeit(z.zeit) + " Uhr (" + (s.sommerzeit ? "Sommerzeit" : "Winterzeit") + ")" },
       { t: s.hoehe > 0 ? "Sonnenhöhe " + Math.round(s.hoehe * 180 / Math.PI) + "°, Richtung " + Math.round(((s.azimut * 180 / Math.PI) % 360 + 360) % 360) + "° (" + richtungsname(s.azimut) + ")" : "Sonne unter dem Horizont" }
     ];
@@ -4505,7 +4505,7 @@
     objekt(5, function () { schreibe("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\n"); });
     objekt(6, function () { schreibe("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>\n"); });
     var asciiTitel = pdfText(titel);
-    objekt(7, function () { schreibe("<< /Title (" + asciiTitel + ") /Producer (Standortanalyse Oldenburg) >>\n"); });
+    objekt(7, function () { schreibe("<< /Title (" + asciiTitel + ") /Producer (Standortanalyse " + STADT.ascii + ") >>\n"); });
     var xrefStart = laenge, tabelle = "xref\n0 8\n0000000000 65535 f \n";
     for (var n = 1; n <= 7; n++) { tabelle += ("0000000000" + versatz[n]).slice(-10) + " 00000 n \n"; }
     schreibe(tabelle);
@@ -4566,7 +4566,7 @@
     ebenen.push({ name: "MESSUNGEN", aci: 1 });
     var u = utm32(z.mitte.lat, z.mitte.lng), d = z.datum;
 
-    s(999, "Standortanalyse Oldenburg - 3D-Modell (Gebaeude und eigene Baukoerper)");
+    s(999, "Standortanalyse " + STADT.ascii + " - 3D-Modell (Gebaeude und eigene Baukoerper)");
     s(999, "Einheit Meter. Nullpunkt = roter Punkt: Breite " + z.mitte.lat.toFixed(6) + ", Laenge " + z.mitte.lng.toFixed(6) + ". X = Ost, Y = Nord, " + (z.gelaende ? "Z = Hoehe ueber dem Gelaende am Nullpunkt (dort " + z.gelBasis.toFixed(1) + " m ueber NHN); Gebaeude stehen auf dem Gelaende." : "Z = Hoehe ueber Gelaende."));
     s(999, "Nullpunkt in UTM32 ETRS89 (EPSG:25832): Rechtswert " + u.e.toFixed(2) + ", Hochwert " + u.n.toFixed(2) + ". Zum Verorten alles um diesen Wert verschieben.");
     s(999, "Gebaeudehoehen: " + ascii(QUELLE_HOEHEN) + (z.gelaende ? ". " + ascii(QUELLE_GELAENDE) : "") + ". Grundrisse: OpenStreetMap-Mitwirkende (ODbL). Hoehe der Bloecke: " + ascii(z.el("a3dHoehenart").selectedOptions[0].textContent) + ".");
