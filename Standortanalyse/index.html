@@ -9392,6 +9392,22 @@
       if (abschnitt) { abschnitt.addEventListener("toggle", function () { if (abschnitt.open) { vorladeAnsicht3d(); } }); }
       ["pointerenter", "focus", "touchstart"].forEach(function (e) { knopf.addEventListener(e, vorladeAnsicht3d, { passive: true }); });
     })();
+    // Außerdem von selbst: ein paar Sekunden nach dem Start, wenn der Browser Ruhe hat, werden die Dateien der 3D-Ansicht (ca. 13 MB) mit
+    // niedriger Priorität in den Browser-Zwischenspeicher geholt, damit sie beim Klick auf "3D-Ansicht" schon da sind. Nur laden, nicht auswerten
+    // (link rel=prefetch), die Seite bleibt also bedienbar. Nicht bei Datensparmodus und sehr langsamen Verbindungen (2G).
+    (function () {
+      function los() {
+        var c = navigator.connection;
+        if (c && (c.saveData || /(^|-)2g$/.test(c.effectiveType || ""))) { return; }
+        vorladeAnsicht3d();
+      }
+      function warte() {
+        setTimeout(function () {
+          if (window.requestIdleCallback) { window.requestIdleCallback(los, { timeout: 8000 }); } else { los(); }
+        }, 3000);
+      }
+      if (document.readyState === "complete") { warte(); } else { window.addEventListener("load", warte); }
+    })();
     // ---------- Seitenleiste einklappen ----------
     // Der Knopf am linken Kartenrand blendet die Seitenleiste aus (die Karte nimmt dann die ganze Breite) und wieder ein.
     (function () {
