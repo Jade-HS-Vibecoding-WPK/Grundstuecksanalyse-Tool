@@ -21,7 +21,6 @@
   var flst = new Map();            // Flurstücke: Kennung -> Flurstück
   var gebAlle = new Map();         // Gebäude und Bauwerke: Kennung -> Gebäude
   var gebRaster = new Map();       // grobes Raster (0,001 Grad), damit man Gebäude in einem Rechteck schnell findet
-  var kachelVorgang = new Map();   // "i,j" -> Versprechen
   var RASTER = 0.001;
 
   // Bebauungsdichte (BauNVO § 17, Obergrenzen) je Gebietsart: GRZ und GFZ
@@ -67,7 +66,8 @@
   function holeGml(typ, s, w, n, o) {
     var url = DIENST + "?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ave:" + typ +
       "&BBOX=" + s.toFixed(6) + "," + w.toFixed(6) + "," + n.toFixed(6) + "," + o.toFixed(6) + ",urn:ogc:def:crs:EPSG::4326" +
-      "&SRSNAME=urn:ogc:def:crs:EPSG::4326&COUNT=10000";
+      "&SRSNAME=urn:ogc:def:crs:EPSG::4326&COUNT=10000" +
+      "&PROPERTYNAME=" + (typ === "Flurstueck" ? "(idflurst,lagebeztxt,gemarkung,flur,flstnrzae,flstnrnen,flaeche,tntxt,geometrie)" : "(oid,gebnutzbez,funktion,geometrie)");
     var abbruch = typeof AbortController !== "undefined" ? new AbortController() : null;
     var frist = setTimeout(function () { if (abbruch) { abbruch.abort(); } }, 45000);
     return fetch(url, abbruch ? { signal: abbruch.signal } : {}).then(function (r) {
@@ -112,11 +112,11 @@
     }
     return Math.abs(s) / 2;
   }
-  function parseFlst(doc) {
-    var els = doc.getElementsByTagNameNS("*", "Flurstueck");
+  function leseFlst(doc) {
+    var liste = [], els = doc.getElementsByTagNameNS("*", "Flurstueck");
     for (var i = 0; i < els.length; i++) {
       var e = els[i], id = textVon(e, "idflurst");
-      if (!id || flst.has(id)) { continue; }
+      if (!id) { continue; }
       var polys = polygoneVon(e);
       if (!polys.length) { continue; }
       var f = {
@@ -137,15 +137,17 @@
       if (Math.abs(sa) > 1e-18) { f.mitte = [sy / (3 * sa), sx / (3 * sa)]; }
       if (!(f.mitte[0] > f.bb[0] && f.mitte[0] < f.bb[2] && f.mitte[1] > f.bb[1] && f.mitte[1] < f.bb[3])) { f.mitte = [(f.bb[0] + f.bb[2]) / 2, (f.bb[1] + f.bb[3]) / 2]; }
       f.nr = f.zae + (f.nen > 0 ? "/" + f.nen : "");
-      flst.set(id, f);
+      liste.push(f);
     }
+    return liste;
   }
+  function fuegeFlst(liste) { liste.forEach(function (f) { if (!flst.has(f.id)) { flst.set(f.id, f); } }); }
   var NEBEN = /garage|parkhaus|carport|stellplatz|schuppen|gartenhaus|laube|stall|scheune|geräte|nebengeb|abstell|gewächshaus|pavillon|unterstand|trafo|umspann|pumpwerk|wetterschutz|fahrradhaus|bootshaus|kiosk/i;
-  function parseGeb(doc) {
-    var els = doc.getElementsByTagNameNS("*", "GebaeudeBauwerk");
+  function leseGeb(doc) {
+    var liste = [], els = doc.getElementsByTagNameNS("*", "GebaeudeBauwerk");
     for (var i = 0; i < els.length; i++) {
       var e = els[i], id = textVon(e, "oid") || e.getAttribute("gml:id");
-      if (!id || gebAlle.has(id)) { continue; }
+      if (!id) { continue; }
       var nutz = textVon(e, "gebnutzbez"), fkt = textVon(e, "funktion");
       var art;
       if (nutz === "Gebäude") { art = "haupt"; }
@@ -155,8 +157,14 @@
       if (!polys.length) { continue; }
       var fl = 0; polys.forEach(function (p) { fl += flaecheGrad(p.a); });
       if (art === "haupt" && (NEBEN.test(fkt) || fl < 15)) { art = "neben"; }
-      var b = { id: id, art: art, fkt: fkt, polys: polys, fl: fl, bb: umriss(polys) };
-      gebAlle.set(id, b);
+      liste.push({ id: id, art: art, fkt: fkt, polys: polys, fl: fl, bb: umriss(polys) });
+    }
+    return liste;
+  }
+  function fuegeGeb(liste) {
+    liste.forEach(function (b) {
+      if (gebAlle.has(b.id)) { return; }
+      gebAlle.set(b.id, b);
       for (var ci = Math.floor(b.bb[0] / RASTER); ci <= Math.floor(b.bb[2] / RASTER); ci++) {
         for (var cj = Math.floor(b.bb[1] / RASTER); cj <= Math.floor(b.bb[3] / RASTER); cj++) {
           var key = ci + "," + cj, l = gebRaster.get(key);
@@ -164,7 +172,7 @@
           l.push(b);
         }
       }
-    }
+    });
   }
   function gebInRechteck(s, w, n, o) {
     var aus = [], gesehen = new Set();
@@ -187,15 +195,81 @@
     return aus;
   }
 
-  function ladeKachel(i, j) {
-    var key = i + "," + j;
-    if (kachelVorgang.has(key)) { return kachelVorgang.get(key); }
-    var s = i * KACHEL_LA, w = j * KACHEL_LO, n = s + KACHEL_LA, o = w + KACHEL_LO, pl = 0.0004, po = 0.0007;
-    var p = Promise.all([holeGml("Flurstueck", s, w, n, o), holeGml("GebaeudeBauwerk", s - pl, w - po, n + pl, o + po)]).then(function (r) {
-      parseFlst(r[0]); parseGeb(r[1]);
+  // ---------- Kacheln laden: Warteschlange, Zwischenspeicher im Browser ----------
+  // Gemessen: Der Dienst ist der Engpass. Eine dichte Kachel (Innenstadt) hat 0,6 bis 0,8 MB und braucht 0,5 bis 1,5 s; viele gleichzeitige
+  // Anfragen machen ihn nicht schneller, sondern eher langsamer (12 Anfragen zugleich: 10 bis 20 s). Mehr Threads in der App helfen deshalb
+  // beim Laden nicht. Was hilft: höchstens 3 Anfragen zugleich, die Kacheln in der Mitte des Fensters zuerst, nur die nötigen Eigenschaften,
+  // Gebäude nur wenn sie gebraucht werden und jede Kachel für 14 Tage im Browser merken (IndexedDB), dann ist ein zweiter Besuch sofort da.
+  var MAX_PARALLEL = 3, laufend = 0, wartend = [], fokus = { lat: 53.14, lng: 8.21 };
+  var kachelF = new Map(), kachelG = new Map(), bereitG = new Set();
+  function kachelMitte(i, j) { return { lat: (i + 0.5) * KACHEL_LA, lng: (j + 0.5) * KACHEL_LO }; }
+  function kachelAbstand(i, j) { var m = kachelMitte(i, j); return Math.pow(m.lat - fokus.lat, 2) + Math.pow((m.lng - fokus.lng) * 0.6, 2); }
+  function einreihen(aufgabe, i, j) {
+    return new Promise(function (ok, fehler) { wartend.push({ a: aufgabe, ok: ok, fehler: fehler, i: i, j: j }); weiter(); });
+  }
+  function weiter() {
+    while (laufend < MAX_PARALLEL && wartend.length) {
+      var bestIdx = 0, bestD = Infinity;
+      for (var q = 0; q < wartend.length; q++) { var d = kachelAbstand(wartend[q].i, wartend[q].j); if (d < bestD) { bestD = d; bestIdx = q; } }
+      var e = wartend.splice(bestIdx, 1)[0];
+      laufend++;
+      (function (e) {
+        e.a().then(function (r) { laufend--; e.ok(r); weiter(); }, function (x) { laufend--; e.fehler(x); weiter(); });
+      })(e);
+    }
+  }
+  var DB_NAME = "standortanalyse_grundstuecke", CACHE_TAGE = 14, CACHE_MAX = 600, dbVorgang = null;
+  function dbOeffnen() {
+    if (!dbVorgang) {
+      dbVorgang = new Promise(function (ok, fehler) {
+        if (!window.indexedDB) { fehler(new Error("kein IndexedDB")); return; }
+        var a = indexedDB.open(DB_NAME, 1);
+        a.onupgradeneeded = function () { a.result.createObjectStore("kacheln"); };
+        a.onsuccess = function () {
+          var db = a.result;
+          try {      // zu viele gemerkte Kacheln: alles verwerfen (bleibt klein)
+            var z = db.transaction("kacheln", "readonly").objectStore("kacheln").count();
+            z.onsuccess = function () { if (z.result > CACHE_MAX) { db.transaction("kacheln", "readwrite").objectStore("kacheln").clear(); } };
+          } catch (x) { /* egal */ }
+          ok(db);
+        };
+        a.onerror = function () { fehler(a.error); };
+      });
+      dbVorgang.catch(function () { /* ohne Zwischenspeicher geht es auch */ });
+    }
+    return dbVorgang;
+  }
+  function cacheLies(key) {
+    return dbOeffnen().then(function (db) {
+      return new Promise(function (ok) {
+        try {
+          var r = db.transaction("kacheln", "readonly").objectStore("kacheln").get(key);
+          r.onsuccess = function () { var v = r.result; ok(v && Date.now() - v.z < CACHE_TAGE * 864e5 ? v.d : null); };
+          r.onerror = function () { ok(null); };
+        } catch (x) { ok(null); }
+      });
+    }, function () { return null; });
+  }
+  function cacheSchreibe(key, d) {
+    dbOeffnen().then(function (db) { try { db.transaction("kacheln", "readwrite").objectStore("kacheln").put({ z: Date.now(), d: d }, key); } catch (x) { /* egal */ } }, function () { /* egal */ });
+  }
+  // Eine Kachel eines Typs ("F" Flurstücke, "G" Gebäude): erst der Zwischenspeicher, sonst der Dienst
+  function ladeKachelTyp(typ, i, j) {
+    var map = typ === "F" ? kachelF : kachelG, key = i + "," + j;
+    if (map.has(key)) { return map.get(key); }
+    var s = i * KACHEL_LA, w = j * KACHEL_LO, n = s + KACHEL_LA, o = w + KACHEL_LO, pl = typ === "G" ? 0.0004 : 0, po = typ === "G" ? 0.0007 : 0;
+    var p = cacheLies("v2|" + typ + "|" + key).then(function (d) {
+      if (d) { return d; }
+      return einreihen(function () { return holeGml(typ === "F" ? "Flurstueck" : "GebaeudeBauwerk", s - pl, w - po, n + pl, o + po); }, i, j).then(function (doc) {
+        var liste = typ === "F" ? leseFlst(doc) : leseGeb(doc);
+        cacheSchreibe("v2|" + typ + "|" + key, liste);
+        return liste;
+      });
+    }).then(function (liste) {
+      if (typ === "F") { fuegeFlst(liste); } else { fuegeGeb(liste); bereitG.add(key); }
     });
-    kachelVorgang.set(key, p);
-    p.catch(function () { kachelVorgang.delete(key); });     // beim nächsten Mal noch einmal versuchen
+    map.set(key, p);
+    p.catch(function () { map.delete(key); });     // beim nächsten Mal noch einmal versuchen
     return p;
   }
   function kachelnFuer(s, w, n, o) {
@@ -203,10 +277,17 @@
     for (var i = Math.floor(s / KACHEL_LA); i <= Math.floor(n / KACHEL_LA); i++) { for (var j = Math.floor(w / KACHEL_LO); j <= Math.floor(o / KACHEL_LO); j++) { liste.push([i, j]); } }
     return liste;
   }
-  function ladeBereich(s, w, n, o) {
-    return Promise.all(kachelnFuer(s, w, n, o).map(function (k) { return ladeKachel(k[0], k[1]); }));
+  // Lädt alle Kacheln des Rechtecks (die mittleren zuerst). "mitGeb": auch die Gebäude. "beiKachel(i, j)" wird gerufen, sobald eine Kachel fertig ist.
+  function ladeBereich(s, w, n, o, mitGeb, beiKachel) {
+    fokus = { lat: (s + n) / 2, lng: (w + o) / 2 };
+    return Promise.all(kachelnFuer(s, w, n, o).map(function (k) {
+      var teile = [ladeKachelTyp("F", k[0], k[1])];
+      if (mitGeb) { teile.push(ladeKachelTyp("G", k[0], k[1])); }
+      return Promise.all(teile).then(function () { if (beiKachel) { beiKachel(k[0], k[1]); } });
+    }));
   }
-
+  // Sind die Gebäude für dieses Grundstück da (alle Kacheln, die es berührt)?
+  function gebaeudeBereit(f) { return kachelnFuer(f.bb[0], f.bb[1], f.bb[2], f.bb[3]).every(function (k) { return bereitG.has(k[0] + "," + k[1]); }); }
   // ---------- Geometrie in Metern (Ursprung = Mitte des Grundstücks) ----------
   function lokalRing(ring, la0, lo0, kx) {
     var a = new Float64Array(ring.length * 2);
@@ -254,29 +335,69 @@
     return b.polys.map(function (p) { var a = lokalRing(p.a, L0.la0, L0.lo0, L0.kx); return { a: a, bb: bbLokal(a) }; });
   }
 
-  // Fläche des Gebäudes, die auf dem Grundstück liegt: liegt es ganz darin, zählt seine volle Fläche, sonst wird abgetastet
-  function innenFlaeche(b, L0) {
+  // Fläche des Gebäudes, die auf dem Grundstück liegt. Schnelle Vorprüfung in Grad (ohne Umrechnen): liegen alle Ecken im Grundstück, zählt die
+  // volle Fläche; liegt keine Ecke darin und nichts berührt sich, ist es 0 (typisch für Straßen-Flurstücke mit riesigem umschließendem Rechteck,
+  // die vorher jedes Gebäude darin abgetastet haben: das war der Hauptgrund für die lange Rechenzeit). Nur Gebäude, die die Grenze wirklich
+  // schneiden, werden abgetastet.
+  function flachGrad(ring) { var a = new Float64Array(ring.length * 2); for (var i = 0; i < ring.length; i++) { a[2 * i] = ring[i][1]; a[2 * i + 1] = ring[i][0]; } return a; }
+  function gradDaten(f) {
+    if (f._deg) { return f._deg; }
+    var polys = f.polys.map(function (p) { var a = flachGrad(p.a); return { a: a, i: p.i.map(flachGrad), bb: bbLokal(a) }; });
+    var bb = [Infinity, Infinity, -Infinity, -Infinity];
+    polys.forEach(function (p) { bb = [Math.min(bb[0], p.bb[0]), Math.min(bb[1], p.bb[1]), Math.max(bb[2], p.bb[2]), Math.max(bb[3], p.bb[3])]; });
+    f._deg = { polys: polys, bb: bb };
+    return f._deg;
+  }
+  function gebGrad(b) { if (!b._d) { var a = flachGrad(b.polys[0].a); b._d = { a: a, bb: bbLokal(a) }; } return b._d; }
+  function strecken(ax, ay, bx, by, cx, cy, dx, dy) {       // schneiden sich die Strecken ab und cd?
+    function o(px, py, qx, qy, rx, ry) { return (qx - px) * (ry - py) - (qy - py) * (rx - px); }
+    var d1 = o(ax, ay, bx, by, cx, cy), d2 = o(ax, ay, bx, by, dx, dy), d3 = o(cx, cy, dx, dy, ax, ay), d4 = o(cx, cy, dx, dy, bx, by);
+    return ((d1 > 0) !== (d2 > 0)) && ((d3 > 0) !== (d4 > 0));
+  }
+  function beruehrenSich(D, gd) {        // Grundstücksgrenze und Gebäude, wenn keine Gebäudeecke im Grundstück liegt
+    var ga = gd.a, gb = gd.bb, ringe = [];
+    D.polys.forEach(function (p) { ringe.push(p.a); p.i.forEach(function (r) { ringe.push(r); }); });
+    for (var q = 0; q < ringe.length; q++) {
+      var r = ringe[q], n = r.length / 2;
+      for (var i = 0; i < n; i++) {                       // liegt eine Ecke des Grundstücks im Gebäude?
+        var x = r[2 * i], y = r[2 * i + 1];
+        if (x >= gb[0] && x <= gb[2] && y >= gb[1] && y <= gb[3] && pip(x, y, ga)) { return true; }
+      }
+      for (var k = 0, j = n - 1; k < n; j = k++) {        // schneiden sich Kanten?
+        var ax = r[2 * j], ay = r[2 * j + 1], bx = r[2 * k], by = r[2 * k + 1];
+        if (Math.max(ax, bx) < gb[0] || Math.min(ax, bx) > gb[2] || Math.max(ay, by) < gb[1] || Math.min(ay, by) > gb[3]) { continue; }
+        for (var u = 0, v = ga.length / 2 - 1; u < ga.length / 2; v = u++) {
+          if (strecken(ax, ay, bx, by, ga[2 * v], ga[2 * v + 1], ga[2 * u], ga[2 * u + 1])) { return true; }
+        }
+      }
+    }
+    return false;
+  }
+  function innenFlaeche(b, f, L0) {
+    var D = gradDaten(f), gd = gebGrad(b);
+    if (gd.bb[2] < D.bb[0] || gd.bb[0] > D.bb[2] || gd.bb[3] < D.bb[1] || gd.bb[1] > D.bb[3]) { return 0; }
+    var n = gd.a.length / 2, innen = 0;
+    for (var i = 0; i < n; i++) { if (imGrundstueck(gd.a[2 * i], gd.a[2 * i + 1], D)) { innen++; } }
+    if (innen === n) { return b.fl; }
+    if (innen === 0 && !beruehrenSich(D, gd)) { return 0; }
+    // Das Gebäude schneidet die Grundstücksgrenze: Fläche durch Abtasten
     var gp = gebLokal(b, L0), g0 = gp[0];
     var x0 = Math.max(g0.bb[0], L0.bb[0]), y0 = Math.max(g0.bb[1], L0.bb[1]), x1 = Math.min(g0.bb[2], L0.bb[2]), y1 = Math.min(g0.bb[3], L0.bb[3]);
     if (x1 <= x0 || y1 <= y0) { return 0; }
-    var alle = true;
-    for (var i = 0; i < g0.a.length; i += 2) { if (!imGrundstueck(g0.a[i], g0.a[i + 1], L0)) { alle = false; break; } }
-    if (alle) { return b.fl; }
-    var schritt = Math.max(0.2, Math.sqrt((x1 - x0) * (y1 - y0) / 5000)), n = 0;
+    var schritt = Math.max(0.2, Math.sqrt((x1 - x0) * (y1 - y0) / 5000)), z = 0;
     for (var y = y0 + schritt / 2; y < y1; y += schritt) {
       for (var x = x0 + schritt / 2; x < x1; x += schritt) {
         var inG = false;
         for (var q = 0; q < gp.length; q++) { if (pip(x, y, gp[q].a)) { inG = true; break; } }
-        if (inG && imGrundstueck(x, y, L0)) { n++; }
+        if (inG && imGrundstueck(x, y, L0)) { z++; }
       }
     }
-    return n * schritt * schritt;
-  }
-  // Überbaute Fläche eines Grundstücks, getrennt nach Hauptgebäuden, Garagen und Nebengebäuden, sonstigen Bauwerken (Überdachungen)
+    return z * schritt * schritt;
+  }  // Überbaute Fläche eines Grundstücks, getrennt nach Hauptgebäuden, Garagen und Nebengebäuden, sonstigen Bauwerken (Überdachungen)
   function bebauung(f) {
     var L0 = lok(f), erg = { haupt: 0, neben: 0, sonst: 0, nHaupt: 0, teile: [] };
     gebInRechteck(f.bb[0], f.bb[1], f.bb[2], f.bb[3]).forEach(function (b) {
-      var a = innenFlaeche(b, L0);
+      var a = innenFlaeche(b, f, L0);
       if (a < 0.5) { return; }
       erg[b.art] += a;
       if (b.art === "haupt") { erg.nHaupt++; }
@@ -531,7 +652,7 @@
     zeigeAuswahl();
     // Gebäude rund um das Grundstück laden (auch die der Nachbarn für den Vergleich)
     var ra = 0.0012, ro = 0.002;
-    ladeBereich(f.bb[0] - ra, f.bb[1] - ro, f.bb[2] + ra, f.bb[3] + ro).then(function () {
+    ladeBereich(f.bb[0] - ra, f.bb[1] - ro, f.bb[2] + ra, f.bb[3] + ro, true).then(function () {
       if (token !== S.token) { return; }
       S.ber = bebauung(f);
       aktualisiereAnzeige();
@@ -570,7 +691,7 @@
   function suche(ll, still) {
     setzeMeldung("Grundstück wird gesucht …");
     var kl = Math.floor(ll.lat / KACHEL_LA), kj = Math.floor(ll.lng / KACHEL_LO);
-    return ladeKachel(kl, kj).then(function () {
+    return ladeKachelTyp("F", kl, kj).then(function () {
       var treffer = null;
       flstInRechteck(ll.lat - 1e-6, ll.lng - 1e-6, ll.lat + 1e-6, ll.lng + 1e-6).forEach(function (f) {
         var L0 = lok(f), x = (ll.lng - L0.lo0) * L0.kx, y = (ll.lat - L0.la0) * M_LA;
@@ -747,40 +868,58 @@
     d.appendChild(k);
     return d;
   }
+  // Zeichnet die Grundstücke des Kartenfensters. Jede Kachel wird gezeichnet, sobald sie da ist (die mittleren zuerst), man wartet nicht auf alle.
+  // Die Einfärbung braucht auch die Gebäude; die Grenzen allein brauchen nur die Flurstücke (halb so viele Daten).
   function zeichneKarte() {
     var grenzen = FLST[0], farbig = FLST[1];
     var an1 = karte.hasLayer(grenzen.ebene), an2 = karte.hasLayer(farbig.ebene);
     leereKarte();
     if (!an1 && !an2) { return; }
     if (karte.getZoom() < MIN_ZOOM) { setzeKartenStatus("Die Grundstücke erscheinen erst in der Nahansicht (ab Zoomstufe " + MIN_ZOOM + "). Bitte weiter hineinzoomen."); return; }
-    var nr = ++ladeNr, b = karte.getBounds().pad(0.1);
-    setzeKartenStatus("Grundstücke werden geladen …");
-    ladeBereich(b.getSouth(), b.getWest(), b.getNorth(), b.getEast()).then(function () {
+    var nr = ++ladeNr, b = karte.getBounds().pad(0.03), zoom = karte.getZoom();
+    var kacheln = kachelnFuer(b.getSouth(), b.getWest(), b.getNorth(), b.getEast()), fertig = 0, gezeichnet = new Set();
+    setzeKartenStatus("Grundstücke werden geladen (0 von " + kacheln.length + " Kacheln) …");
+    function zeichne(f) {
+      var ringe = f.polys.map(function (p) { return [p.a].concat(p.i); });
+      if (an2) {
+        var gz = grzGebaeude(f);
+        if (gz !== null) { L.polygon(ringe, { renderer: renderer("grundFuellPane"), stroke: false, fillColor: grzKlasse(gz).farbe, fillOpacity: farbig.deckkraft, interactive: false }).addTo(farbig.ebene); }
+      }
+      if (an1) {
+        var p = L.polygon(ringe, { renderer: renderer("grundLinienPane"), color: grenzen.farbe, weight: 1.2, fill: true, fillOpacity: 0, interactive: true }).addTo(grenzen.ebene);
+        p.on("click", function (ev) { if (grundWahl) { return; } zeigePopup(p, popupInhalt(f), ev.latlng); });
+        if (zoom >= 18 && f.flaeche > 0) {
+          L.marker(f.mitte, { icon: L.divIcon({ className: "grundLabel", html: "<span>" + zahlDe(Math.round(f.flaeche), 0) + " m²</span>", iconSize: [0, 0] }), interactive: false, keyboard: false }).addTo(grenzen.ebene);
+        }
+      }
+    }
+    // Die Grundstücke werden in kleinen Portionen gezeichnet (höchstens etwa 25 ms am Stück), damit die Karte dabei nicht stehen bleibt
+    var offen = [], laeuft = false;
+    function portion() {
+      if (nr !== ladeNr) { offen = []; laeuft = false; return; }
+      var t0 = performance.now();
+      while (offen.length && performance.now() - t0 < 25) { zeichne(offen.shift()); }
+      if (offen.length) { setTimeout(portion, 0); } else { laeuft = false; }
+    }
+    function zeichneNeue() {
       if (nr !== ladeNr) { return; }
-      setzeKartenStatus("");
-      var liste = flstInRechteck(b.getSouth(), b.getWest(), b.getNorth(), b.getEast()).slice(0, 7000);
-      var zoom = karte.getZoom();
-      liste.forEach(function (f) {
-        var ringe = f.polys.map(function (p) { return [p.a].concat(p.i); });
-        if (an2) {
-          var gz = grzGebaeude(f);
-          if (gz !== null) { L.polygon(ringe, { renderer: renderer("grundFuellPane"), stroke: false, fillColor: grzKlasse(gz).farbe, fillOpacity: farbig.deckkraft, interactive: false }).addTo(farbig.ebene); }
-        }
-        if (an1) {
-          var p = L.polygon(ringe, { renderer: renderer("grundLinienPane"), color: grenzen.farbe, weight: 1.2, fill: true, fillOpacity: 0, interactive: true }).addTo(grenzen.ebene);
-          p.on("click", function (ev) { if (grundWahl) { return; } zeigePopup(p, popupInhalt(f), ev.latlng); });
-          if (zoom >= 18 && f.flaeche > 0) {
-            L.marker(f.mitte, { icon: L.divIcon({ className: "grundLabel", html: "<span>" + zahlDe(Math.round(f.flaeche), 0) + " m²</span>", iconSize: [0, 0] }), interactive: false, keyboard: false }).addTo(grenzen.ebene);
-          }
-        }
+      flstInRechteck(b.getSouth(), b.getWest(), b.getNorth(), b.getEast()).forEach(function (f) {
+        if (gezeichnet.has(f.id) || (an2 && !gebaeudeBereit(f))) { return; }
+        gezeichnet.add(f.id); offen.push(f);
       });
+      if (offen.length && !laeuft) { laeuft = true; setTimeout(portion, 0); }
+    }
+    ladeBereich(b.getSouth(), b.getWest(), b.getNorth(), b.getEast(), an2, function () {
+      if (nr !== ladeNr) { return; }
+      fertig++;
+      zeichneNeue();
+      setzeKartenStatus(fertig < kacheln.length ? "Grundstücke werden geladen (" + fertig + " von " + kacheln.length + " Kacheln) …" : "");
     }).catch(function (x) {
       if (nr !== ladeNr) { return; }
-      setzeKartenStatus("Die Grundstücke konnten nicht geladen werden (Internet prüfen oder später noch einmal versuchen).", true);
+      setzeKartenStatus("Die Grundstücke konnten nicht (alle) geladen werden (Internet prüfen oder später noch einmal versuchen).", true);
       if (window.console) { console.error(x); }
     });
   }
-
   // ---------- Gespeichertes Bild ----------
   var bildDaten = null;
   function bildBereich(plan, mitte) {
@@ -797,7 +936,7 @@
       bildDaten = null;
       return Promise.reject(new Error("Der Bildausschnitt ist für die Grundstücke zu groß (höchstens etwa 2,5 × 2,5 km)."));
     }
-    return ladeBereich(bb[0], bb[1], bb[2], bb[3]).then(function () {
+    return ladeBereich(bb[0], bb[1], bb[2], bb[3], ebenen.indexOf(FLST[1]) >= 0).then(function () {
       bildDaten = { bb: bb, ebenen: ebenen, liste: flstInRechteck(bb[0], bb[1], bb[2], bb[3]) };
       return bildDaten;
     });
@@ -935,7 +1074,7 @@
   function stelleWiederHer(z) {
     if (!z || !z.id) { return Promise.resolve(); }
     var bb = z.bbox;
-    return ladeBereich(bb[0], bb[1], bb[2], bb[3]).then(function () {
+    return ladeBereich(bb[0], bb[1], bb[2], bb[3], false).then(function () {
       var f = flst.get(z.id);
       if (f) {
         var w = z.werte || {};
@@ -994,6 +1133,6 @@
     vorbereitenBild: vorbereitenBild, zeichneInBild: zeichneInBild, legende: legende, imBild: imBild, quelle: quelle, datenblatt: datenblatt, daten: daten, bereit: bereit,
     klickBeenden: klickBeenden, ausgewaehlt: function () { return S.f; },
     // für Tests
-    _intern: { flst: flst, gebAlle: gebAlle, bebauung: bebauung, lok: lok, abstandsFeld: abstandsFeld, baufeld: baufeld, kontur: kontur, S: S, holeHoehen: holeHoehen, geschosse: geschosse }
+    _intern: { kachelF: kachelF, kachelG: kachelG, bereitG: bereitG, warteschlange: function () { return { laufend: laufend, wartend: wartend.length }; }, flst: flst, gebAlle: gebAlle, bebauung: bebauung, lok: lok, abstandsFeld: abstandsFeld, baufeld: baufeld, kontur: kontur, S: S, holeHoehen: holeHoehen, geschosse: geschosse }
   };
 })();
