@@ -812,7 +812,7 @@
           <details class="analyseGruppe"><summary><span class="titel">Grundwasser (LBEG, Online-Dienst)</span><span class="anzahl"></span></summary><div id="analyseGrundwasser"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Versiegelung und Altlasten (LBEG, Online-Dienst)</span><span class="anzahl"></span></summary><div id="analyseVersiegelung"></div></details>
           <details class="analyseGruppe"><summary><span class="titel">Sonnenstunden und Sichtfeld</span><span class="anzahl"></span></summary><div id="analyseSonnenstunden"></div></details>
-          <details class="analyseGruppe"><summary><span class="titel">Gebäudehöhen</span><span class="anzahl"></span></summary><div id="analyseHoehen"></div><p class="hinweis" style="margin:4px 0 0">Färbt jedes Gebäude nach seiner Traufhöhe (Höhe der Dachkante über dem Boden, Gebäudemodell des LGLN, auf 1 bis 5 m genau): unter 4 m (Garagen, Schuppen), 4 bis 7 m, 7 bis 10 m, 10 bis 13 m, 13 bis 20 m und über 20 m. Sichtbar ab der Nahansicht. Beim ersten Zuschalten werden ca. 13 MB geladen (die Höhendaten und das Gelände, die auch die 3D-Ansicht braucht). Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
+          <details class="analyseGruppe"><summary><span class="titel">Gebäudehöhen</span><span class="anzahl"></span></summary><div id="analyseHoehen"></div><p class="hinweis" style="margin:4px 0 0">Färbt jedes Gebäude nach seiner Traufhöhe (Höhe der Dachkante über dem Boden, Gebäudemodell des LGLN, auf 1 bis 5 m genau): unter 4 m (Garagen, Schuppen), 4 bis 7 m, 7 bis 10 m, 10 bis 13 m, 13 bis 20 m und über 20 m. Sichtbar ab der Nahansicht. Beim ersten Zuschalten werden die Höhen und das Gelände für den sichtbaren Ausschnitt geladen (wenige MB, die auch die 3D-Ansicht braucht). Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Grünversorgung (Fußweg)</span><span class="anzahl"></span></summary><div id="analyseVersorgung"></div><p class="hinweis" style="margin:4px 0 0">Zeigt für die Wohngebiete (Nutzungsart Wohnen), wie weit es zu Fuß nach dem Wegenetz bis zum nächsten öffentlichen Park, Spielplatz oder Wald ist: grün bis 300 m, orange 300 bis 500 m, dunkelrot darüber. Gerechnet in Rasterzellen von 20 m; die erste Berechnung dauert einige Sekunden. Grundlage sind OpenStreetMap-Daten (Parks ab 1.000 m², Spielplätze ab 100 m², Wald ab 1 ha, ohne privaten Zugang); wo dort Flächen oder Wege fehlen, erscheinen Lücken. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Durchlässigkeit des Wegenetzes</span><span class="anzahl"></span></summary><div id="analyseDl"></div><p class="hinweis" id="dlInfo" style="margin:4px 0 0;display:none"></p><p class="hinweis" style="margin:4px 0 0">Zeigt, wie gut man zu Fuß durch das Quartier kommt. <em>Kreuzungsdichte</em>: Kreuzungen je km² auf einem 100-m-Raster (rot = weitmaschig, grün = engmaschig). <em>Blockgrößen</em>: Fläche der Blöcke zwischen Wegen, Bahn, Gewässern (grün = kleinteilig, rot = großer Block). <em>Umwegfaktor</em>: wie viel länger der echte Fußweg ab dem roten Punkt ist als die Luftlinie (1,0 = direkt; braucht eine Adresse). <em>Barrieren</em>: Bahn, Flüsse und Kanäle, Hauptstraßen; weiße Kreise zeigen, wo Wege Bahn und Wasser queren (Brücke, Unterführung, Bahnübergang). Gerechnet wird aus dem Wegenetz von OpenStreetMap (nur so vollständig wie dieses). Die erste Berechnung dauert einige Sekunden. Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
           <details class="analyseGruppe"><summary><span class="titel">Wer wohnt dort? (Zensus 2022)</span><span class="anzahl"></span></summary><div id="analyseZensus"></div><p class="hinweis" style="margin:4px 0 0">Ergebnisse des Zensus 2022 (Stichtag 15. Mai 2022) auf einem Raster von 100 × 100 m: Einwohnerdichte, Durchschnittsalter, Anteil der unter 18-Jährigen und der ab 65-Jährigen, durchschnittliche Haushaltsgröße, Nettokaltmiete (€ je m²), Leerstandsquote und Eigentümerquote. Ein Klick auf eine Zelle zeigt alle Werte. Zellen ohne Angabe bleiben ungefärbt (Datenschutz: wo zu wenige Menschen oder Wohnungen leben, werden keine Werte veröffentlicht). Die Zahlen sind aus Datenschutzgründen leicht verändert; Werte in Klammern beruhen auf wenigen Fällen. Quelle: © Statistische Ämter des Bundes und der Länder, 2024 (Datenlizenz Deutschland – Namensnennung – Version 2.0). Die Datei wird erst beim Zuschalten geladen (ca. 0,4 MB). Wird bei „Alles einschalten“ nicht mit eingeschaltet.</p></details>
@@ -1075,7 +1075,7 @@
           <p class="hinweis" style="margin-top:0">Die Umgebung als 3D-Modell mit vereinfachten Dachformen und dem Schatten der Sonne. Du wählst Datum und Uhrzeit und siehst, wo Schatten fällt. Eigene Baukörper entstehen aus Flächen, die du in „06 Zeichnen“ zeichnest und denen du eine Höhe gibst. Die 3D-Ansicht lässt sich als Bild speichern. Oben in der App wechselst du mit den Reitern „Karte“ und „3D-Ansicht“ hin und her; die 3D-Ansicht bleibt dabei erhalten (Kamera, Datum, Messungen). Hast du in der Karte etwas geändert (Zeichnung, Ebenen), baut sie sich beim Zurückwechseln neu auf. Das Kreuz am Reiter schließt sie ganz.</p>
           <button type="button" id="ansicht3dKnopf">3D-Ansicht öffnen</button>
           <div id="ansicht3dMeldung" class="meldung" aria-live="polite"></div>
-          <p class="hinweis">Das Modell zeigt den Ausschnitt um den roten Punkt (ohne Adresse: um die Kartenmitte). Beim ersten Öffnen werden große Datendateien geladen (Gebäudehöhen und Gelände, zusammen etwa 13 MB), das dauert einen Moment. Sobald du diesen Abschnitt aufklappst, beginnt das Laden schon im Hintergrund.</p>
+          <p class="hinweis">Das Modell zeigt den Ausschnitt um den roten Punkt (ohne Adresse: um die Kartenmitte). Beim ersten Öffnen werden Gebäudehöhen und Gelände für den Ausschnitt geladen (je nach Größe einige hundert KB bis wenige MB), das dauert einen Moment. Sobald du diesen Abschnitt aufklappst, beginnt das Laden schon im Hintergrund.</p>
         </div>
       </details>
 
@@ -1105,7 +1105,7 @@
           <textarea id="entwurfWuensche" rows="3" placeholder="Zum Beispiel: Holzbau, Dachbegrünung, möglichst viele Bäume erhalten" autocomplete="off"></textarea>
 
           <label class="haken"><input type="checkbox" id="entwurfHoehen" checked autocomplete="off"> Gebäudehöhen und Gelände einbeziehen</label>
-          <p class="hinweis" style="margin:2px 0 0 24px">Lädt beim ersten Mal große Dateien (ca. 13 MB) und liefert Bebauungsdichte, Traufhöhen und Geländehöhen.</p>
+          <p class="hinweis" style="margin:2px 0 0 24px">Lädt beim ersten Mal Gebäudehöhen und Gelände für den Ausschnitt (einige MB) und liefert Bebauungsdichte, Traufhöhen und Geländehöhen.</p>
           <label class="haken"><input type="checkbox" id="entwurfRegen" checked autocomplete="off"> Starkregen am Standort abfragen</label>
           <p class="hinweis" style="margin:2px 0 0 24px">Fragt den Online-Dienst des Bundes ab, braucht Internet.</p>
 
@@ -1180,7 +1180,7 @@
 
             <div class="gruppentitel" style="margin-top:14px">Bestand</div>
             <div id="grundBestand"></div>
-            <button type="button" id="grundHoehenKnopf" class="zweit" hidden>Gebäudehöhen laden (ca. 13 MB)</button>
+            <button type="button" id="grundHoehenKnopf" class="zweit" hidden>Gebäudehöhen laden (einige MB)</button>
             <label for="grundBestandGeschosse" style="margin-top:10px">Geschosse im Bestand selbst eintragen (leer = aus den Gebäudehöhen schätzen)</label>
             <input type="number" id="grundBestandGeschosse" min="1" max="12" step="1" autocomplete="off">
 
@@ -1222,7 +1222,7 @@
       <details class="abschnitt" id="schnittAbschnitt">
         <summary><span class="nr">14</span> Schnitt</summary>
         <div class="inhalt">
-          <p class="hinweis" style="margin-top:0">Zeichne eine Linie über die Karte (A–A′): darunter erscheint der Schnitt durch die Umgebung mit Gelände, Gebäuden samt Dachform, Bäumen, Wäldern und deinen eigenen Baukörpern. Geschnittene Teile sind dunkel, was dahinter liegt, ist heller. Du kannst ihn als PNG, PDF oder SVG speichern. Beim ersten Mal werden ca. 13 MB geladen (Gebäudehöhen und Gelände).</p>
+          <p class="hinweis" style="margin-top:0">Zeichne eine Linie über die Karte (A–A′): darunter erscheint der Schnitt durch die Umgebung mit Gelände, Gebäuden samt Dachform, Bäumen, Wäldern und deinen eigenen Baukörpern. Geschnittene Teile sind dunkel, was dahinter liegt, ist heller. Du kannst ihn als PNG, PDF oder SVG speichern. Beim ersten Mal werden einige MB geladen (Gebäudehöhen und Gelände nur für den Bereich der Linie).</p>
           <button type="button" id="schnittZeichnen">Schnittlinie zeichnen</button>
           <div class="gitter" style="margin-top:6px">
             <button type="button" id="schnittAnzeigen" class="zweit">Schnitt anzeigen</button>
@@ -1237,12 +1237,13 @@
         <div class="inhalt hilfe">
           <h3>So gehst du vor</h3>
           <ol>
+            <li><strong>Stadt</strong> ganz oben in der Seitenleiste wählen (Oldenburg, Osnabrück, Hannover, Braunschweig; nur wenn mehrere fertig sind). Beim Wechsel lädt die App neu, speichere vorher dein Projekt. Fehlt für eine Stadt eine offene Datenquelle (z. B. Lärmkarte, Bebauungspläne), erscheint die Ebene dort nicht.</li>
             <li><strong>Adresse</strong> in „01 Standort“ eingeben und „Adresse suchen“. Der rote Punkt ist dein Standort.</li>
             <li><strong>Karte</strong> oben rechts wählen: „Startkarte“ (ohne Symbole), „Hellgrau“, „Schwarzplan“ (schwarze Gebäude auf Weiß) oder „Freiraumplan“ (umgekehrt: Gebäude weiß, Freiraum schwarz). „Bebauung“ zeigt die Gebäude, sobald du nah genug herangezoomt hast.</li>
             <li><strong>Analysedaten</strong> (04): Haken setzen oder „Alles einschalten“. Fußweg und Sonnenstand brauchen die Adresse.</li>
-            <li><strong>Neue Analyse-Ebenen</strong> (alle in 04, nicht bei „Alles einschalten“): „Gebäudehöhen“ färbt die Gebäude nach Traufhöhe (lädt einmalig ca. 13 MB). „Straßen nach Höchstgeschwindigkeit“ und „nach Straßenart“ stehen in „Verkehr und Mobilität“ (grau = in OpenStreetMap kein Tempo eingetragen). „Grünversorgung (Fußweg)“ färbt Wohngebiete rot, wenn Park, Spielplatz oder Wald mehr als 300 m Fußweg entfernt sind (braucht die Adresse nicht). „Nutzungsmischung (Wärmebild)“ zeigt auf einem 100-m-Raster, wie gut Wohnen, Arbeiten, Läden und Gastronomie sowie Gemeinbedarf gemischt sind (grün = gut gemischt, rot = einseitig). Alle vier sind Orientierung aus OpenStreetMap-Daten und nur so vollständig wie diese. Die Gruppe „Durchlässigkeit des Wegenetzes“ zeigt, wie gut man zu Fuß durch das Quartier kommt: <em>Kreuzungsdichte</em> (Kreuzungen je km², rot = weitmaschig), <em>Blockgrößen</em> (Blöcke zwischen Wegen, Bahn und Gewässern), <em>Umwegfaktor</em> (wie viel länger der Fußweg ab dem roten Punkt ist als die Luftlinie, braucht die Adresse) und <em>Barrieren und Querungen</em> (Bahn, Flüsse, Hauptstraßen; weiße Kreise = Brücke, Unterführung oder Bahnübergang). Unter den Haken stehen die wichtigsten Zahlen.</li>
+            <li><strong>Neue Analyse-Ebenen</strong> (alle in 04, nicht bei „Alles einschalten“): „Gebäudehöhen“ färbt die Gebäude nach Traufhöhe (lädt die Höhen des sichtbaren Ausschnitts, beim ersten Mal wenige MB). „Straßen nach Höchstgeschwindigkeit“ und „nach Straßenart“ stehen in „Verkehr und Mobilität“ (grau = in OpenStreetMap kein Tempo eingetragen). „Grünversorgung (Fußweg)“ färbt Wohngebiete rot, wenn Park, Spielplatz oder Wald mehr als 300 m Fußweg entfernt sind (braucht die Adresse nicht). „Nutzungsmischung (Wärmebild)“ zeigt auf einem 100-m-Raster, wie gut Wohnen, Arbeiten, Läden und Gastronomie sowie Gemeinbedarf gemischt sind (grün = gut gemischt, rot = einseitig). Alle vier sind Orientierung aus OpenStreetMap-Daten und nur so vollständig wie diese. Die Gruppe „Durchlässigkeit des Wegenetzes“ zeigt, wie gut man zu Fuß durch das Quartier kommt: <em>Kreuzungsdichte</em> (Kreuzungen je km², rot = weitmaschig), <em>Blockgrößen</em> (Blöcke zwischen Wegen, Bahn und Gewässern), <em>Umwegfaktor</em> (wie viel länger der Fußweg ab dem roten Punkt ist als die Luftlinie, braucht die Adresse) und <em>Barrieren und Querungen</em> (Bahn, Flüsse, Hauptstraßen; weiße Kreise = Brücke, Unterführung oder Bahnübergang). Unter den Haken stehen die wichtigsten Zahlen.</li>
              <li><strong>Wer wohnt dort? (Zensus 2022)</strong> (Gruppe in 04, bei „Alles einschalten“ aus): acht Ebenen aus dem Zensus 2022 auf einem Raster von 100 × 100 m (Einwohnerdichte, Durchschnittsalter, Anteil unter 18 und ab 65 Jahren, Haushaltsgröße, Nettokaltmiete, Leerstand, Eigentümerquote). Ein Klick auf eine Zelle zeigt alle Werte. Leere Zellen: zu wenige Fälle, es werden keine Zahlen veröffentlicht. Die Zahlen sind leicht verändert. Quelle: © Statistische Ämter des Bundes und der Länder, 2024; sie steht in Karte und gespeichertem Bild. Die Zahlen für die Umgebung stehen auch im Text der Entwurfsstrategie (Abschnitt 11).</li>
-            <li><strong>Schnitt</strong> (14): „Schnittlinie zeichnen“, dann die Punkte der Linie in die Karte klicken (Doppelklick beendet). Unter der Karte erscheint der Schnitt A–A′ mit Gelände, Gebäuden samt Dachform, Bäumen, Wäldern und deinen eigenen Baukörpern; geschnitten = dunkel, dahinter liegende Ansicht = hell. Blickrichtung, Tiefe der Ansicht und Überhöhung lassen sich oben im Schnitt einstellen, die roten Griffe auf der Karte verschieben die Linie. Speichern als PNG, PDF oder SVG. Beim ersten Mal werden ca. 13 MB geladen.</li>
+            <li><strong>Schnitt</strong> (14): „Schnittlinie zeichnen“, dann die Punkte der Linie in die Karte klicken (Doppelklick beendet). Unter der Karte erscheint der Schnitt A–A′ mit Gelände, Gebäuden samt Dachform, Bäumen, Wäldern und deinen eigenen Baukörpern; geschnitten = dunkel, dahinter liegende Ansicht = hell. Blickrichtung, Tiefe der Ansicht und Überhöhung lassen sich oben im Schnitt einstellen, die roten Griffe auf der Karte verschieben die Linie. Speichern als PNG, PDF oder SVG. Beim ersten Mal werden einige MB geladen (nur für den Bereich der Linie).</li>
             <li><strong>Eigene Pläne</strong> (05): Bis zu fünf JPG, PNG oder PDF hochladen. In der Liste wählst du einen Plan aus, blendest ihn mit dem Haken aus oder ein und änderst mit ▲ und ▼ die Reihenfolge. Mit dem Kreis in der Mitte verschieben, mit dem roten Quadrat drehen und vergrößern, oder „Zwei Punkte einpassen“ für den genauen Maßstab. „Plan sperren“ schützt vor Verschieben.</li>
             <li><strong>Zeichnen</strong> (06): Werkzeug wählen und in die Karte klicken. Objekte anklicken zum Ändern, Entf löscht, Strg+Z nimmt zurück. Mit „Strecke messen“ und „Fläche messen“ liest du Längen in Metern und Flächen in Quadratmetern ab, sie stehen auf der Karte und im gespeicherten Bild.</li>
             <li><strong>Ausschnitt</strong> (07): Maßstab und Papierformat wählen. Mit „Rahmen auf der Karte zeigen“ siehst du, was ins Bild kommt.</li>
@@ -1250,7 +1251,7 @@
             <li><strong>Speichern</strong> (09): „Als Bild speichern“ (PNG) oder als PDF. Beim Drucken „100 %“ wählen, dann stimmt der Maßstab.</li>
             <li><strong>3D-Ansicht</strong> (10): „3D-Ansicht öffnen“. Datum und Uhrzeit wählen, der Schatten wandert mit. Ziehen dreht das Modell, Rechtsklick ziehen verschiebt, das Mausrad zoomt. Für einen eigenen Baukörper in „06 Zeichnen“ eine Fläche zeichnen, die Höhe eintragen und die 3D-Ansicht öffnen. Die Sonnenstunden (im Jahresmittel, mit Schatten von Gebäuden und Bäumen) berechnest du im Abschnitt „Sonnenstunden“ der 3D-Ansicht; das Ergebnis erscheint danach auch hier in der Karte. Bäume stehen im Abschnitt „Bäume“ der 3D-Ansicht. Eigene Bäume setzt du hier unter „06 Zeichnen“ mit dem Werkzeug „Baum“ (Höhe, Krone und Baumart darunter; der Kreis zeigt die Krone) oder direkt in der 3D-Ansicht. Im Abschnitt „Analysedaten“ der 3D-Ansicht schaltest du dieselben Ebenen wie in der Karte (sie liegen auf dem Boden, Haltestellen und Einrichtungen stehen als Pfähle). Im Abschnitt „Messen“ der 3D-Ansicht misst du Entfernungen, Strecken und Gebäudehöhen und prüfst, ob ein Punkt im Schatten liegt. Mit dem Werkzeug „Sichtfeld“ klickst du einen Standort an und siehst, was man von dort aus sieht (grün = zu sehen, gelb = durch Bäume und Laub eingeschränkt, ungefärbt = verdeckt); das Ergebnis erscheint auch in der Karte (Ebene „Sichtfeld“) und im gespeicherten Bild.</li>
           <li><strong>Entwurfsstrategie</strong> (11): Aus deiner Analyse entsteht ein fertiger Text für eine KI, die drei Entwurfsstrategien entwickelt. Adresse suchen, bei Bedarf eine Fläche „Grundstück“ zeichnen, Bauaufgabe eintragen, „Text erstellen“, dann kopieren und in die KI einfügen. Die Zahlen sind Näherungen aus offenen Daten, was die App nicht weiß, steht unter „Nicht vorhanden“.</li>
-          <li><strong>Grundstück</strong> (13): „Am roten Punkt“ wählt das Grundstück an der gesuchten Adresse, „In der Karte anklicken“ jedes andere (oder in der Karte auf ein Grundstück klicken, wenn die Ebene „Grundstücksgrenzen“ an ist). Du siehst Fläche, Nutzung, die vorhandene Überbauung (GRZ von Hauptgebäuden, Garagen und Nebengebäuden) und, sobald du die Gebäudehöhen lädst (einmalig ca. 13 MB), die geschätzte GFZ. Die Vergleichswerte der Umgebung (80 m) helfen, wenn kein Bebauungsplan gilt. Unter „Potenzial und Einschränkungen“ beantwortet die App regelbasiert aus den Zahlen und Daten: Was darf gebaut werden (zulässige Nutzungen nach Gebietsart), was ginge zusätzlich oder alternativ (Anbau, Aufstockung, zweites Haus, Nutzungsalternativen), wie intensiv wird das Grundstück genutzt, wirtschaftliche Potenziale (Bodenrichtwert, Bodenwert, Faustrechnung mit deinen Baukosten und Mieten) und Einschränkungen (Zuschnitt, Lärm, Schutzgebiete, Bebauungsplan). Das ist eine Orientierung und keine Rechtsauskunft oder Wertermittlung. Unter „Zulässige Werte“ wählst du die Gebietsart (die App schlägt die Obergrenzen der Baunutzungsverordnung vor) oder trägst GRZ, GFZ, Geschosse und Abstand aus dem Bebauungsplan ein. Daraus entstehen die zulässige Grund- und Geschossfläche, das Baufeld (Grundstück minus Abstand zur Grenze, begrenzt durch die GRZ) und eine Baukörper-Studie. „Baufeld als Baukörper übernehmen“ legt sie in „06 Zeichnen“ an, dann erscheint sie auch im Bild und in 3D. In „04 Analysedaten“ gibt es dazu die Ebenen „Grundstücksgrenzen mit Fläche“ und „nach Überbauung eingefärbt“ (ab Zoomstufe 16) sowie die amtliche Liegenschaftskarte mit Flurstücksnummern und Hausnummern (ab Zoomstufe 17, schwarz-weiß durchsichtig oder in Farbe). Das gewählte Grundstück steht auch in „11 Entwurfsstrategie“ (Text, Word und PDF); „Geschossfläche in die Entwurfsstrategie übernehmen“ trägt die Werte der Studie in die Felder dort ein. Die Daten kommen online vom Landesamt LGLN (Kataster, ohne Eigentümer) und brauchen Internet. Das ist eine Orientierung, keine amtliche Auskunft: Baugrenzen und Festsetzungen des Bebauungsplans, Baulasten und Abstände zur Straße sind nicht berücksichtigt.</li>
+          <li><strong>Grundstück</strong> (13): „Am roten Punkt“ wählt das Grundstück an der gesuchten Adresse, „In der Karte anklicken“ jedes andere (oder in der Karte auf ein Grundstück klicken, wenn die Ebene „Grundstücksgrenzen“ an ist). Du siehst Fläche, Nutzung, die vorhandene Überbauung (GRZ von Hauptgebäuden, Garagen und Nebengebäuden) und, sobald du die Gebäudehöhen lädst (wenige MB für die Umgebung), die geschätzte GFZ. Die Vergleichswerte der Umgebung (80 m) helfen, wenn kein Bebauungsplan gilt. Unter „Potenzial und Einschränkungen“ beantwortet die App regelbasiert aus den Zahlen und Daten: Was darf gebaut werden (zulässige Nutzungen nach Gebietsart), was ginge zusätzlich oder alternativ (Anbau, Aufstockung, zweites Haus, Nutzungsalternativen), wie intensiv wird das Grundstück genutzt, wirtschaftliche Potenziale (Bodenrichtwert, Bodenwert, Faustrechnung mit deinen Baukosten und Mieten) und Einschränkungen (Zuschnitt, Lärm, Schutzgebiete, Bebauungsplan). Das ist eine Orientierung und keine Rechtsauskunft oder Wertermittlung. Unter „Zulässige Werte“ wählst du die Gebietsart (die App schlägt die Obergrenzen der Baunutzungsverordnung vor) oder trägst GRZ, GFZ, Geschosse und Abstand aus dem Bebauungsplan ein. Daraus entstehen die zulässige Grund- und Geschossfläche, das Baufeld (Grundstück minus Abstand zur Grenze, begrenzt durch die GRZ) und eine Baukörper-Studie. „Baufeld als Baukörper übernehmen“ legt sie in „06 Zeichnen“ an, dann erscheint sie auch im Bild und in 3D. In „04 Analysedaten“ gibt es dazu die Ebenen „Grundstücksgrenzen mit Fläche“ und „nach Überbauung eingefärbt“ (ab Zoomstufe 16) sowie die amtliche Liegenschaftskarte mit Flurstücksnummern und Hausnummern (ab Zoomstufe 17, schwarz-weiß durchsichtig oder in Farbe). Das gewählte Grundstück steht auch in „11 Entwurfsstrategie“ (Text, Word und PDF); „Geschossfläche in die Entwurfsstrategie übernehmen“ trägt die Werte der Studie in die Felder dort ein. Die Daten kommen online vom Landesamt LGLN (Kataster, ohne Eigentümer) und brauchen Internet. Das ist eine Orientierung, keine amtliche Auskunft: Baugrenzen und Festsetzungen des Bebauungsplans, Baulasten und Abstände zur Straße sind nicht berücksichtigt.</li>
           <li><strong>Fotos</strong> (12): Bis zu zwölf Standortfotos (JPG oder PNG) erscheinen als nummerierte Markierungen auf der Karte, auf Wunsch mit Sichtkegel in Blickrichtung. Hat das Foto GPS-Daten, setzt die App den Ort selbst, sonst klickst du auf den Standort. Ein Klick auf die Markierung zeigt das Foto. Im gespeicherten Bild stehen die Markierungen und unten eine Fotoleiste (Haken „Fotos“ in 09).</li>
           </ol>
 
@@ -2293,8 +2294,8 @@
     }
 
     // Ebene "Gebäude nach Traufhöhe" (Höhenkarte): jedes Gebäude in der Farbe seiner Höhenklasse. Die Höhen stammen aus dem
-    // 3D-Gebäudemodell des LGLN (Datei hoehen.js, wie in der 3D-Ansicht; die Traufhöhe ist auf den Boden bezogen).
-    // Die Datei (ca. 13 MB mit dem Gelände) wird erst beim Zuschalten geladen. Sie liegt über der normalen Bebauung.
+    // 3D-Gebäudemodell des LGLN (Kacheln in hoehen/, wie in der 3D-Ansicht; die Traufhöhe ist auf den Boden bezogen).
+    // Die Kacheln (nur der sichtbare Ausschnitt, mit dem Gelände) werden erst beim Zuschalten geladen. Sie liegt über der normalen Bebauung.
     var HOEHEN_KLASSEN = [
       { bis: 4,        farbe: "#fff2b3", text: "unter 4 m" },
       { bis: 7,        farbe: "#fdd16b", text: "4 bis 7 m" },
@@ -2395,32 +2396,32 @@
     ];
     function istZensusEbene(ebene) { return ZENSUS.some(function (g) { return g.ebene === ebene; }); }
     var zensusDaten = null, zensusVorgang = null, zensusErgebnis = {};
-    var hoehenListe = null, hoehenLadevorgang = null;
+    var hoehenGeladen = false, hoehenNr = 0;
     function hoehenKlasseVon(t) {
       for (var i = 0; i < HOEHEN_KLASSEN.length; i++) { if (t < HOEHEN_KLASSEN[i].bis) { return i; } }
       return HOEHEN_KLASSEN.length - 1;
     }
-    // Lädt die Höhen (nur beim ersten Mal) und merkt sich je Gebäude Klasse, Ringe und umschließendes Rechteck
-    function ladeHoehenDaten() {
-      if (hoehenListe) { return Promise.resolve(hoehenListe); }
-      if (hoehenLadevorgang) { return hoehenLadevorgang; }
-      hoehenLadevorgang = ladeAnsicht3d().then(function () { return window.ansicht3d.daten.gebaeude(); }).then(function (liste) {
-        hoehenListe = liste.map(function (g) {
-          var a = g.ringe[0], s = 90, w = 180, n = -90, o = -180;
-          for (var i = 0; i < a.length; i += 2) {
-            if (a[i] < s) { s = a[i]; } if (a[i] > n) { n = a[i]; }
-            if (a[i + 1] < w) { w = a[i + 1]; } if (a[i + 1] > o) { o = a[i + 1]; }
+    // Lädt die Höhen der Gebäude im Rechteck (nur die gebrauchten Kacheln, beim ersten Mal ein paar Sekunden) und liefert je Gebäude
+    // Klasse, Ringe und umschließendes Rechteck (wird am Gebäude gemerkt, damit es nur einmal gerechnet wird)
+    function ladeHoehenDaten(s, w, n, o) {
+      return ladeAnsicht3d().then(function () { return window.ansicht3d.daten.gebaeude({ s: s, w: w, n: n, o: o }); }).then(function (liste) {
+        hoehenGeladen = true;
+        var aus = [];
+        liste.forEach(function (g) {
+          var h = g.karte;
+          if (!h) {
+            var a = g.ringe[0], s0 = 90, w0 = 180, n0 = -90, o0 = -180;
+            for (var i = 0; i < a.length; i += 2) {
+              if (a[i] < s0) { s0 = a[i]; } if (a[i] > n0) { n0 = a[i]; }
+              if (a[i + 1] < w0) { w0 = a[i + 1]; } if (a[i + 1] > o0) { o0 = a[i + 1]; }
+            }
+            h = g.karte = { kl: hoehenKlasseVon(g.t), ringe: g.ringe, s: s0, w: w0, n: n0, o: o0 };
           }
-          return { kl: hoehenKlasseVon(g.t), ringe: g.ringe, s: s, w: w, n: n, o: o };
+          if (h.n >= s && h.s <= n && h.o >= w && h.w <= o) { aus.push(h); }
         });
-        return hoehenListe;
-      }).catch(function (fehler) { hoehenLadevorgang = null; throw fehler; });
-      return hoehenLadevorgang;
-    }
-    function hoehenImRechteck(s, w, n, o) {
-      return hoehenListe.filter(function (g) { return g.n >= s && g.s <= n && g.o >= w && g.w <= o; });
-    }
-    var hoehenGezeichnet = null, hoehenTimer = null;
+        return aus;
+      });
+    }    var hoehenGezeichnet = null, hoehenTimer = null;
     function zeichneHoehen(liste) {
       HOEHENKARTE.ebene.clearLayers();
       var proKlasse = HOEHEN_KLASSEN.map(function () { return []; });
@@ -2444,17 +2445,18 @@
         HOEHENKARTE.ebene.clearLayers(); hoehenGezeichnet = null;
         return;
       }
-      if (!hoehenListe) {
-        setzeKartenStatus("Gebäudehöhen werden geladen (beim ersten Mal ca. 13 MB) …");
-        ladeHoehenDaten().then(function () { setzeKartenStatus(""); aktualisiereHoehen(); })
-          .catch(function () { setzeKartenStatus("Die Gebäudehöhen konnten nicht geladen werden. Die Dateien hoehen.js, gelaende.js und ansicht3d.js müssen im selben Ordner wie index.html liegen.", true); });
-        return;
-      }
       var sichtbar = karte.getBounds();
       if (hoehenGezeichnet && hoehenGezeichnet.contains(sichtbar) && HOEHENKARTE.ebene.getLayers().length) { return; }
-      var holen = sichtbar.pad(0.2);
-      zeichneHoehen(hoehenImRechteck(holen.getSouth(), holen.getWest(), holen.getNorth(), holen.getEast()));
-      hoehenGezeichnet = holen;
+      var holen = sichtbar.pad(0.2), nr = ++hoehenNr, erstes = !hoehenGeladen;
+      if (erstes) { setzeKartenStatus("Gebäudehöhen werden geladen (beim ersten Mal wenige MB, nur der sichtbare Ausschnitt) …"); }
+      ladeHoehenDaten(holen.getSouth(), holen.getWest(), holen.getNorth(), holen.getEast()).then(function (liste) {
+        if (nr !== hoehenNr || !karte.hasLayer(HOEHENKARTE.ebene)) { return; }
+        if (erstes) { setzeKartenStatus(""); }
+        zeichneHoehen(liste);
+        hoehenGezeichnet = holen;
+      }).catch(function () {
+        if (nr === hoehenNr) { setzeKartenStatus("Die Gebäudehöhen konnten nicht geladen werden. Der Ordner „hoehen“ (und „gelaende“) und die Datei ansicht3d.js müssen im selben Ordner wie index.html liegen.", true); }
+      });
     }
     karte.on("moveend", function () {
       clearTimeout(hoehenTimer);
@@ -2544,7 +2546,15 @@
         klassen: LAERM_LDEN, gebuendelt: true, deckkraft: 0.6, stadt: true },
       { quelle: "laerm", id: "laerm_nacht", name: "Straßenlärm, nachts", legende: "Straßenlärm nachts (L_Night)", farbe: "#e0603a",
         klassen: LAERM_NACHT, gebuendelt: true, deckkraft: 0.6, stadt: true }
-    ].map(function (gruppe) {
+    ].filter(function (gruppe) {
+      // Daten, die nur die Stadt selbst liefert: Gibt es sie für die gewählte Stadt nicht, bleibt die Ebene weg (siehe staedte.js, "hat")
+      var hat = STADT.hat || {};
+      if (gruppe.quelle === "laerm") { return !!hat.laerm; }
+      if (gruppe.quelle === "fnp") { return !!hat.fnp; }
+      if (gruppe.quelle === "brw") { return !!hat.bodenrichtwerte; }
+      if (gruppe.quelle === "stadt") { return !!hat.stadt && (!STADT.stadtGruppen || STADT.stadtGruppen.indexOf(gruppe.id) >= 0); }
+      return true;
+    }).map(function (gruppe) {
       gruppe.flaeche = !gruppe.punkte;     // in der Seitenleiste ein Farbfeld (bei Punkten ein Punkt)
       if (gruppe.deckkraft === undefined) { gruppe.deckkraft = FLAECHEN_DECKKRAFT; }
       gruppe.ebene = L.layerGroup();
@@ -2738,7 +2748,7 @@
     baueAnalyseHaken("analyseSonne", SONNE, function (tag) { return tag.datum; });
     baueAnalyseHaken("analyseOepnv", [OEPNV, TAKT], function (g) { return g === OEPNV ? "Haltestellen und Bahnhöfe" : g.name; });
     baueAnalyseHaken("analyseMobilitaet", MOBILITAET, function (g) { return g.name; });
-    baueAnalyseHaken("analyseLuft", [LUFT], function (g) { return g.name; });
+    baueAnalyseHaken("analyseLuft", (STADT.hat && STADT.hat.luft) ? [LUFT] : [], function (g) { return g.name; });
     baueAnalyseHaken("analyseBaeume", [BAEUME2D], function (b) { return b.name; });
     baueAnalyseHaken("analyseStarkregen", STARKREGEN, function (g) { return g.name; });
     baueAnalyseHaken("analyseBoden", BODEN, function (g) { return g.name; });
@@ -2762,6 +2772,8 @@
     baueAnalyseHaken("analyseStadt", FLAECHEN.filter(function (g) { return g.quelle === "stadt"; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseFnp", FLAECHEN.filter(function (g) { return g.quelle === "fnp"; }), function (gruppe) { return gruppe.name; });
     baueAnalyseHaken("analyseBrw", FLAECHEN.filter(function (g) { return g.quelle === "brw"; }), function (gruppe) { return gruppe.name; });
+    // Gruppen ohne einen einzigen Haken (Daten für diese Stadt nicht vorhanden) ausblenden
+    document.querySelectorAll("details.analyseGruppe").forEach(function (d) { if (!d.querySelector("input")) { d.style.display = "none"; } });
 
     // Maßstabsbalken unten links
     L.control.scale({ metric: true, imperial: false, position: "bottomleft" }).addTo(karte);
@@ -8260,9 +8272,7 @@
     function holeExportHoehen(plan, mitte) {
       var halbH = plan.hoeheM / 2 * 1.03, halbB = plan.breiteM / 2 * 1.03;
       var dBreite = halbH / 110574, dLaenge = halbB / (111320 * Math.cos(mitte.lat * Math.PI / 180));
-      return ladeHoehenDaten().then(function () {
-        return hoehenImRechteck(mitte.lat - dBreite, mitte.lng - dLaenge, mitte.lat + dBreite, mitte.lng + dLaenge);
-      });
+      return ladeHoehenDaten(mitte.lat - dBreite, mitte.lng - dLaenge, mitte.lat + dBreite, mitte.lng + dLaenge);
     }
     function zeichneHoehenInBild(c, liste, k) {
       HOEHEN_KLASSEN.forEach(function (kl, i) {
@@ -9367,13 +9377,11 @@
     })();
 
     // ---------- 3D-Ansicht (Abschnitt 10) ----------
-    // three.js (3D-Bibliothek), die Gebäudehöhen und der Programmteil der Ansicht werden erst beim ersten Öffnen geladen.
+    // three.js (3D-Bibliothek) und der Programmteil der Ansicht werden erst beim ersten Öffnen geladen (die Gebäudehöhen und das Gelände lädt der Programmteil danach in Kacheln, nur für den gewählten Ausschnitt).
     var ansicht3dLadevorgang = null;
-    // Die Dateien der 3D-Ansicht: alle werden gleichzeitig geladen, laufen aber in dieser Reihenfolge (three.js zuerst, der Programmteil nach den Daten)
+    // Die Dateien der 3D-Ansicht: beide werden gleichzeitig geladen, laufen aber in dieser Reihenfolge (three.js zuerst)
     var ANSICHT3D_DATEIEN = [
       { adresse: "three/three.min.js", pruefung: function () { return !!window.THREE; } },
-      { adresse: stadtDatei("hoehen"), pruefung: function () { return !!window.HOEHEN_DATEN || !!window.hoehenGeladen; } },
-      { adresse: stadtDatei("gelaende"), pruefung: function () { return !!window.GELAENDE_DATEN; } },
       { adresse: "ansicht3d.js", pruefung: function () { return !!window.ansicht3d; } }
     ];
     function ladeSkriptReihe(liste) {
@@ -9433,7 +9441,7 @@
       if (abschnitt) { abschnitt.addEventListener("toggle", function () { if (abschnitt.open) { vorladeAnsicht3d(); } }); }
       ["pointerenter", "focus", "touchstart"].forEach(function (e) { knopf.addEventListener(e, vorladeAnsicht3d, { passive: true }); });
     })();
-    // Außerdem von selbst: ein paar Sekunden nach dem Start, wenn der Browser Ruhe hat, werden die Dateien der 3D-Ansicht (ca. 13 MB) mit
+    // Außerdem von selbst: ein paar Sekunden nach dem Start, wenn der Browser Ruhe hat, werden die Dateien der 3D-Ansicht (ca. 0,9 MB) mit
     // niedriger Priorität in den Browser-Zwischenspeicher geholt, damit sie beim Klick auf "3D-Ansicht" schon da sind. Nur laden, nicht auswerten
     // (link rel=prefetch), die Seite bleibt also bedienbar. Nicht bei Datensparmodus und sehr langsamen Verbindungen (2G).
     (function () {
@@ -9492,7 +9500,7 @@
           zeigeReiter("3d");
         }).catch(function () {
           reiter3d.textContent = "3D-Ansicht";
-          feld.textContent = "Die 3D-Ansicht konnte nicht geladen werden. Es fehlt eine Datei im Ordner „Standortanalyse“ (three, hoehen.js oder ansicht3d.js).";
+          feld.textContent = "Die 3D-Ansicht konnte nicht geladen werden. Es fehlt eine Datei im Ordner „Standortanalyse“ (three oder ansicht3d.js).";
           feld.className = "meldung fehler";
         });
       }

@@ -1,11 +1,11 @@
-# Holt die amtlichen 3D-Gebaeudemodelle (LoD2) des Landesamts fuer Geoinformation und Landesvermessung Niedersachsen (LGLN)
-# fuer das Stadtgebiet Oldenburg und schreibt Grundriss und Hoehe jedes Gebaeudes in die Datei
-# Standortanalyse\hoehen_oldenburg.js (3D-Ansicht der App).
+﻿# Holt die amtlichen 3D-Gebaeudemodelle (LoD2) des Landesamts fuer Geoinformation und Landesvermessung Niedersachsen (LGLN)
+# fuer das Stadtgebiet und schreibt Grundriss und Hoehe jedes Gebaeudes in die Datei
+# Standortanalyse\staedte\<Stadt>\hoehen.js (3D-Ansicht der App).
 #
 # Quelle: LGLN, 3D-Gebaeudemodell LoD2, Open Data, Lizenz CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.de).
 # Quellenvermerk in der App: "Gebaeudehoehen: LGLN (Jahr), CC BY 4.0".
 #
-# Ablauf: 1) Aus den vorhandenen Gebaeudeumrissen (gebaeude_oldenburg.js) wird ermittelt, welche 1-x-1-km-Kacheln gebraucht werden.
+# Ablauf: 1) Aus den vorhandenen Gebaeudeumrissen (gebaeude.js) wird ermittelt, welche 1-x-1-km-Kacheln gebraucht werden.
 #         2) Jede Kachel (ca. 1,7 MB, Shape-Datei als ZIP) wird heruntergeladen (zusammen etwa 300 MB, dauert einige Minuten).
 #         3) Aus jeder Kachel werden Grundriss (Boden-Flaeche) und Hoehen (Traufe, First) der Gebaeude gelesen und in
 #            Laengen-/Breitengrad umgerechnet.
@@ -13,13 +13,15 @@
 # schon geladene Kacheln werden uebernommen.
 
 param(
-  [string]$Zielordner = (Join-Path $PSScriptRoot 'rohdaten_hoehen'),
-  [string]$Gebaeude = (Join-Path $PSScriptRoot '..\Standortanalyse\gebaeude_oldenburg.js'),
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\hoehen_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Zielordner = (Join-Path $PSScriptRoot "rohdaten_hoehen_$Stadt"),
+  [string]$Gebaeude = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\gebaeude.js"),
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\hoehen"),   # Ordner mit den Kacheln
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd'),
   [int]$Hoechstens = 0,            # nur zum Testen: nur so viele Kacheln verarbeiten (0 = alle)
   [switch]$Behalten                # nur zum Testen: Zwischenordner nicht loeschen
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); . (Join-Path $PSScriptRoot 'kacheln.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -319,7 +321,8 @@ Write-Host ("{0} Kacheln (je 1 x 1 km) beruehren Gebaeude." -f $kacheln.Count)
 if ($kacheln.Count -eq 0) { Write-Host 'Keine Kacheln gefunden. Abbruch.'; exit 1 }
 
 # Kachelliste des Landes holen (Adressen der ZIP-Dateien)
-$suche = 'https://lod.stac.lgln.niedersachsen.de/search?collections=lod2&bbox=8.04,53.03,8.36,53.24&limit=1000'
+$bb = [string]::Format([Globalization.CultureInfo]::InvariantCulture, '{0},{1},{2},{3}', $StadtInfo.West - 0.02, $StadtInfo.Sued - 0.02, $StadtInfo.Ost + 0.015, $StadtInfo.Nord + 0.015)
+$suche = 'https://lod.stac.lgln.niedersachsen.de/search?collections=lod2&bbox=' + $bb + '&limit=1000'
 $antwort = Invoke-RestMethod -Uri $suche -UserAgent $kennung -TimeoutSec 120
 $adressen = @{}
 foreach ($f in $antwort.features) {
@@ -365,9 +368,9 @@ foreach ($k in $liste) {
   Write-Host ("[{0}/{1}] Kachel {2}: {3} Gebaeude" -f $nr, $liste.Count, $k, $neu)
 }
 
-$inhalt = '// Gebaeudehoehen der Stadt Oldenburg (Oldb): LGLN, 3D-Gebaeudemodell LoD2, Open Data, Lizenz CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.de). Erzeugt mit Datenpflege\13_Gebaeudehoehen_aktualisieren.ps1.' + "`n" +
-          '// Jedes Gebaeude = [Traufhoehe, Firsthoehe, Dachklasse (0 flach, 1 Sattel, 2 Walm, 3 Zelt/Pyramide, 4 Pult), Winkel (Firstrichtung 0 bis 179 bzw. Neigungsrichtung beim Pultdach, Grad von Norden im Uhrzeigersinn), Ring, Ring, ...] ueber Grund, Hoehen in Dezimetern; Ring = [Breite, Laenge, Delta, Delta, ...] in Millionstel Grad (erster Ring = Aussenkante, weitere = Innenhoefe).' + "`n" +
-          'var HOEHEN_OLDENBURG = {"einheit":1e-6,"version":2,"stand":"' + $Stand + '","anzahl":' + $eintraege.Count + ',"gebaeude":[' + "`n" + ($eintraege -join ",`n") + "`n" + ']};' + "`n"
-[System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
-Write-Host ("Fertig: {0} Gebaeude, {1} KB in {2}" -f $eintraege.Count, [int]((Get-Item $Ausgabe).Length / 1024), $Ausgabe)
+$kopf = '// Gebaeudehoehen der Stadt ' + $StadtInfo.Ascii + ': LGLN, 3D-Gebaeudemodell LoD2, Open Data, Lizenz CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.de). Erzeugt mit Datenpflege\13_Gebaeudehoehen_aktualisieren.ps1.' + "`n" +
+        '// Jedes Gebaeude = [Traufhoehe, Firsthoehe, Dachklasse (0 flach, 1 Sattel, 2 Walm, 3 Zelt/Pyramide, 4 Pult), Winkel (Firstrichtung 0 bis 179 bzw. Neigungsrichtung beim Pultdach, Grad von Norden im Uhrzeigersinn), Ring, Ring, ...], Hoehen in Dezimetern ueber NHN (nicht ueber Grund!); Ring = [Breite, Laenge, Delta, Delta, ...] in Millionstel Grad (erster Ring = Aussenkante, weitere = Innenhoefe).' + "`n" +
+        '// Die Gebaeude liegen in Kacheln (hoehen\<i>_<j>.js, Zelle = Breite / dlat, Laenge / dlon), index.js nennt die vorhandenen Kacheln.'
+Schreibe-HoehenKacheln $eintraege $Ausgabe $Stand $kopf
+Write-Host ("Fertig: {0} Gebaeude in {1}" -f $eintraege.Count, $Ausgabe)
 if (-not $Behalten) { Remove-Item -Recurse -Force $Zielordner -Confirm:$false }

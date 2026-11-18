@@ -414,23 +414,33 @@
   }
 
   // ---------- Gebäudehöhen (LGLN) für die Schätzung der Geschosse ----------
-  var hoehenIdx = null, hoehenVorgang = null;
-  function holeHoehen() {
-    if (hoehenIdx) { return Promise.resolve(hoehenIdx); }
-    if (hoehenVorgang) { return hoehenVorgang; }
-    hoehenVorgang = window.ladeAnsicht3d().then(function () { return window.ansicht3d.daten.gebaeude(); }).then(function (liste) {
-      var idx = new Map();
+  // Die Höhen werden in Kacheln geladen, und zwar nur für die Umgebung des Grundstücks (bb = [Süd, West, Nord, Ost]); hoehenIdx ist dann gesetzt.
+  // Wählt man später ein Grundstück außerhalb des geladenen Bereichs, werden dort die Kacheln nachgeladen.
+  var hoehenIdx = null, hoehenSchon = null, hoehenBereiche = [];
+  function hoehenBox(bb) { return { s: bb[0] - 0.004, w: bb[1] - 0.006, n: bb[2] + 0.004, o: bb[3] + 0.006 }; }
+  function hoehenGedeckt(bb) {
+    if (!hoehenIdx || !bb) { return false; }
+    var b = hoehenBox(bb);
+    return hoehenBereiche.some(function (r) { return r.s <= b.s && r.n >= b.n && r.w <= b.w && r.o >= b.o; });
+  }
+  function holeHoehen(bb) {
+    bb = bb || (S.f ? S.f.bb : null);
+    if (!bb) { return Promise.reject(new Error("Kein Grundstück gewählt")); }
+    if (hoehenGedeckt(bb)) { return Promise.resolve(hoehenIdx); }
+    var box = hoehenBox(bb);
+    return window.ladeAnsicht3d().then(function () { return window.ansicht3d.daten.gebaeude(box); }).then(function (liste) {
+      if (!hoehenIdx) { hoehenIdx = new Map(); hoehenSchon = new Set(); }
       liste.forEach(function (g) {
-        var key = Math.floor(g.lat / RASTER) + "," + Math.floor(g.lng / RASTER), l = idx.get(key);
-        if (!l) { l = []; idx.set(key, l); }
+        if (hoehenSchon.has(g)) { return; }
+        hoehenSchon.add(g);
+        var key = Math.floor(g.lat / RASTER) + "," + Math.floor(g.lng / RASTER), l = hoehenIdx.get(key);
+        if (!l) { l = []; hoehenIdx.set(key, l); }
         l.push(g);
       });
-      hoehenIdx = idx;
-      return idx;
-    }, function (x) { hoehenVorgang = null; throw x; });
-    return hoehenVorgang;
-  }
-  function pipGrad(lat, lng, ring) {
+      hoehenBereiche.push(box);
+      return hoehenIdx;
+    });
+  }  function pipGrad(lat, lng, ring) {
     var c = false;
     for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
       var yi = ring[i][0], xi = ring[i][1], yj = ring[j][0], xj = ring[j][1];
@@ -654,6 +664,8 @@
     // Gebäude rund um das Grundstück laden (auch die der Nachbarn für den Vergleich)
     var ra = 0.0012, ro = 0.002;
     ladeBereich(f.bb[0] - ra, f.bb[1] - ro, f.bb[2] + ra, f.bb[3] + ro, true).then(function () {
+      return hoehenIdx ? holeHoehen(f.bb).catch(function () { /* ohne Höhen bleibt die GFZ ungeschätzt */ }) : null;      // schon geladene Höhen: für das neue Grundstück nachladen
+    }).then(function () {
       if (token !== S.token) { return; }
       S.ber = bebauung(f);
       aktualisiereAnzeige();
@@ -744,7 +756,9 @@
     S.pot = null;
     return ladeFlaechenDaten(gruppen).then(function (daten) {
       if (token !== S.token) { return; }
-      var P = probePunkte(f), pot = { fnp: [], laerm: {}, schutz: {}, bplan: false, brw: null, brwAndere: 0 };
+      var P = probePunkte(f), pot = { fnp: [], laerm: {}, schutz: {}, bplan: false, brw: null, brwAndere: 0, hat: {} };
+      // Welche Daten gibt es für die gewählte Stadt überhaupt? (Fehlende Ebenen sind nicht in FLAECHEN, siehe staedte.js)
+      POT_IDS.forEach(function (id) { pot.hat[id] = FLAECHEN.some(function (g) { return g.id === id; }); });
       function trifft(id, punkte) { return (daten[id] || []).some(function (fl) { return punkte.some(function (p) { return imFlaeche(fl, p[0], p[1]); }); }); }
       // Bodenrichtwertzone: die kleinste Zone, die die Grundstücksmitte enthält (sonst irgendeinen Probepunkt)
       var zonen = [];
@@ -758,7 +772,9 @@
       ["nsg", "lsg", "biotope", "wallhecken"].forEach(function (id) { pot.schutz[id] = trifft(id, P); });
       // Lärm: höchste Klasse auf einem der Probepunkte (höchstens 12 Punkte, die Dateien sind groß)
       ["laerm_lden", "laerm_nacht"].forEach(function (id) {
-        var gr = FLAECHEN.filter(function (g) { return g.id === id; })[0], keys = Object.keys(gr.klassen), best = -1, pp = P.length > 12 ? P.filter(function (p, i) { return i % Math.ceil(P.length / 12) === 0; }) : P;
+        var gr = FLAECHEN.filter(function (g) { return g.id === id; })[0];
+        if (!gr) { pot.laerm[id] = null; return; }     // keine Lärmdaten für diese Stadt
+        var keys = Object.keys(gr.klassen), best = -1, pp = P.length > 12 ? P.filter(function (p, i) { return i % Math.ceil(P.length / 12) === 0; }) : P;
         (daten[id] || []).forEach(function (fl) {
           var ix = keys.indexOf(fl.a); if (ix <= best) { return; }
           if (pp.some(function (p) { return imFlaeche(fl, p[0], p[1]); })) { best = ix; }
@@ -985,10 +1001,14 @@
       var ld = pot.laerm.laerm_lden, ln = pot.laerm.laerm_nacht;
       if (ld) { e.push("Straßenlärm (ganzer Tag): " + ld.text + " auf dem Grundstück" + (ld.stufe >= 2 ? ". Schallschutz (Grundrisse, Fenster, Lärmschutzwand) ist einzuplanen; für ein Allgemeines Wohngebiet gelten als Orientierungswerte tags 55 dB und nachts 45 dB (DIN 18005)." : ". Die Orientierungswerte für ein Wohngebiet liegen tags bei 55 dB und nachts bei 45 dB (DIN 18005).")); achten.push("Straßenlärm " + ld.text + " (ganzer Tag) auf dem Grundstück."); }
       if (ln && !ld) { e.push("Straßenlärm nachts: " + ln.text + " auf dem Grundstück."); }
-      if (!ld && !ln) { e.push("Kein Straßenlärm ab 55 dB (Tag) bzw. 50 dB (Nacht) in der Lärmkartierung der Stadt (die Karte erfasst nur Hauptverkehrsstraßen)."); }
+      var hatLaerm = !!(pot.hat && (pot.hat.laerm_lden || pot.hat.laerm_nacht));
+      if (!hatLaerm) { e.push("Straßenlärm: Für diese Stadt liegt keine Lärmkartierung in den App-Daten vor, bitte bei der Stadt oder im Lärmportal des Landes prüfen."); }
+      else if (!ld && !ln) { e.push("Kein Straßenlärm ab 55 dB (Tag) bzw. 50 dB (Nacht) in der Lärmkartierung der Stadt (die Karte erfasst nur Hauptverkehrsstraßen)."); }
       var sn = { nsg: "Naturschutzgebiet", lsg: "Landschaftsschutzgebiet", biotope: "geschütztes Biotop", wallhecken: "Wallhecke" };
       Object.keys(sn).forEach(function (id) { if (pot.schutz[id]) { e.push("Das Grundstück liegt ganz oder teilweise in einem Bereich mit Schutzstatus (" + sn[id] + "): Eingriffe sind genehmigungspflichtig oder verboten."); achten.push("Schutzstatus: " + sn[id] + " auf dem Grundstück."); } });
-      if (!pot.schutz.nsg && !pot.schutz.lsg && !pot.schutz.biotope && !pot.schutz.wallhecken) { e.push("Keine Naturschutzgebiete, Landschaftsschutzgebiete, Biotope oder Wallhecken auf dem Grundstück (nach den Daten der Stadt)."); }
+      var geprueft = Object.keys(sn).filter(function (id) { return pot.hat && pot.hat[id]; });
+      if (geprueft.length && !geprueft.some(function (id) { return pot.schutz[id]; })) { e.push("Kein geschütztes Gebiet auf dem Grundstück (geprüft: " + geprueft.map(function (id) { return sn[id]; }).join(", ") + "; nach den Daten der Stadt)."); }
+      if (geprueft.length < Object.keys(sn).length) { e.push("Nicht in den Daten dieser Stadt und deshalb nicht geprüft: " + Object.keys(sn).filter(function (id) { return !(pot.hat && pot.hat[id]); }).map(function (id) { return sn[id]; }).join(", ") + "."); }
     }
     e.push("Nicht geprüft, weil nicht in den App-Daten: Baulasten und Grunddienstbarkeiten, Denkmalschutz, Altlasten, Grundwasserstand und Baugrund, Hochwasser und Starkregen, Leitungen, Baumschutz, Artenschutz, Erschließung und Stellplatznachweis. Altlasten, Baugrund, Grundwasser und Starkregen kannst du als Ebenen in „04 Analysedaten“ ansehen.");
     abs.push(a5);
@@ -1033,7 +1053,7 @@
       zeile(best, "Geschossfläche (Schätzung)", hoehenIdx || lesenZahl("grundBestandGeschosse") > 0 ? qm(g.gfHaupt) + "  ·  GFZ " + zahlDe(gfz, 2) : "noch nicht geschätzt", true);
       if (g.gfUnbekannt > 0 && hoehenIdx) { absatz(best, g.gfUnbekannt + " Gebäude ohne Höhenangabe: dort ist ein Geschoss angenommen."); }
       var hk = el("grundHoehenKnopf"); hk.hidden = !!hoehenIdx;
-      if (!hoehenIdx) { absatz(best, "Die Geschosszahl wird aus den Gebäudehöhen des Landesamts geschätzt (Traufhöhe geteilt durch " + zahlDe(GESCHOSSHOEHE, 1) + " m). Dafür müssen einmalig etwa 13 MB geladen werden."); }
+      if (!hoehenIdx) { absatz(best, "Die Geschosszahl wird aus den Gebäudehöhen des Landesamts geschätzt (Traufhöhe geteilt durch " + zahlDe(GESCHOSSHOEHE, 1) + " m). Dafür müssen die Höhen der Umgebung (einige MB) geladen werden."); }
     }
     // Umgebung
     var umg = el("grundUmgebung"); umg.textContent = "";
@@ -1323,8 +1343,8 @@
       return new Promise(function (ok) { setTimeout(ok, 150); }).then(warteBestand);
     }
     return warteBestand().then(function () {
-      if (!mitHoehen || hoehenIdx) { return null; }
-      return holeHoehen().then(function () { if (S.f === f) { aktualisiereAnzeige(); } return umgebungRechnen(S.token); }).catch(function () { /* ohne Höhen bleibt die GFZ ungeschätzt */ });
+      if (!mitHoehen || hoehenGedeckt(f.bb)) { return null; }
+      return holeHoehen(f.bb).then(function () { if (S.f === f) { aktualisiereAnzeige(); } return umgebungRechnen(S.token); }).catch(function () { /* ohne Höhen bleibt die GFZ ungeschätzt */ });
     });
   }
   // ---------- Oberfläche ----------
@@ -1378,8 +1398,8 @@
     el("grundKlick").addEventListener("click", function () { klickStarten(); });
     el("grundUebernehmen").addEventListener("click", uebernehmen);
     el("grundHoehenKnopf").addEventListener("click", function () {
-      var k = el("grundHoehenKnopf"); k.disabled = true; setzeMeldung("Gebäudehöhen werden geladen (einmalig etwa 13 MB) …");
-      holeHoehen().then(function () { k.disabled = false; setzeMeldung(""); if (S.f) { aktualisiereAnzeige(); umgebungRechnen(S.token); } })
+      var k = el("grundHoehenKnopf"); k.disabled = true; setzeMeldung("Gebäudehöhen werden geladen (für die Umgebung des Grundstücks, einige MB) …");
+      holeHoehen(S.f ? S.f.bb : null).then(function () { k.disabled = false; setzeMeldung(""); if (S.f) { aktualisiereAnzeige(); umgebungRechnen(S.token); } })
         .catch(function () { k.disabled = false; setzeMeldung("Die Gebäudehöhen konnten nicht geladen werden (Internet prüfen).", true); });
     });
     el("grundZuEntwurf").addEventListener("click", function () {

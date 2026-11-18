@@ -19,7 +19,7 @@
 
   var zeichnet = false, neuePunkte = [], gummi = null;
   var linie = null, griffe = [], pfeil = null, positionMarke = null;
-  var panel = null, ergebnis = null, svgInfo = null, timer = null, rechnungNr = 0, datenCache = null;
+  var panel = null, ergebnis = null, svgInfo = null, timer = null, rechnungNr = 0, datenGeladen = false;
 
   function el(id) { return document.getElementById(id); }
   function z1(v, d) { return Number(v).toLocaleString("de-DE", { minimumFractionDigits: d === undefined ? 1 : d, maximumFractionDigits: d === undefined ? 1 : d }); }
@@ -91,18 +91,25 @@
   }
 
   // ---------- Daten ----------
+  // Rechteck um die Schnittlinie (Grad), mit Rand für die Ansicht dahinter (Höhen und Gelände werden nur für dieses Rechteck geladen)
+  function linienBox() {
+    var la = Z.punkte.map(function (p) { return p[0]; }), lo = Z.punkte.map(function (p) { return p[1]; });
+    var s = Math.min.apply(null, la), n = Math.max.apply(null, la), w = Math.min.apply(null, lo), o = Math.max.apply(null, lo);
+    var dLat = 400 / M_LAT, dLng = 400 / (M_LAT * Math.cos((s + n) / 2 * Math.PI / 180));
+    return { s: s - dLat, n: n + dLat, w: w - dLng, o: o + dLng };
+  }
   function ladeDaten() {
-    if (datenCache) { return Promise.resolve(datenCache); }
+    var box = linienBox();
     return ladeAnsicht3d().then(function () {
       var D = window.ansicht3d && window.ansicht3d.daten;
       if (!D) { throw new Error("Die Höhen- und Geländedaten der 3D-Ansicht fehlen."); }
       return Promise.all([
-        D.gelaende(), D.gebaeude(),
+        D.gelaende(box), D.gebaeude(box),
         D.waelder().catch(function () { return []; }),
         ladeBaeumeDaten().catch(function () { return []; })
       ]).then(function (r) {
-        datenCache = { G: r[0], geb: r[1], wald: r[2], baeume: r[3], utm32: D.utm32, dach: D.dach };
-        return datenCache;
+        datenGeladen = true;
+        return { G: r[0], geb: r[1], wald: r[2], baeume: r[3], utm32: D.utm32, dach: D.dach };
       });
     });
   }
@@ -548,7 +555,7 @@
   function zeige() {
     if (!panel || Z.punkte.length < 2) { return; }
     var nr = ++rechnungNr;
-    if (!datenCache) { meldung("Daten werden geladen (beim ersten Mal ca. 13 MB: Gebäudehöhen und Gelände) …"); }
+    if (!datenGeladen) { meldung("Daten werden geladen (beim ersten Mal einige MB: Gebäudehöhen und Gelände für den Bereich der Linie) …"); }
     ladeDaten().then(function (daten) {
       if (nr !== rechnungNr || !panel) { return; }
       var R;
@@ -565,7 +572,7 @@
     }).catch(function (x) {
       if (nr !== rechnungNr || !panel) { return; }
       if (window.console) { console.error("Schnitt:", x); }
-      meldung("Der Schnitt konnte nicht berechnet werden. " + esc(x && x.message ? x.message : "") + " Die Dateien hoehen.js, gelaende.js und ansicht3d.js müssen im selben Ordner wie index.html liegen.");
+      meldung("Der Schnitt konnte nicht berechnet werden. " + esc(x && x.message ? x.message : "") + " Die Ordner „hoehen“ und „gelaende“ sowie die Datei ansicht3d.js müssen im selben Ordner wie index.html liegen.");
     });
   }
 

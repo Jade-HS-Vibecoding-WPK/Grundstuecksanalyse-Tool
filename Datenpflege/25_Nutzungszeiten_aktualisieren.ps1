@@ -1,5 +1,5 @@
-# Holt Orte mit Nutzung im Stadtgebiet Oldenburg (Gastronomie, Laeden, Buero, Schulen, Aerzte, Hotels, Kultur, Sport u. a.)
-# von OpenStreetMap, samt den Oeffnungszeiten (opening_hours), und schreibt sie in die Datei Standortanalyse\zeiten_oldenburg.js
+﻿# Holt Orte mit Nutzung im Stadtgebiet (Gastronomie, Laeden, Buero, Schulen, Aerzte, Hotels, Kultur, Sport u. a.)
+# von OpenStreetMap, samt den Oeffnungszeiten (opening_hours), und schreibt sie in die Datei Standortanalyse\staedte\<Stadt>\zeiten.js
 # (Ebenen "Tagsueber aktiv", "Abends aktiv", "Nachts aktiv" der App, Abschnitt "Tag- und Nachtnutzung").
 # Die Einteilung in tagsueber, abends und nachts macht die App selbst: nach den Oeffnungszeiten, wo es welche gibt,
 # sonst nach der Art des Ortes. Hier wird nur gesammelt. Alles geht in einem Schritt (etwa 1 Minute).
@@ -8,14 +8,16 @@
 # Flaechen (es wird deren Mitte genommen) nur, wenn in den naechsten 25 m noch kein Punkt der gleichen Art liegt.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\zeiten_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\zeiten.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $bereich = "($sued,$west,$nord,$ost)"
 $kennung = 'Standortanalyse-Studienprojekt/1.0'
 
@@ -51,7 +53,10 @@ foreach ($dienst in $dienste) {
            -UseBasicParsing -UserAgent $kennung -TimeoutSec 200
       $text = [System.Text.Encoding]::UTF8.GetString($r.RawContentStream.ToArray())
       if ($text -notmatch '"elements"') { throw 'unbrauchbare Antwort' }
-      $antwort = $text | ConvertFrom-Json
+      # JavaScriptSerializer statt ConvertFrom-Json: Letzteres scheitert, wenn OpenStreetMap-Tags sich nur in der Gross-/Kleinschreibung unterscheiden (z. B. "FIXME" und "fixme")
+      Add-Type -AssemblyName System.Web.Extensions
+      $js = New-Object System.Web.Script.Serialization.JavaScriptSerializer; $js.MaxJsonLength = [int]::MaxValue; $js.RecursionLimit = 200
+      $antwort = $js.DeserializeObject($text)
     } catch {
       Write-Host ('  fehlgeschlagen: ' + $_.Exception.Message)
       Start-Sleep -Seconds (8 * $versuch)
@@ -83,7 +88,7 @@ foreach ($e in $antwort.elements) {
 
 # Doppelte erkennen (Raster mit Zellen von etwa 40 m, geprueft wird in der Zelle und ihren Nachbarn), nur gleiche Art
 $meterProGradBreite = 111195.0
-$meterProGradLaenge = 111195.0 * [Math]::Cos(53.14 * [Math]::PI / 180)
+$meterProGradLaenge = 111195.0 * [Math]::Cos($StadtInfo.Breite * [Math]::PI / 180)
 $zelleLat = 0.0004; $zelleLon = 0.0007
 $raster = @{}
 $ergebnis = New-Object System.Collections.Generic.List[object]
@@ -125,8 +130,8 @@ Write-Host ("{0} Orte, davon {1} mit Oeffnungszeiten" -f $zeilen.Count, $mitZeit
 $nachArt = $ergebnis | Group-Object { $_.Typ.Substring(0, 1) } | ForEach-Object { $_.Name + '=' + $_.Count }
 Write-Host ("  nach Schluessel: " + ($nachArt -join ', '))
 
-$inhalt = '// Orte mit Nutzung in Oldenburg samt Oeffnungszeiten (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\25_Nutzungszeiten_aktualisieren.ps1' + "`n" +
+$inhalt = '// Orte mit Nutzung in ' + $StadtInfo.Ascii + ' samt Oeffnungszeiten (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\25_Nutzungszeiten_aktualisieren.ps1' + "`n" +
           '// p = [Breite, Laenge, Art (Kuerzel:Wert, a = amenity, s = shop, o = office, t = tourism, l = leisure), Name, opening_hours]' + "`n" +
-          'var ZEITEN_OLDENBURG = {"stand":"' + $Stand + '","einheit":1e-6,"p":[' + ($zeilen -join ',') + ']};' + "`n"
+          'var ZEITEN_DATEN = {"stand":"' + $Stand + '","einheit":1e-6,"p":[' + ($zeilen -join ',') + ']};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: {0:n0} Zeichen in {1} geschrieben." -f $inhalt.Length, $Ausgabe)

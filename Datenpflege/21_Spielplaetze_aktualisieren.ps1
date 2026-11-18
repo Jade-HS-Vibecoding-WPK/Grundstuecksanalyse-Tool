@@ -1,13 +1,15 @@
 ﻿# Holt Spielplaetze (als Flaechen) sowie Bewegungsorte (Fussball- und Bolzplaetze, Basketball, Tischtennis, Skateanlagen,
-# Fitnessgeraete, Hundewiesen) im Stadtgebiet Oldenburg von OpenStreetMap und schreibt sie in die Datei
-# Standortanalyse\spielplaetze_oldenburg.js (Ebenen unter "Gruen und Freiraeume / Spielen und Bewegen" der App).
+# Fitnessgeraete, Hundewiesen) im Stadtgebiet von OpenStreetMap und schreibt sie in die Datei
+# Standortanalyse\staedte\<Stadt>\spielplaetze.js (Ebenen unter "Gruen und Freiraeume / Spielen und Bewegen" der App).
 # Die Datenmenge ist klein, deshalb geht alles in einem Schritt. Hinweis: Die Stadt Oldenburg bietet keine offenen
 # Spielplatzdaten an; in OpenStreetMap haben nur etwa 15 % der Spielplaetze einen Namen.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\spielplaetze_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\spielplaetze.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -17,8 +19,8 @@ $serializer.MaxJsonLength = [int]::MaxValue
 $serializer.RecursionLimit = 200
 $ci = [Globalization.CultureInfo]::InvariantCulture
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $b = "($sued,$west,$nord,$ost)"
 $kennung = 'Standortanalyse-Studienprojekt/1.0'
 $dienste = @(
@@ -42,7 +44,7 @@ function Hole-Overpass([string]$abfrage) {
   throw 'Kein Dienst hat geantwortet. Bitte spaeter noch einmal versuchen.'
 }
 function Text-Sicher($s) { return ([string]$s).Replace('\', '').Replace('"', "'").Replace("`r", ' ').Replace("`n", ' ') }
-$mLat = 111195.0; $mLon = 111195.0 * [Math]::Cos(53.14 * [Math]::PI / 180)
+$mLat = 111195.0; $mLon = 111195.0 * [Math]::Cos($StadtInfo.Breite * [Math]::PI / 180)
 
 # ---- 1. Spielplaetze: Flaechen mit Umriss, sonst Punkte ----
 $w1 = Hole-Overpass ('[out:json][timeout:240];nwr["leisure"="playground"]' + $b + ';out geom tags qt;')
@@ -128,9 +130,9 @@ foreach ($g in 'fussball', 'ball2', 'skate', 'hund') {
   Write-Host ("  {0}: {1}" -f $g, @($liste).Count)
 }
 
-$inhalt = '// Spielplaetze und Bewegungsorte in Oldenburg (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\21_Spielplaetze_aktualisieren.ps1' + "`n" +
+$inhalt = '// Spielplaetze und Bewegungsorte in ' + $StadtInfo.Ascii + ' (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\21_Spielplaetze_aktualisieren.ps1' + "`n" +
           '// Spielplatz = [Breite, Laenge (Mitte, Millionstel Grad), Name, Zugang (0 oeffentlich, 1 eingeschraenkt), Flaeche in m2, Umriss [Breite, Laenge, Delta, Delta, ...] oder 0]' + "`n" +
           '// Ort = [Breite, Laenge, Art, Name]' + "`n" +
-          'var SPIEL_OLDENBURG = {"stand":"' + $Stand + '","einheit":1e-6,"spielplaetze":[' + "`n" + ($spiel -join ",`n") + "`n" + '],"orte":{' + ($orteJs -join ',') + '}};' + "`n"
+          'var SPIEL_DATEN = {"stand":"' + $Stand + '","einheit":1e-6,"spielplaetze":[' + "`n" + ($spiel -join ",`n") + "`n" + '],"orte":{' + ($orteJs -join ',') + '}};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: in {0} geschrieben ({1} KB)." -f $Ausgabe, [int]((Get-Item $Ausgabe).Length / 1024))

@@ -4,6 +4,29 @@ DATENPFLEGE
 Diese Programme erneuern die Daten der App. Alle Daten stammen von OpenStreetMap und sind
 ein Stand vom Tag des Herunterladens. Etwa einmal im Jahr zu erneuern genügt.
 
+MEHRERE STAEDTE (neu)
+---------------------
+Die App kennt mehrere Staedte (Liste in "Standortanalyse\staedte\staedte.js"). Jedes Programm hat den Schalter -Stadt, z. B.
+   .\1_Gebaeude_herunterladen.ps1 -Stadt osnabrueck
+Ohne Angabe gilt "oldenburg". Die fertigen Dateien liegen nicht mehr in "Standortanalyse\", sondern je Stadt in
+"Standortanalyse\staedte\<stadt>\", und der Zusatz "_oldenburg" im Dateinamen entfaellt (z. B. staedte\oldenburg\karte.js statt
+karte_oldenburg.js). Alle Angaben zu Dateinamen weiter unten sind entsprechend zu lesen.
+Hoehen (13) und Gelaende (22) werden in Kacheln geschrieben (Ordner hoehen\ und gelaende\), die App laedt nur die Kacheln fuer den
+gewaehlten Ausschnitt. Das Programm 29_Kacheln_umbauen.ps1 braucht man nur fuer alte Gesamtdateien.
+Gemeinsame Hilfen: stadt.ps1 (liest die Stadt aus staedte.js), kacheln.ps1 (schreibt die Kacheln).
+Eine neue Stadt anlegen: 1. Eintrag in staedte.js ergaenzen (Mitte, Grenzen, Suchbereich, "datenrechteck" [Sued, West, Nord, Ost],
+   "ags" = amtlicher Gemeindeschluessel, optional "ladekreis" und "borisgemeinde" als Suchmuster fuer das Ladesaeulenregister bzw. BORIS),
+   "bereit" bleibt false. 2. Die Programme 1 bis 10, 12 bis 15, 17 bis 22, 24 bis 28 mit -Stadt <id> laufen lassen (Reihenfolge wie bei
+   Oldenburg; 13 braucht vorher 2, 18 nach 17). Zusaetzlich 33_Strassenliste_aktualisieren.ps1 (Strassenliste fuer die Autokorrektur,
+   braucht karte.js aus Programm 4). 3. Staedtische Daten (Datei stadt.js): Programme 11 und 23 gibt es nur fuer Oldenburg (Laerm,
+   Bebauungsplaene, FNP, Schutzgebiete, Bezirke); 30 nur fuer Osnabrueck (Geodatenportal der Stadt); 32 fuer Staedte ohne eigene offene
+   Stadtdaten (Naturschutz-, Landschaftsschutzgebiete und Naturdenkmale vom Land Niedersachsen/NLWKN, Stadtbezirke aus OpenStreetMap,
+   Parameter -BezirkStufe = admin_level der Bezirke). landdaten.ps1 ist die gemeinsame Hilfe von 30 und 32.
+   Flaechennutzungsplan fuer alle anderen Staedte: 31_Flaechennutzungsplan_Land.ps1 (Landesportal PlanDigital Niedersachsen, WFS je
+   Gemeinde ueber "ags", Datenlizenz Deutschland - Zero 2.0; fehlt der Plan dort, bleiben die Gruppen leer).
+   Fehlt eine Quelle, wird in staedte.js bei "hat" bzw. "stadtGruppen" das Entsprechende weggelassen, dann verschwindet die Ebene fuer
+   diese Stadt. 4. "bereit: true" setzen, sobald alles getestet ist.
+
 A) Gebäude (Ebene "Bebauung")  ->  Standortanalyse\gebaeude_oldenburg.js
    1. Rechtsklick auf "1_Gebaeude_herunterladen.ps1" -> "Mit PowerShell ausführen" (dauert einige Minuten).
    2. Rechtsklick auf "2_Gebaeude_umwandeln.ps1" -> "Mit PowerShell ausführen".

@@ -1,5 +1,5 @@
-# Holt alle zu Fuss begehbaren Wege und Strassen im Stadtgebiet Oldenburg von OpenStreetMap und schreibt sie in die Datei
-# Standortanalyse\wegenetz_oldenburg.js (Ebenen "5 / 10 Min. nach Wegenetz" der App).
+﻿# Holt alle zu Fuss begehbaren Wege und Strassen im Stadtgebiet von OpenStreetMap und schreibt sie in die Datei
+# Standortanalyse\staedte\<Stadt>\wegenetz.js (Ebenen "5 / 10 Min. nach Wegenetz" der App).
 #
 # Die App rechnet damit selbst aus, wie weit man in 5 bzw. 10 Minuten zu Fuss kommt (80 m pro Minute entlang der Wege).
 # Mitgenommen werden: Gehwege, Fusswege, Fussgaengerzonen, Treppen, Pfade, verkehrsberuhigte Bereiche, Wohn- und
@@ -10,11 +10,13 @@
 # "rohdaten_wegenetz", der am Ende geloescht wird; bei einem Abbruch kann man das Programm einfach noch einmal starten.
 
 param(
-  [string]$Zielordner = (Join-Path $PSScriptRoot 'rohdaten_wegenetz'),
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\wegenetz_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Zielordner = (Join-Path $PSScriptRoot "rohdaten_wegenetz_$Stadt"),
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\wegenetz.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd'),
   [int]$Anzahl = 4
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -23,8 +25,8 @@ New-Item -ItemType Directory -Force $Zielordner | Out-Null
 $log = Join-Path $Zielordner '_log.txt'
 "Start $(Get-Date -Format 'HH:mm:ss')" | Set-Content $log -Encoding UTF8
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $dLat = ($nord - $sued) / $Anzahl
 $dLon = ($ost - $west) / $Anzahl
 $dienst = 'https://overpass.openstreetmap.fr/api/interpreter'
@@ -96,9 +98,9 @@ foreach ($datei in (Get-ChildItem $Zielordner -Filter 'teil_*.json')) {
   }
 }
 
-$inhalt = '// Begehbares Wegenetz in Oldenburg (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\12_Wegenetz_aktualisieren.ps1.' + "`n" +
+$inhalt = '// Begehbares Wegenetz in ' + $StadtInfo.Ascii + ' (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\12_Wegenetz_aktualisieren.ps1.' + "`n" +
           '// Jeder Weg = [Breite, Laenge, Delta, Delta, ...] in Millionstel Grad. Kreuzungen erkennt die App an gleichen Punkten.' + "`n" +
-          'var WEGENETZ_OLDENBURG = {"einheit":1e-6,"stand":"' + $Stand + '","wege":[' + ($wege -join ',') + ']};' + "`n"
+          'var WEGENETZ_DATEN = {"einheit":1e-6,"stand":"' + $Stand + '","wege":[' + ($wege -join ',') + ']};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: {0} Wege, {1} Punkte, {2} KB in {3}" -f $wege.Count, $punkte, [int]((Get-Item $Ausgabe).Length / 1024), $Ausgabe)
 Remove-Item -Recurse -Force $Zielordner -Confirm:$false

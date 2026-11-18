@@ -1,8 +1,10 @@
 ﻿param(
-  [string[]]$Dateien = (Get-ChildItem (Join-Path $PSScriptRoot 'rohdaten') -Filter 'teil_*.json' | ForEach-Object { $_.FullName }),
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\gebaeude_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string[]]$Dateien = (Get-ChildItem (Join-Path $PSScriptRoot "rohdaten_gebaeude_$Stadt") -Filter 'teil_*.json' | ForEach-Object { $_.FullName }),
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\gebaeude.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $code = @'
 using System;
@@ -183,11 +185,11 @@ public static class GebaeudeWandler
         }
 
         var kopf = new StringBuilder();
-        kopf.Append("// Gebäudeumrisse der Stadt Oldenburg (Oldb) und Umgebung\n");
+        kopf.Append("// Gebäudeumrisse der Stadt und Umgebung\n");
         kopf.Append("// Daten: © OpenStreetMap-Mitwirkende, Lizenz ODbL (https://www.openstreetmap.org/copyright). Stand: " + stand + "\n");
         kopf.Append("// Format: Jedes Gebäude = Liste von Ringen (erster Ring = Außenkante, weitere = Innenhöfe).\n");
         kopf.Append("// Jeder Ring = [Breite, Länge, Δ Breite, Δ Länge, ...] in Millionstel Grad; ab dem zweiten Punkt als Abstand zum vorigen Punkt.\n");
-        kopf.Append("var GEBAEUDE_OLDENBURG = { einheit: 1e-6, stand: \"" + stand + "\", anzahl: " + anzahl + ", gebaeude: [\n");
+        kopf.Append("var GEBAEUDE_DATEN = { einheit: 1e-6, stand: \"" + stand + "\", anzahl: " + anzahl + ", gebaeude: [\n");
         File.WriteAllText(ausgabe, kopf.ToString() + sb.ToString() + "]};\n", new UTF8Encoding(false));
 
         return string.Format("Gebäude geschrieben: {0} | Wege: {1} (nicht geschlossen: {2}, zu klein: {3}) | Relationen: {4} (ohne Ring: {5}, Innenhöfe: {6}) | doppelt übersprungen: {7}",

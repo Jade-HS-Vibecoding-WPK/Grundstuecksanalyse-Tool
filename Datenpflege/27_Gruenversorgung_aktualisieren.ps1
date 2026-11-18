@@ -1,5 +1,5 @@
-# Holt die oeffentlich nutzbaren Gruenflaechen im Stadtgebiet Oldenburg von OpenStreetMap und schreibt sie in die Datei
-# Standortanalyse\gruenversorgung_oldenburg.js (Ebene "Gruenversorgung" der App: Wohngebiete ohne Park, Spielplatz oder Wald
+﻿# Holt die oeffentlich nutzbaren Gruenflaechen im Stadtgebiet von OpenStreetMap und schreibt sie in die Datei
+# Standortanalyse\staedte\<Stadt>\gruenversorgung.js (Ebene "Gruenversorgung" der App: Wohngebiete ohne Park, Spielplatz oder Wald
 # in 300 m Fussweg). Alles geht in einem Schritt (etwa 1 Minute).
 #
 # Was gesammelt wird (jeweils ohne privaten oder gesperrten Zugang):
@@ -9,14 +9,16 @@
 # Je Flaeche eine Zeile [Art, Breite, Laenge, Delta, Delta, ...] (nur die Aussenkante, Millionstel Grad, danach Unterschiede).
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\gruenversorgung_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\gruenversorgung.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $b = "($sued,$west,$nord,$ost)"
 $kennung = 'Standortanalyse-Studienprojekt/1.0'
 $dienste = @(
@@ -201,9 +203,9 @@ public static class GruenWandler
             }
         }
         var o = new StringBuilder();
-        o.Append("// Oeffentlich nutzbare Gruenflaechen in Oldenburg (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\\27_Gruenversorgung_aktualisieren.ps1\n");
+        o.Append("// Oeffentlich nutzbare Gruenflaechen im Stadtgebiet (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\\27_Gruenversorgung_aktualisieren.ps1\n");
         o.Append("// f = [Art (0 Park/Gruen, 1 Spielplatz, 2 Wald), Breite, Laenge, Delta, Delta, ...] (nur Aussenkante, Millionstel Grad)\n");
-        o.Append("var GRUENVERSORGUNG_OLDENBURG = {\"stand\":\"" + stand + "\",\"einheit\":1e-6,\"f\":[" + string.Join(",", zeilen.ToArray()) + "]};\n");
+        o.Append("var GRUENVERSORGUNG_DATEN = {\"stand\":\"" + stand + "\",\"einheit\":1e-6,\"f\":[" + string.Join(",", zeilen.ToArray()) + "]};\n");
         File.WriteAllText(ausgabe, o.ToString(), new UTF8Encoding(false));
         return string.Format("Park/Gruen: {0} ({1} ha) | Spielplaetze: {2} ({3} ha) | Wald: {4} ({5} ha)", anzahl[0], (int)(qm[0] / 10000), anzahl[1], (int)(qm[1] / 10000), anzahl[2], (int)(qm[2] / 10000));
     }

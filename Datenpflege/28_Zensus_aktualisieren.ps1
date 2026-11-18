@@ -1,8 +1,8 @@
-# Holt die Ergebnisse des Zensus 2022 im 100-m-Gitter (Statistisches Bundesamt, Statistische Aemter des Bundes und der Laender)
-# fuer das Stadtgebiet Oldenburg und schreibt sie in die Datei Standortanalyse\zensus_oldenburg.js
+﻿# Holt die Ergebnisse des Zensus 2022 im 100-m-Gitter (Statistisches Bundesamt, Statistische Aemter des Bundes und der Laender)
+# fuer das Stadtgebiet und schreibt sie in die Datei Standortanalyse\staedte\<Stadt>\zensus.js
 # (Ebenen "Zensus ..." der App, Abschnitt "Wer wohnt dort?"). Alles geht in einem Schritt.
 #
-# Was passiert: Acht ZIP-Dateien (zusammen ca. 130 MB, bundesweit) werden heruntergeladen, die Zellen in und um Oldenburg herausgesucht
+# Was passiert: Acht ZIP-Dateien (zusammen ca. 130 MB, bundesweit) werden heruntergeladen, die Zellen in und um die Stadt herausgesucht
 # (die Gitterkoordinaten sind ETRS89-LAEA, EPSG:3035, und werden hier in Laengen- und Breitengrad umgerechnet) und alles in einer kleinen
 # Datei gesammelt. Die ZIP-Dateien werden danach geloescht. Dauer: je nach Verbindung etwa 3 bis 8 Minuten.
 #
@@ -16,10 +16,12 @@
 #                       32 Leerstand, 64 Eigentuemer.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\zensus_oldenburg.js'),
-  [string]$Arbeitsordner = (Join-Path $env:TEMP 'zensus_oldenburg_roh'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\zensus.js"),
+  [string]$Arbeitsordner = (Join-Path $env:TEMP 'zensus_roh'),
   [switch]$Behalten
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -86,15 +88,15 @@ public static class ZensusKonv {
 }
 '@
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 
 # Probe der Umrechnung: hin und zurueck muss denselben Punkt ergeben
 $px = 0.0; $py = 0.0; $la = 0.0; $lo = 0.0
-[ZensusKonv]::Vor(53.1405, 8.2135, [ref]$px, [ref]$py)
+[ZensusKonv]::Vor($StadtInfo.MitteBreite, $StadtInfo.MitteLaenge, [ref]$px, [ref]$py)
 [ZensusKonv]::Rueck($px, $py, [ref]$la, [ref]$lo)
-if ([Math]::Abs($la - 53.1405) -gt 1e-7 -or [Math]::Abs($lo - 8.2135) -gt 1e-7) { throw 'Umrechnung der Gitterkoordinaten stimmt nicht.' }
-Write-Host ("Probe: Oldenburg Mitte liegt bei E {0:n0}, N {1:n0} (ETRS89-LAEA)." -f $px, $py)
+if ([Math]::Abs($la - $StadtInfo.MitteBreite) -gt 1e-7 -or [Math]::Abs($lo - $StadtInfo.MitteLaenge) -gt 1e-7) { throw 'Umrechnung der Gitterkoordinaten stimmt nicht.' }
+Write-Host ("Probe: Mitte von {2} liegt bei E {0:n0}, N {1:n0} (ETRS89-LAEA)." -f $px, $py, $StadtInfo.Ascii)
 
 # Rechteck im Gitter, das das Stadtgebiet sicher enthaelt
 $xs = @(); $ys = @()
@@ -184,7 +186,7 @@ if ($fremd.Count) { Write-Host ('Andere Zeichen in den Dateien: ' + (($fremd.Key
 
 # Gitterrichtung in der Stadtmitte: so verschieben sich Breite und Laenge (Millionstel Grad) je 100 m nach Osten (gx) und nach Norden (gy)
 $mx = 0.0; $my = 0.0; $a1 = 0.0; $o1 = 0.0; $a2 = 0.0; $o2 = 0.0
-[ZensusKonv]::Vor(53.1405, 8.2135, [ref]$mx, [ref]$my)
+[ZensusKonv]::Vor($StadtInfo.MitteBreite, $StadtInfo.MitteLaenge, [ref]$mx, [ref]$my)
 [ZensusKonv]::Rueck($mx, $my, [ref]$a1, [ref]$o1)
 [ZensusKonv]::Rueck($mx + 100, $my, [ref]$a2, [ref]$o2)
 $gx = '[' + [Math]::Round(($a2 - $a1) * 1e6, 1).ToString([Globalization.CultureInfo]::InvariantCulture) + ',' + [Math]::Round(($o2 - $o1) * 1e6, 1).ToString([Globalization.CultureInfo]::InvariantCulture) + ']'
@@ -192,9 +194,9 @@ $gx = '[' + [Math]::Round(($a2 - $a1) * 1e6, 1).ToString([Globalization.CultureI
 $gy = '[' + [Math]::Round(($a2 - $a1) * 1e6, 1).ToString([Globalization.CultureInfo]::InvariantCulture) + ',' + [Math]::Round(($o2 - $o1) * 1e6, 1).ToString([Globalization.CultureInfo]::InvariantCulture) + ']'
 Write-Host ("Gitter: 100 m nach Osten = {0}, 100 m nach Norden = {1} (Millionstel Grad Breite, Laenge)" -f $gx, $gy)
 
-$inhalt = '// Zensus 2022, 100-m-Gitter fuer Oldenburg (c) Statistische Aemter des Bundes und der Laender, 2024. Datenlizenz Deutschland - Namensnennung - Version 2.0 (dl-de/by-2-0). Erzeugt mit Datenpflege\28_Zensus_aktualisieren.ps1' + "`n" +
+$inhalt = '// Zensus 2022, 100-m-Gitter fuer ' + $StadtInfo.Ascii + ' (c) Statistische Aemter des Bundes und der Laender, 2024. Datenlizenz Deutschland - Namensnennung - Version 2.0 (dl-de/by-2-0). Erzeugt mit Datenpflege\28_Zensus_aktualisieren.ps1' + "`n" +
           '// z = [Breite, Laenge (Zellmitte, Millionstel Grad, ab der zweiten Zelle Unterschiede), Einwohner, Durchschnittsalter, Anteil unter 18 %, Anteil ab 65 %, Haushaltsgroesse, Nettokaltmiete EUR/m2, Leerstand %, Eigentuemer %, Klammer-Bits]; -1 = keine Angabe' + "`n" +
-          'var ZENSUS_OLDENBURG = {"stand":"2022-05-15","einheit":1e-6,"gx":' + $gx + ',"gy":' + $gy + ',"z":[' + ($zeilen -join ',') + ']};' + "`n"
+          'var ZENSUS_DATEN = {"stand":"2022-05-15","einheit":1e-6,"gx":' + $gx + ',"gy":' + $gy + ',"z":[' + ($zeilen -join ',') + ']};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: in {0} geschrieben ({1} KB)." -f $Ausgabe, [int]((Get-Item $Ausgabe).Length / 1024))
 

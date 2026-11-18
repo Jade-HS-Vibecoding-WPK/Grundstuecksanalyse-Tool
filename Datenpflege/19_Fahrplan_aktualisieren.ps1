@@ -1,5 +1,5 @@
-﻿# Rechnet fuer alle Haltestellen im Stadtgebiet Oldenburg aus, wie oft sie an einem normalen Werktag bedient werden und
-# welche Linien dort halten. Ergebnis: Standortanalyse\fahrplan_oldenburg.js (Ebene "Haltestellen nach Takt" und die Angaben,
+﻿# Rechnet fuer alle Haltestellen im Stadtgebiet aus, wie oft sie an einem normalen Werktag bedient werden und
+# welche Linien dort halten. Ergebnis: Standortanalyse\staedte\<Stadt>\fahrplan.js (Ebene "Haltestellen nach Takt" und die Angaben,
 # die erscheinen, wenn man in der Karte eine Haltestelle anklickt).
 #
 # Quelle: gtfs.de, "Local Transit Germany" (Fahrplandaten des oeffentlichen Nahverkehrs, Daten bereitgestellt von DELFI e.V.,
@@ -11,13 +11,15 @@
 # Schulwerktag; Ferien und Feiertage koennen abweichen. Endhaltestellen (kein Einstieg) werden nicht mitgezaehlt.
 
 param(
-  [string]$Zielordner = (Join-Path $PSScriptRoot 'rohdaten_fahrplan'),
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\fahrplan_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Zielordner = (Join-Path $PSScriptRoot "rohdaten_fahrplan_$Stadt"),
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\fahrplan.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd'),
   [string]$Zip = '',
   [int]$MaxMinuten = 20,
   [switch]$Behalten
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -28,8 +30,8 @@ if (-not (Test-Path $Zip) -or (Get-Item $Zip).Length -lt 1MB) {
   Invoke-WebRequest -Uri 'https://download.gtfs.de/germany/nv_free/latest.zip' -OutFile $Zip -UseBasicParsing -UserAgent 'Standortanalyse-Studienprojekt/1.0' -TimeoutSec 1200
 }
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 
 # Erster Dienstag ab morgen
 $tag = (Get-Date).Date.AddDays(1)
@@ -215,9 +217,9 @@ $ergebnis = [FahrplanWerkzeug]::Rechne($Zip, $datum, $sued, $nord, $west, $ost, 
 Write-Host $meldung
 if (-not $ergebnis) { Write-Host 'Es wurde nichts geschrieben. Mit -MaxMinuten kann man mehr Zeit erlauben.'; exit 1 }
 
-$inhalt = '// Haltestellen in Oldenburg mit Abfahrten (Dienstag, 6 bis 20 Uhr) und Linien. Quelle: gtfs.de (Local Transit Germany), Daten bereitgestellt von DELFI e.V., CC BY 4.0. Erzeugt mit Datenpflege\19_Fahrplan_aktualisieren.ps1' + "`n" +
+$inhalt = '// Haltestellen in ' + $StadtInfo.Ascii + ' mit Abfahrten (Dienstag, 6 bis 20 Uhr) und Linien. Quelle: gtfs.de (Local Transit Germany), Daten bereitgestellt von DELFI e.V., CC BY 4.0. Erzeugt mit Datenpflege\19_Fahrplan_aktualisieren.ps1' + "`n" +
           '// Jede Haltestelle = [Breite, Laenge (Millionstel Grad), Name, Abfahrten 6 bis 20 Uhr, meiste Abfahrten in einer Stunde, Linien]' + "`n" +
-          'var FAHRPLAN_OLDENBURG = {"stand":"' + $Stand + '","tag":"' + $tag.ToString('yyyy-MM-dd') + '","einheit":1e-6,"haltestellen":[' + "`n" + $ergebnis + "`n" + ']};' + "`n"
+          'var FAHRPLAN_DATEN = {"stand":"' + $Stand + '","tag":"' + $tag.ToString('yyyy-MM-dd') + '","einheit":1e-6,"haltestellen":[' + "`n" + $ergebnis + "`n" + ']};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: in {0} geschrieben ({1} KB)." -f $Ausgabe, [int]((Get-Item $Ausgabe).Length / 1024))
 if (-not $Behalten) { Remove-Item -Recurse -Force $Zielordner -Confirm:$false }

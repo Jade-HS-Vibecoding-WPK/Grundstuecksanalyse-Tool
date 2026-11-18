@@ -1,4 +1,4 @@
-﻿# Holt den Flaechennutzungsplan (FNP) der Stadt Oldenburg und schreibt ihn in die Datei Standortanalyse\fnp_oldenburg.js
+﻿# Holt den Flaechennutzungsplan (FNP) der Stadt Oldenburg und schreibt ihn in die Datei Standortanalyse\staedte\<Stadt>\fnp.js
 # (Ebenen "Flaechennutzungsplan" der App).
 #
 # Quelle: Stadt Oldenburg (Oldb), INSPIRE-Downloaddienst (WFS 2.0) "Flaechennutzungsplan Stadt Oldenburg INSPIRE"
@@ -11,9 +11,12 @@
 # Ein Schritt. Der Dienst ist langsam (je Flaechenart etwa 10 bis 40 Sekunden). Es entsteht eine kleine Datei (unter 1 MB).
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\fnp_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\fnp.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
+if ($Stadt -ne 'oldenburg') { throw 'Dieses Programm holt Daten, die nur die Stadt Oldenburg anbietet. Fuer andere Staedte gibt es ein eigenes Programm (siehe LIESMICH.txt, Neue Stadt).' }
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -88,6 +91,6 @@ foreach ($id in $reihenfolge) { [void]$gruppenText.Add('"' + $id + '":{"f":[' + 
 $inhalt = '// Flaechennutzungsplan der Stadt Oldenburg (Oldb): Wohn-, gemischte, gewerbliche und Sonderbauflaechen, Gemeinbedarf, Gruen, Wald, Wasser, Landwirtschaft.' + "`n" +
           '// Quelle: Stadt Oldenburg (Oldb), INSPIRE-Downloaddienst Flaechennutzungsplan (Stand: Aenderungen bis 05.07.2024), Datenlizenz Deutschland - Zero - Version 2.0 (https://www.govdata.de/dl-de/zero-2-0).' + "`n" +
           '// Erzeugt mit Datenpflege\23_Flaechennutzungsplan_aktualisieren.ps1. f = Flaechen (Ringe als [Breite, Laenge, Delta, ...] in Millionstel Grad).' + "`n" +
-          'var FNP_OLDENBURG = {"einheit":1e-6,"stand":"' + $Stand + '","gruppen":{' + ($gruppenText -join ',') + '}};' + "`n"
+          'var FNP_DATEN = {"einheit":1e-6,"stand":"' + $Stand + '","gruppen":{' + ($gruppenText -join ',') + '}};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ('Fertig: ' + $Ausgabe + ' (' + [Math]::Round($inhalt.Length / 1024) + ' KB)')

@@ -1,11 +1,13 @@
-﻿$ErrorActionPreference = 'Continue'
-$basis = Join-Path $PSScriptRoot "rohdaten"
+﻿param([string]$Stadt = 'oldenburg')
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
+$ErrorActionPreference = 'Continue'
+$basis = Join-Path $PSScriptRoot "rohdaten_gebaeude_$Stadt"
 New-Item -ItemType Directory -Force $basis | Out-Null
 $log = Join-Path $basis "_log.txt"
 "Start $(Get-Date -Format 'HH:mm:ss')" | Set-Content $log -Encoding UTF8
 
-# Stadtgebiet Oldenburg mit etwas Rand: Süd, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Süd, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $anzahl = 4
 $dLat = ($nord - $sued) / $anzahl
 $dLon = ($ost - $west) / $anzahl

@@ -1,4 +1,4 @@
-# Holt offene Geodaten der Stadt Oldenburg und schreibt sie in die Datei Standortanalyse\stadt_oldenburg.js
+﻿# Holt offene Geodaten der Stadt Oldenburg und schreibt sie in die Datei Standortanalyse\staedte\<Stadt>\stadt.js
 # (Ebenen "Laerm", "Bebauungsplaene", "Naturschutz" und "Stadtbezirke" der App).
 #
 # Quelle: Stadt Oldenburg (Oldb), Offene Daten (https://opendata.oldenburg.de) und der dortige ArcGIS-Dienst
@@ -7,14 +7,17 @@
 #
 # Die Daten sind klein, deshalb geht alles in einem Schritt.
 
-# Es entstehen zwei Dateien: stadt_oldenburg.js (Bebauungsplaene, Naturschutz, Stadtbezirke, klein) und
-# laerm_oldenburg.js (Laermkartierung, ca. 4 MB, wird von der App erst geladen, wenn die Laermebene eingeschaltet wird).
+# Es entstehen zwei Dateien: stadt.js (Bebauungsplaene, Naturschutz, Stadtbezirke, klein) und
+# laerm.js (Laermkartierung, ca. 4 MB, wird von der App erst geladen, wenn die Laermebene eingeschaltet wird).
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\stadt_oldenburg.js'),
-  [string]$AusgabeLaerm = (Join-Path $PSScriptRoot '..\Standortanalyse\laerm_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\stadt.js"),
+  [string]$AusgabeLaerm = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\laerm.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
+if ($Stadt -ne 'oldenburg') { throw 'Dieses Programm holt Daten, die nur die Stadt Oldenburg anbietet. Fuer andere Staedte gibt es ein eigenes Programm (siehe LIESMICH.txt, Neue Stadt).' }
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -148,13 +151,13 @@ Write-Host ("  {0} Flaechen" -f $w.Flaechen.Count)
 $inhalt = '// Offene Geodaten der Stadt Oldenburg (Oldb): Laermkartierung, Bebauungsplaene, Naturschutz, Stadtbezirke.' + "`n" +
           '// Quelle: Stadt Oldenburg (Oldb), Datenlizenz Deutschland - Namensnennung - Version 2.0 (https://www.govdata.de/dl-de/by-2-0).' + "`n" +
           '// Erzeugt mit Datenpflege\11_StadtOldenburg_aktualisieren.ps1. f = Flaechen (Ringe als [Breite, Laenge, Delta, ...] in Millionstel Grad), p = Punkte, a = Beschriftung/Klasse je Eintrag.' + "`n" +
-          'var STADT_OLDENBURG = {"einheit":1e-6,"stand":"' + $Stand + '","gruppen":{' + ($gruppen -join ',') + '}};' + "`n"
+          'var STADT_DATEN = {"einheit":1e-6,"stand":"' + $Stand + '","gruppen":{' + ($gruppen -join ',') + '}};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 
 $inhaltLaerm = '// Laermkartierung Strassenverkehr 2022 der Stadt Oldenburg (Oldb): L_DEN (ganzer Tag) und L_Night (Nacht), Klassen in dB.' + "`n" +
                '// Quelle: Stadt Oldenburg (Oldb), Datenlizenz Deutschland - Namensnennung - Version 2.0 (https://www.govdata.de/dl-de/by-2-0).' + "`n" +
-               '// Erzeugt mit Datenpflege\11_StadtOldenburg_aktualisieren.ps1. Aufbau wie stadt_oldenburg.js.' + "`n" +
-               'var LAERM_OLDENBURG = {"einheit":1e-6,"stand":"' + $Stand + '","gruppen":{' + ($gruppenLaerm -join ',') + '}};' + "`n"
+               '// Erzeugt mit Datenpflege\11_StadtOldenburg_aktualisieren.ps1. Aufbau wie stadt.js.' + "`n" +
+               'var LAERM_DATEN = {"einheit":1e-6,"stand":"' + $Stand + '","gruppen":{' + ($gruppenLaerm -join ',') + '}};' + "`n"
 [System.IO.File]::WriteAllText($AusgabeLaerm, $inhaltLaerm, (New-Object System.Text.UTF8Encoding($false)))
 
 Write-Host ("Fertig: {0} KB in {1}" -f [int]((Get-Item $Ausgabe).Length / 1024), $Ausgabe)

@@ -1,15 +1,17 @@
-# Holt die Luftmessstationen im Stadtgebiet Oldenburg und ihre Jahresmittelwerte (Stickstoffdioxid, Feinstaub PM10 und PM2,5)
+﻿# Holt die Luftmessstationen im Stadtgebiet und ihre Jahresmittelwerte (Stickstoffdioxid, Feinstaub PM10 und PM2,5)
 # vom Umweltbundesamt (Luftdaten-Schnittstelle, Daten der Messnetze der Laender und des Bundes) und schreibt sie in die Datei
-# Standortanalyse\luft_oldenburg.js (Ebene "Luftmessstation" der App).
+# Standortanalyse\staedte\<Stadt>\luft.js (Ebene "Luftmessstation" der App).
 #
 # Quelle: Umweltbundesamt mit Daten der Messnetze der Laender und des Bundes (https://luftdaten.umweltbundesamt.de).
 # Die Datenmenge ist winzig, deshalb geht alles in einem Schritt. Aufgenommen werden alle Stationen im Stadtgebiet
 # (zur Zeit nur "Oldenburg Heiligengeistwall", eine Station am Verkehr) und die letzten sieben abgeschlossenen Jahre.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\luft_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\luft.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -30,8 +32,8 @@ function Hole([string]$pfad) {
   throw 'Das Umweltbundesamt hat nicht geantwortet. Bitte spaeter noch einmal versuchen.'
 }
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 
 $heute = Get-Date
 $meta = Hole ('meta/json?use=airquality&lang=de&date_from=' + $heute.AddDays(-5).ToString('yyyy-MM-dd') + '&time_from=1&date_to=' + $heute.AddDays(-4).ToString('yyyy-MM-dd') + '&time_to=24')
@@ -80,8 +82,8 @@ foreach ($st in $stationen) {
   $teile.Add('[' + [long][Math]::Round($st.Lat * 1e6) + ',' + [long][Math]::Round($st.Lon * 1e6) + ',"' + (Text-Sicher $st.Name) + '","' + (Text-Sicher $st.Code) + '","' + (Text-Sicher $st.Art) + '","' + (Text-Sicher $st.Strasse) + '","' + (Text-Sicher $st.Seit) + '",[' + ($jz -join ',') + ']]')
 }
 
-$inhalt = '// Luftmessstationen in Oldenburg mit Jahresmittelwerten. Quelle: Umweltbundesamt mit Daten der Messnetze der Laender und des Bundes. Erzeugt mit Datenpflege\20_Luft_aktualisieren.ps1' + "`n" +
+$inhalt = '// Luftmessstationen in ' + $StadtInfo.Ascii + ' mit Jahresmittelwerten. Quelle: Umweltbundesamt mit Daten der Messnetze der Laender und des Bundes. Erzeugt mit Datenpflege\20_Luft_aktualisieren.ps1' + "`n" +
           '// Jede Station = [Breite, Laenge (Millionstel Grad), Name, Code, Art, Strasse, in Betrieb seit, [[Jahr, NO2, PM10, PM2,5 (Jahresmittel in ug/m3), Tage ueber 50 ug/m3 (PM10)], ...]]' + "`n" +
-          'var LUFT_OLDENBURG = {"stand":"' + $Stand + '","einheit":1e-6,"stationen":[' + "`n" + ($teile -join ",`n") + "`n" + ']};' + "`n"
+          'var LUFT_DATEN = {"stand":"' + $Stand + '","einheit":1e-6,"stationen":[' + "`n" + ($teile -join ",`n") + "`n" + ']};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: in {0} geschrieben." -f $Ausgabe)

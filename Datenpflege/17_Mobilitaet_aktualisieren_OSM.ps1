@@ -1,22 +1,24 @@
 ﻿# Holt Radwege, Strassen mit Radfahrstreifen, Fahrradabstellanlagen, Parkhaeuser, Parkplaetze sowie Carsharing- und Leihrad-
-# Stationen im Stadtgebiet Oldenburg von OpenStreetMap und schreibt sie in die Datei
-# Standortanalyse\mobilitaet_oldenburg.js (Ebenen unter "Verkehr und Mobilitaet" der App).
+# Stationen im Stadtgebiet von OpenStreetMap und schreibt sie in die Datei
+# Standortanalyse\staedte\<Stadt>\mobilitaet.js (Ebenen unter "Verkehr und Mobilitaet" der App).
 # (Die Ladestationen kommen aus einem eigenen Schritt, 18_Ladestationen_aktualisieren.ps1, und werden in dieselbe Datei geschrieben.)
 #
 # Es ist nur dieser eine Schritt noetig. Die Datenmenge ist klein. Das Programm liest eine vorhandene Datei, behaelt darin die
 # Ladestationen und ersetzt nur die OpenStreetMap-Teile.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\mobilitaet_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\mobilitaet.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Add-Type -AssemblyName System.Web.Extensions
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $b = "($sued,$west,$nord,$ost)"
 $kennung = 'Standortanalyse-Studienprojekt/1.0'
 $dienste = @(
@@ -113,7 +115,7 @@ foreach ($e in $w2['elements']) {
 }
 
 # Doppelte erkennen: Punkte bis auf 6 m (Abstellanlagen) bzw. 30 m (Flaechen) zusammenfassen
-$mLat = 111195.0; $mLon = 111195.0 * [Math]::Cos(53.14 * [Math]::PI / 180)
+$mLat = 111195.0; $mLon = 111195.0 * [Math]::Cos($StadtInfo.Breite * [Math]::PI / 180)
 function Ohne-Doppelte($liste, [double]$grenzePunkt, [double]$grenzeFlaeche) {
   $raster = @{}; $aus = New-Object System.Collections.Generic.List[object]
   foreach ($k in ($liste | Sort-Object Flaeche)) {
@@ -158,7 +160,7 @@ if (Test-Path $Ausgabe) {
 }
 if ($laden) { $teileJs.Add($laden) }
 
-$inhalt = '// Radwege, Parken und Sharing in Oldenburg (c) OpenStreetMap-Mitwirkende, ODbL; Ladestationen: Bundesnetzagentur, CC BY 4.0. Erzeugt mit Datenpflege\17_Mobilitaet_aktualisieren_OSM.ps1 und 18_Ladestationen_aktualisieren.ps1' + "`n" +
-          'var MOBILITAET_OLDENBURG = {"stand":"' + $Stand + '","einheit":1e-6,"gruppen":{' + ($teileJs -join ',') + '}};' + "`n"
+$inhalt = '// Radwege, Parken und Sharing in ' + $StadtInfo.Ascii + ' (c) OpenStreetMap-Mitwirkende, ODbL; Ladestationen: Bundesnetzagentur, CC BY 4.0. Erzeugt mit Datenpflege\17_Mobilitaet_aktualisieren_OSM.ps1 und 18_Ladestationen_aktualisieren.ps1' + "`n" +
+          'var MOBILITAET_DATEN = {"stand":"' + $Stand + '","einheit":1e-6,"gruppen":{' + ($teileJs -join ',') + '}};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: in {0} geschrieben ({1} KB)." -f $Ausgabe, [int]((Get-Item $Ausgabe).Length / 1024))

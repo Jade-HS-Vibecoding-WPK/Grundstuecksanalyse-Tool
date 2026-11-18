@@ -1,4 +1,4 @@
-﻿# Holt die Gelaendehoehen fuer das Stadtgebiet Oldenburg und schreibt sie in die Datei Standortanalyse\gelaende_oldenburg.js
+﻿# Holt die Gelaendehoehen fuer das Stadtgebiet und schreibt sie in die Ordner Standortanalyse\staedte\<Stadt>\gelaende (Kacheln von 2,5 x 2,5 km)
 # (Gelaende der 3D-Ansicht).
 #
 # Quelle: Landesamt fuer Geoinformation und Landesvermessung Niedersachsen (LGLN), Digitales Gelaendemodell 1 m (DGM1), Open Data,
@@ -9,12 +9,14 @@
 # wenn es zu lange dauert; nach einem Abbruch einfach noch einmal starten.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\gelaende_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\gelaende"),   # Ordner mit den Kacheln
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd'),
   [int]$MaxMinuten = 25,
   [int]$Parallel = 6,
   [int]$Hoechstens = 0            # nur zum Testen: nur so viele Kacheln lesen (0 = alle)
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); . (Join-Path $PSScriptRoot 'kacheln.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -23,7 +25,8 @@ $kennung = 'Standortanalyse-Studienprojekt/1.0'
 
 # ---- 1) Kachelliste (neueste Befliegung je Kachel) ----
 Write-Host 'Hole die Kachelliste des Landes ...'
-$suche = 'https://dgm.stac.lgln.niedersachsen.de/search?collections=dgm1&bbox=8.06,53.05,8.345,53.225&limit=1000'
+$bb = [string]::Format([Globalization.CultureInfo]::InvariantCulture, '{0},{1},{2},{3}', $StadtInfo.West, $StadtInfo.Sued, $StadtInfo.Ost, $StadtInfo.Nord)
+$suche = 'https://dgm.stac.lgln.niedersachsen.de/search?collections=dgm1&bbox=' + $bb + '&limit=1000'
 $antwort = Invoke-RestMethod -Uri $suche -UserAgent $kennung -TimeoutSec 180
 $beste = @{}
 foreach ($f in $antwort.features) {
@@ -38,7 +41,7 @@ Write-Host ("{0} Kacheln (neueste Befliegung je Kachel)." -f $liste.Count)
 if ($liste.Count -eq 0) { throw 'Keine Kacheln gefunden.' }
 if ($Hoechstens -gt 0) { $liste = @($liste | Select-Object -First $Hoechstens) }
 
-Add-Type -ReferencedAssemblies 'System.Net', 'System.Core' -TypeDefinition @'
+$gelaendeCode = @'
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -122,7 +125,7 @@ public class GelaendeWerkzeug
         return liste;
     }
 
-    public static string Rechne(string[] urls, int[] ekm, int[] nkm, double schritt, int maxMinuten, int parallel, out string meldung)
+    public static bool Rechne(string[] urls, int[] ekm, int[] nkm, double schritt, int maxMinuten, int parallel, string ordner, string stand, string dateikopf, out string meldung)
     {
         int eMin = int.MaxValue, eMax = int.MinValue, nMin = int.MaxValue, nMax = int.MinValue;
         for (int i = 0; i < urls.Length; i++) { eMin = Math.Min(eMin, ekm[i]); eMax = Math.Max(eMax, ekm[i]); nMin = Math.Min(nMin, nkm[i]); nMax = Math.Max(nMax, nkm[i]); }
@@ -176,48 +179,24 @@ public class GelaendeWerkzeug
             catch (Exception ex) { lock (sperre) { fehler++; fehlertext = ex.Message; } }
         });
         meldung = fertig + " Kacheln gelesen, " + fehler + " Fehler" + (fehler > 0 ? " (" + fehlertext + ")" : "") + (abbruch ? ", ABGEBROCHEN (Zeitgrenze)" : "") + ", " + (int)sw.Elapsed.TotalSeconds + " s";
-        if (abbruch || fehler > 0) return null;
-        // Luecken (kein Wert) von links her auffuellen, dann Zeile fuer Zeile Differenzen
-        int unten = 0; short mn = short.MaxValue, mx = short.MinValue;
-        for (long i = 0; i < gitter.LongLength; i++) { short v = gitter[i]; if (v == short.MinValue) { unten++; } else { mn = (short)Math.Min((int)mn, (int)v); mx = (short)Math.Max((int)mx, (int)v); } }
-        for (int j = 0; j < H; j++)
-        {
-            short vor = short.MinValue;
-            for (int i = 0; i < W; i++) { long k = (long)j * W + i; if (gitter[k] != short.MinValue) { vor = gitter[k]; break; } }
-            if (vor == short.MinValue) vor = 0;
-            for (int i = 0; i < W; i++) { long k = (long)j * W + i; if (gitter[k] == short.MinValue) gitter[k] = vor; else vor = gitter[k]; }
-        }
-        var diff = new byte[(long)W * H * 2]; long p = 0;
-        for (int j = 0; j < H; j++)
-        {
-            short vor = 0;
-            for (int i = 0; i < W; i++) { short v = gitter[(long)j * W + i]; int d = v - vor; vor = v; diff[p++] = (byte)(d & 255); diff[p++] = (byte)((d >> 8) & 255); }
-        }
-        byte[] gepackt;
-        using (var ms = new MemoryStream())
-        {
-            using (var ds = new DeflateStream(ms, CompressionLevel.Optimal, true)) ds.Write(diff, 0, diff.Length);
-            gepackt = ms.ToArray();
-        }
-        meldung += "; Gitter " + W + " x " + H + ", Hoehen " + (mn / 10.0).ToString(System.Globalization.CultureInfo.InvariantCulture) + " bis " + (mx / 10.0).ToString(System.Globalization.CultureInfo.InvariantCulture) + " m, ohne Wert " + unten + " Zellen, gepackt " + gepackt.Length / 1024 + " KB";
-        return "\"e0\":" + e0.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + ",\"n1\":" + n1.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + ",\"schritt\":" + schritt.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-               ",\"breite\":" + W + ",\"hoehe\":" + H + ",\"min\":" + (mn / 10.0).ToString(System.Globalization.CultureInfo.InvariantCulture) + ",\"max\":" + (mx / 10.0).ToString(System.Globalization.CultureInfo.InvariantCulture) + ",\"daten\":\"" + Convert.ToBase64String(gepackt) + "\"";
+        if (abbruch || fehler > 0) return false;
+        meldung += "; " + KachelWerkzeug.GelaendeSchreiben(gitter, W, H, e0, n1, schritt, ordner, stand, 500, dateikopf);
+        return true;
     }
 }
 '@
+Add-Type -ReferencedAssemblies 'System.Net', 'System.Core' -TypeDefinition ($gelaendeCode + $KachelQuelle)
 
 $urls = [string[]]($liste | ForEach-Object { $_.Adresse })
 $ekm = [int[]]($liste | ForEach-Object { $_.E })
 $nkm = [int[]]($liste | ForEach-Object { $_.N })
 Write-Host ("Lese {0} Kacheln (Teilabrufe, {1} gleichzeitig, hoechstens {2} Minuten) ..." -f $urls.Length, $Parallel, $MaxMinuten)
 $meldung = ''
-$ergebnis = [GelaendeWerkzeug]::Rechne($urls, $ekm, $nkm, 5.0, $MaxMinuten, $Parallel, [ref]$meldung)
+Loesche-KachelOrdner $Ausgabe
+$kopf = '// Gelaendehoehen der Stadt ' + $StadtInfo.Ascii + ': LGLN, Digitales Gelaendemodell 1 m (DGM1), Open Data, Lizenz CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.de). Erzeugt mit Datenpflege\22_Gelaende_aktualisieren.ps1.' + "`n" +
+        '// Raster in UTM32 (ETRS89): e0 = Rechtswert der linken Kante, n1 = Hochwert der oberen Kante, schritt in m (Zellmitten), Zeilen von Norden nach Sueden. Kacheln: Bloecke von "kachel" x "kachel" Zellen, Name = Spalte_Zeile des Blocks.' + "`n" +
+        '// Jede Kachel = Base64 von "deflate-raw" ueber 16-Bit-Werte (kleinstes Byte zuerst): Hoehe in Dezimetern ueber NHN, je Zeile als Differenz zum linken Nachbarn.'
+$ok = [GelaendeWerkzeug]::Rechne($urls, $ekm, $nkm, 5.0, $MaxMinuten, $Parallel, $Ausgabe, $Stand, $kopf, [ref]$meldung)
 Write-Host $meldung
-if (-not $ergebnis) { Write-Host 'Es wurde nichts geschrieben. Bitte noch einmal starten (mit -MaxMinuten mehr Zeit erlauben).'; exit 1 }
-
-$inhalt = '// Gelaendehoehen der Stadt Oldenburg (Oldb): LGLN, Digitales Gelaendemodell 1 m (DGM1), Open Data, Lizenz CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/deed.de). Erzeugt mit Datenpflege\22_Gelaende_aktualisieren.ps1.' + "`n" +
-          '// Raster in UTM32 (ETRS89): e0 = Rechtswert der linken Kante, n1 = Hochwert der oberen Kante, schritt in m (Zellmitten), Zeilen von Norden nach Sueden.' + "`n" +
-          '// daten = Base64 von "deflate-raw" ueber 16-Bit-Werte (kleinstes Byte zuerst): Hoehe in Dezimetern ueber NHN, je Zeile als Differenz zum linken Nachbarn.' + "`n" +
-          'var GELAENDE_OLDENBURG = {"stand":"' + $Stand + '",' + $ergebnis + '};' + "`n"
-[System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
-Write-Host ("Fertig: in {0} geschrieben ({1} KB)." -f $Ausgabe, [int]((Get-Item $Ausgabe).Length / 1024))
+if (-not $ok) { Write-Host 'Es wurde nichts (vollstaendig) geschrieben. Bitte noch einmal starten (mit -MaxMinuten mehr Zeit erlauben).'; exit 1 }
+Write-Host ("Fertig: Kacheln in {0}" -f $Ausgabe)

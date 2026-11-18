@@ -1,6 +1,6 @@
 /* =====================================================================
    3D-Ansicht (Schattenstudie)
-   Wird erst beim ersten Öffnen geladen (zusammen mit three/three.min.js und hoehen.js).
+   Wird erst beim ersten Öffnen geladen (zusammen mit three/three.min.js; Höhen und Gelände lädt sie bei Bedarf in Kacheln).
    Zeigt die Umgebung als Modell mit vereinfachten Dachformen (Gebäudehöhen und Dachformen: LGLN, CC BY 4.0), die eigenen Baukörper aus der
    Zeichnung (Flächen mit Höhe) und den Schatten der Sonne zu einem wählbaren Tag und einer Uhrzeit.
    Greift auf die Daten der Hauptseite zu (marker, zeichnung, erstelleKartenbild, ...).
@@ -15,7 +15,6 @@
   var HIMMELSRICHTUNGEN = ["Nord", "Nordost", "Ost", "Südost", "Süd", "Südwest", "West", "Nordwest"];
 
   var zustand = null;       // alles, was nur bei geöffneter Ansicht existiert
-  var gebaeudeListe = null; // entpackte Gebäude mit Höhen (einmal)
 
   // ---------- Sonne ----------
   // Sommerzeit in Deutschland: von letztem Sonntag im März bis letztem Sonntag im Oktober (jeweils 1 Uhr UTC)
@@ -69,13 +68,82 @@
   }
   function datumText(jahr, monat, tag) { return tag + ". " + MONATE[monat - 1] + " " + jahr; }
 
-  // ---------- Daten ----------
-  function entpacke() {
-    if (gebaeudeListe) { return gebaeudeListe; }
-    var roh = window.HOEHEN_DATEN;
+  // ---------- Daten: Gebäudehöhen in Kacheln (hoehen\index.js und hoehen\<i>_<j>.js) ----------
+  // Geladen wird nur, was für den gewählten Ausschnitt gebraucht wird. bbox = { s, w, n, o } in Grad (Süd, West, Nord, Ost).
+  var hoehenIndex = null, hoehenIndexVorgang = null, hoehenKacheln = {}, hoehenKachelVorgang = {}, hoehenRoh = {};
+  window.HOEHEN_KACHEL = function (schl, roh) { hoehenRoh[schl] = roh; };
+
+  // Lädt eine Skriptdatei (ein Versprechen; schlägt fehl, wenn die Datei fehlt)
+  function skriptLaden(adresse) {
+    return new Promise(function (fertig, fehler) {
+      var s = document.createElement("script");
+      s.src = adresse;
+      s.onload = function () { s.remove(); fertig(); };
+      s.onerror = function () { s.remove(); fehler(new Error("Datei " + adresse + " nicht gefunden")); };
+      document.head.appendChild(s);
+    });
+  }
+  // Rechteck in Grad um einen Punkt (r in Metern)
+  function bboxUm(lat, lng, r) {
+    var dLat = r / 111195, dLng = r / (111195 * Math.cos(lat * Math.PI / 180));
+    return { s: lat - dLat, n: lat + dLat, w: lng - dLng, o: lng + dLng };
+  }
+  function bboxVereinigen(a, b) {
+    if (!a) { return b; } if (!b) { return a; }
+    return { s: Math.min(a.s, b.s), n: Math.max(a.n, b.n), w: Math.min(a.w, b.w), o: Math.max(a.o, b.o) };
+  }
+
+  function hoehenIndexLaden() {
+    if (hoehenIndex) { return Promise.resolve(hoehenIndex); }
+    if (!hoehenIndexVorgang) {
+      hoehenIndexVorgang = skriptLaden(stadtDatei("hoehen/index")).then(function () {
+        hoehenIndex = window.HOEHEN_INDEX; window.HOEHEN_INDEX = null;
+        if (!hoehenIndex) { throw new Error("Die Datei hoehen/index.js ist leer"); }
+        return hoehenIndex;
+      }, function (x) { hoehenIndexVorgang = null; throw x; });
+    }
+    return hoehenIndexVorgang;
+  }
+  // Schlüssel der Kacheln, die das Rechteck berühren (ohne bbox: alle)
+  function hoehenSchluessel(idx, bbox) {
+    var r = [], k;
+    if (!bbox) { for (k in idx.kacheln) { r.push(k); } return r; }
+    var randB = 0.0025, randL = randB / Math.cos(bbox.s * Math.PI / 180);       // Gebäude liegen in der Kachel ihres ersten Eckpunkts: etwa 270 m Rand mitnehmen
+    var i0 = Math.floor((bbox.s - randB) / idx.dlat), i1 = Math.floor((bbox.n + randB) / idx.dlat), j0 = Math.floor((bbox.w - randL) / idx.dlon), j1 = Math.floor((bbox.o + randL) / idx.dlon);
+    for (var i = i0; i <= i1; i++) { for (var j = j0; j <= j1; j++) { k = i + "_" + j; if (idx.kacheln[k]) { r.push(k); } } }
+    return r;
+  }
+  // Rechteck, das alle Zellen der Kacheln umfasst
+  function hoehenZellenBox(idx, keys) {
+    var b = null;
+    keys.forEach(function (k) {
+      var p = k.split("_"), i = +p[0], j = +p[1];
+      b = bboxVereinigen(b, { s: i * idx.dlat, n: (i + 1) * idx.dlat, w: j * idx.dlon, o: (j + 1) * idx.dlon });
+    });
+    return b;
+  }
+  function hoehenKachelLaden(k) {
+    if (hoehenKacheln[k]) { return Promise.resolve(); }
+    if (!hoehenKachelVorgang[k]) {
+      hoehenKachelVorgang[k] = skriptLaden(stadtDatei("hoehen/" + k)).then(function () {
+        var roh = hoehenRoh[k]; delete hoehenRoh[k];
+        if (!roh) { throw new Error("Die Kachel hoehen/" + k + ".js ist leer"); }
+        hoehenKacheln[k] = { liste: entpackeKachel(roh), korrigiert: false };
+      }, function (x) { delete hoehenKachelVorgang[k]; throw x; });
+    }
+    return hoehenKachelVorgang[k];
+  }
+  // Lädt die Kacheln des Rechtecks; liefert ihre Schlüssel
+  function hoehenLaden(bbox) {
+    return hoehenIndexLaden().then(function (idx) {
+      var keys = hoehenSchluessel(idx, bbox);
+      return Promise.all(keys.map(hoehenKachelLaden)).then(function () { return keys; });
+    });
+  }
+  function entpackeKachel(roh) {
     var e = roh.einheit;
     var ab = roh.version >= 2 ? 4 : 2;      // ab Version 2: [Traufe, First, Dachklasse, Winkel, Ring, ...]
-    gebaeudeListe = roh.gebaeude.map(function (g) {
+    return roh.gebaeude.map(function (g) {
       var ringe = [];
       for (var i = ab; i < g.length; i++) {
         var r = g[i], f = new Float64Array(r.length);
@@ -91,10 +159,25 @@
       for (var j = 0; j < a.length; j += 2) { cla += a[j]; clo += a[j + 1]; }
       return { t: g[0] / 10, f: g[1] / 10, cls: ab === 4 ? g[2] : 0, ang: ab === 4 ? g[3] : 0, ringe: ringe, lat: cla / n, lng: clo / n };
     });
-    window.HOEHEN_DATEN = null;
-    return gebaeudeListe;
   }
-
+  // Gebäude der geladenen Kacheln (keys); die Höhen werden dabei einmal je Kachel auf den Boden bezogen, wenn das Gelände (G) bekannt ist
+  function gebaeudeAusKacheln(keys, G) {
+    var aus = [];
+    keys.forEach(function (k) {
+      var t = hoehenKacheln[k];
+      if (!t) { return; }
+      if (!t.korrigiert && G) { hoehenKorrigieren(t.liste, G); t.korrigiert = true; }
+      aus = aus.concat(t.liste);
+    });
+    return aus;
+  }
+  // Gebäude (mit Höhen über Boden) im Rechteck bbox; ohne bbox alle der Stadt. Lädt Höhen und Gelände nach Bedarf.
+  function gebaeudeLaden(bbox) {
+    return hoehenLaden(bbox).then(function (keys) {
+      var zb = hoehenZellenBox(hoehenIndex, keys) || bbox;
+      return gelaendeLaden(zb).then(function (G) { return gebaeudeAusKacheln(keys, G); });
+    });
+  }
   function imVieleck(x, y, pkt) {     // pkt = [x0, y0, x1, y1, ...]
     var innen = false;
     for (var i = 0, j = pkt.length - 2; i < pkt.length; j = i, i += 2) {
@@ -629,39 +712,68 @@
     zeichne();
   }
 
-  // ---------- Gelände (Digitales Geländemodell 1 m des LGLN, auf 5 m Raster, Datei gelaende.js) ----------
+  // ---------- Gelände (Digitales Geländemodell 1 m des LGLN, auf 5 m Raster, Kacheln in gelaende\) ----------
   var QUELLE_GELAENDE = "Gelände: LGLN (DGM1), CC BY 4.0";
-  var gelaendeDaten = null, gelaendeVorgang = null;
-  // Lädt die Datei (nur beim ersten Mal): Base64 -> entpacken ("deflate-raw") -> Zeilen aus Differenzen zurückrechnen (Dezimeter über NHN)
-  function gelaendeLaden() {
-    if (gelaendeDaten) { return Promise.resolve(gelaendeDaten); }
-    if (gelaendeVorgang) { return gelaendeVorgang; }
-    gelaendeVorgang = new Promise(function (fertig, fehler) {
-      function auswerten() {
-        try {
-          var roh = window.GELAENDE_DATEN;
-          if (typeof DecompressionStream === "undefined") { throw new Error("Der Browser kann die Gelände-Datei nicht entpacken (DecompressionStream fehlt)."); }
-          var bin = atob(roh.daten), bytes = new Uint8Array(bin.length);
-          for (var i = 0; i < bin.length; i++) { bytes[i] = bin.charCodeAt(i); }
-          new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer().then(function (buf) {
-            var d = new Int16Array(buf), W = roh.breite, H = roh.hoehe;
-            for (var j = 0; j < H; j++) { var s = 0, o = j * W; for (var k = 0; k < W; k++) { s = (s + d[o + k]) << 16 >> 16; d[o + k] = s; } }
-            gelaendeDaten = { h: d, W: W, H: H, e0: roh.e0, n1: roh.n1, schritt: roh.schritt, stand: roh.stand, min: roh.min, max: roh.max };
-            window.GELAENDE_DATEN = null;
-            fertig(gelaendeDaten);
-          }, function (x) { gelaendeVorgang = null; fehler(x); });
-        } catch (x) { gelaendeVorgang = null; fehler(x); }
-      }
-      if (window.GELAENDE_DATEN) { auswerten(); return; }
-      var skript = document.createElement("script");
-      skript.src = stadtDatei("gelaende");
-      skript.onload = auswerten;
-      skript.onerror = function () { gelaendeVorgang = null; fehler(new Error("Datei gelaende.js nicht gefunden")); };
-      document.head.appendChild(skript);
-    });
-    return gelaendeVorgang;
-  }
+  var gelaendeIndex = null, gelaendeIndexVorgang = null, gelaendeG = null, gelaendeKachelVorgang = {}, gelaendeRoh = {};
+  window.GELAENDE_KACHEL = function (schl, b64) { gelaendeRoh[schl] = b64; };
 
+  function gelaendeIndexLaden() {
+    if (gelaendeIndex) { return Promise.resolve(gelaendeIndex); }
+    if (!gelaendeIndexVorgang) {
+      gelaendeIndexVorgang = skriptLaden(stadtDatei("gelaende/index")).then(function () {
+        var idx = window.GELAENDE_INDEX; window.GELAENDE_INDEX = null;
+        if (!idx) { throw new Error("Die Datei gelaende/index.js ist leer"); }
+        idx.vorhanden = {};
+        idx.kacheln.forEach(function (k) { idx.vorhanden[k] = true; });
+        gelaendeIndex = idx;
+        return idx;
+      }, function (x) { gelaendeIndexVorgang = null; throw x; });
+    }
+    return gelaendeIndexVorgang;
+  }
+  // Schlüssel der Geländekacheln, die das Rechteck bbox (Grad) berühren (ohne bbox: alle)
+  function gelaendeSchluessel(idx, bbox) {
+    var r = [], k;
+    if (!bbox) { return idx.kacheln.slice(); }
+    var mn1 = 1e18, mx1 = -1e18, mn2 = 1e18, mx2 = -1e18;
+    [[bbox.s, bbox.w], [bbox.s, bbox.o], [bbox.n, bbox.w], [bbox.n, bbox.o]].forEach(function (c) {
+      var q = utm32(c[0], c[1]), col = (q.e - idx.e0) / idx.schritt, row = (idx.n1 - q.n) / idx.schritt;
+      if (col < mn1) { mn1 = col; } if (col > mx1) { mx1 = col; } if (row < mn2) { mn2 = row; } if (row > mx2) { mx2 = row; }
+    });
+    var K = idx.kachel, nc = Math.ceil(idx.breite / K), nr = Math.ceil(idx.hoehe / K);
+    var c0 = Math.max(0, Math.floor((mn1 - 2) / K)), c1 = Math.min(nc - 1, Math.floor((mx1 + 2) / K)), r0 = Math.max(0, Math.floor((mn2 - 2) / K)), r1 = Math.min(nr - 1, Math.floor((mx2 + 2) / K));
+    for (var rr = r0; rr <= r1; rr++) { for (var cc = c0; cc <= c1; cc++) { k = cc + "_" + rr; if (idx.vorhanden[k]) { r.push(k); } } }
+    return r;
+  }
+  // Lädt eine Kachel (Base64 -> entpacken ("deflate-raw") -> Zeilen aus Differenzen zurückrechnen) und schreibt sie ins große Raster G
+  function gelaendeKachelLaden(G, idx, k) {
+    if (!gelaendeKachelVorgang[k]) {
+      gelaendeKachelVorgang[k] = skriptLaden(stadtDatei("gelaende/" + k)).then(function () {
+        var b64 = gelaendeRoh[k]; delete gelaendeRoh[k];
+        if (!b64) { throw new Error("Die Kachel gelaende/" + k + ".js ist leer"); }
+        if (typeof DecompressionStream === "undefined") { throw new Error("Der Browser kann die Gelände-Daten nicht entpacken (DecompressionStream fehlt)."); }
+        var bin = atob(b64), bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) { bytes[i] = bin.charCodeAt(i); }
+        return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer();
+      }).then(function (buf) {
+        var p = k.split("_"), c = +p[0], r = +p[1], K = idx.kachel, w = Math.min(K, G.W - c * K), h = Math.min(K, G.H - r * K), d = new Int16Array(buf);
+        for (var j = 0; j < h; j++) {
+          var s = 0, o = j * w, z0 = (r * K + j) * G.W + c * K;
+          for (var i = 0; i < w; i++) { s = (s + d[o + i]) << 16 >> 16; G.h[z0 + i] = s; }
+        }
+      }, function (x) { delete gelaendeKachelVorgang[k]; throw x; });
+    }
+    return gelaendeKachelVorgang[k];
+  }
+  // Sorgt dafür, dass das Gelände im Rechteck bbox (Grad) geladen ist (ohne bbox: ganze Stadt); liefert das Raster G
+  // (ein großes Raster für die ganze Stadt, die Kacheln füllen es nach und nach).
+  function gelaendeLaden(bbox) {
+    return gelaendeIndexLaden().then(function (idx) {
+      if (!gelaendeG) { gelaendeG = { h: new Int16Array(idx.breite * idx.hoehe), W: idx.breite, H: idx.hoehe, e0: idx.e0, n1: idx.n1, schritt: idx.schritt, stand: idx.stand, min: idx.min, max: idx.max }; }
+      var G = gelaendeG, keys = gelaendeSchluessel(idx, bbox);
+      return Promise.all(keys.map(function (k) { return gelaendeKachelLaden(G, idx, k); })).then(function () { return G; });
+    });
+  }
   // Richtet z.gh(x, n) ein: Höhe des Geländes in Metern über dem Punkt in der Mitte (x = Ost, n = Nord in Metern um die Mitte).
   // Ohne Gelände (G = null) ist es überall 0. Das Raster liegt in UTM32; die Umrechnung der Metersysteme ist eine kleine Drehung
   // (Meridiankonvergenz), die aus drei UTM-Punkten bestimmt wird.
@@ -1538,7 +1650,7 @@
       z.boden = boden;
 
       // Gebäude
-      var liste = entpacke();
+      var liste = z.gebaeudeListe || [];
       var dLat = R / z.mLat, dLng = R / z.mLng;
       var art = z.el("a3dHoehenart").value;
       var eigene = eigeneFlaechen().filter(function (o) { return o.hoehe > 0; });
@@ -1628,25 +1740,36 @@
     }, 30);
   }
 
-  // Lädt (falls gewünscht) das Gelände und richtet z.gh ein; bei einem Fehler steht das Modell auf ebenem Boden
-  // Die Geländedaten werden immer geladen: Die Höhen der Gebäude in der Datei sind Höhen über NHN und werden damit auf den Boden bezogen
+  // Lädt die Gebäudehöhen und das Gelände für den Ausschnitt (nur die gebrauchten Kacheln) und richtet z.gh ein; z.gebaeudeListe = Gebäude mit Höhen über Boden.
+  // Bei einem Geländefehler steht das Modell auf ebenem Boden.
+  // Die Geländedaten werden immer geladen: Die Höhen der Gebäude in den Dateien sind Höhen über NHN und werden damit auf den Boden bezogen
   // (siehe hoehenKorrigieren). Der Haken "Gelände" bestimmt nur, ob das Relief im Modell zu sehen ist.
   function gelaendeVorbereiten(z) {
     z.gelFehler = "";
     var relief = z.el("a3dGelaende").checked;
-    z.el("a3dStatus").textContent = "Gelände wird geladen …";
-    return gelaendeLaden().then(function (G) { hoehenKorrigieren(G); gelaendeEinrichten(z, relief ? G : null); }, function (x) {
+    z.el("a3dStatus").textContent = "Gebäudehöhen und Gelände werden geladen …";
+    var bb = bboxUm(z.mitte.lat, z.mitte.lng, z.radius + 300);
+    function fehlerText(x) { return x && x.message ? x.message : "Dateien fehlen oder sind beschädigt"; }
+    return hoehenLaden(bb).then(function (keys) {
+      var zb = bboxVereinigen(bb, hoehenZellenBox(hoehenIndex, keys));
+      return gelaendeLaden(zb).then(function (G) {
+        z.gebaeudeListe = gebaeudeAusKacheln(keys, G);
+        gelaendeEinrichten(z, relief ? G : null);
+      }, function (x) {
+        z.gebaeudeListe = gebaeudeAusKacheln(keys, null);
+        gelaendeEinrichten(z, null);
+        z.el("a3dGelaende").checked = false;
+        z.gelFehler = " Das Gelände konnte nicht geladen werden (" + fehlerText(x) + "), das Modell steht auf ebenem Boden und die Gebäudehöhen sind dann um die Geländehöhe (im Stadtgebiet meist einige Meter) zu hoch.";
+      });
+    }, function (x) {
+      z.gebaeudeListe = [];
       gelaendeEinrichten(z, null);
-      z.el("a3dGelaende").checked = false;
-      z.gelFehler = " Das Gelände konnte nicht geladen werden (" + (x && x.message ? x.message : "Datei gelaende.js fehlt oder ist beschädigt") + "), das Modell steht auf ebenem Boden und die Gebäudehöhen sind dann um die Geländehöhe (im Stadtgebiet meist einige Meter) zu hoch.";
+      z.gelFehler = " Die Gebäudehöhen konnten nicht geladen werden (" + fehlerText(x) + "), deshalb fehlen die Gebäude.";
     });
   }
-  // Höhen in der Gebäudedatei (Traufe, First) sind Höhen über NHN, nicht über dem Boden (geprüft: sie steigen mit der Geländehöhe, Traufe minus
+  // Höhen in den Gebäudedateien (Traufe, First) sind Höhen über NHN, nicht über dem Boden (geprüft: sie steigen mit der Geländehöhe, Traufe minus
   // Gelände ergibt im Median 3,6 m). Hier einmal je Gebäude die Geländehöhe an der Gebäudemitte abziehen.
-  var gebaeudeKorrigiert = false;
-  function hoehenKorrigieren(G) {
-    if (gebaeudeKorrigiert || !G) { return; }
-    var liste = entpacke();
+  function hoehenKorrigieren(liste, G) {
     for (var i = 0; i < liste.length; i++) {
       var g = liste[i], q = utm32(g.lat, g.lng);
       var c = Math.round((q.e - G.e0) / G.schritt - 0.5), r = Math.round((G.n1 - q.n) / G.schritt - 0.5);
@@ -1654,9 +1777,7 @@
       var boden = G.h[r * G.W + c] / 10;
       g.t = Math.max(0.5, g.t - boden); g.f = Math.max(g.t, g.f - boden);
     }
-    gebaeudeKorrigiert = true;
-  }
-  // Kleinste und größte Geländehöhe im Ausschnitt (über NHN), grob abgetastet
+  }  // Kleinste und größte Geländehöhe im Ausschnitt (über NHN), grob abgetastet
   function gelaendeSpanne(R) {
     var z = zustand, mn = 1e9, mx = -1e9;
     for (var i = 0; i <= 20; i++) { for (var j = 0; j <= 20; j++) { var v = z.ghAbs(-R + 2 * R * i / 20, -R + 2 * R * j / 20); if (v < mn) { mn = v; } if (v > mx) { mx = v; } } }
@@ -4734,5 +4855,5 @@
   }
 
   // daten: für entwurf.js (Entwurfsstrategie): Gebäude mit Höhen, Gelände und die Umrechnung nach UTM
-  window.ansicht3d = { oeffnen: oeffnen, schliessen: schliessen, verbergen: verbergen, zeigen: zeigen, offen: offen, sonnenstand: sonnenstand, daten: { gebaeude: function () { return gelaendeLaden().then(function (G) { hoehenKorrigieren(G); return entpacke(); }); }, gelaende: gelaendeLaden, utm32: utm32, waelder: waldLaden, dach: dachErzeugen } };
+  window.ansicht3d = { oeffnen: oeffnen, schliessen: schliessen, verbergen: verbergen, zeigen: zeigen, offen: offen, sonnenstand: sonnenstand, daten: { gebaeude: gebaeudeLaden, gelaende: gelaendeLaden, utm32: utm32, waelder: waldLaden, dach: dachErzeugen } };
 })();

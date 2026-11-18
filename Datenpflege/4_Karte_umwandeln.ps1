@@ -1,8 +1,10 @@
 ﻿param(
-  [string[]]$Dateien = (Get-ChildItem (Join-Path $PSScriptRoot 'rohdaten_karte') -Filter 'teil_*.json' | ForEach-Object { $_.FullName }),
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\karte_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string[]]$Dateien = (Get-ChildItem (Join-Path $PSScriptRoot "rohdaten_karte_$Stadt") -Filter 'teil_*.json' | ForEach-Object { $_.FullName }),
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\karte.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $code = @'
 using System;
@@ -316,11 +318,11 @@ public static class KartenWandler
         }
 
         var kopf = new StringBuilder();
-        kopf.Append("// Kartengrundlage der Stadt Oldenburg (Oldb) und Umgebung: Straßen, Bahnlinien, Gewässer, Grünflächen\n");
+        kopf.Append("// Kartengrundlage der Stadt und Umgebung: Straßen, Bahnlinien, Gewässer, Grünflächen\n");
         kopf.Append("// Daten: © OpenStreetMap-Mitwirkende, Lizenz ODbL (https://www.openstreetmap.org/copyright). Stand: " + stand + "\n");
         kopf.Append("// Format: Flächen = Liste von Ringen (erster Ring = Außenkante, weitere = Innenhöfe), Ring = [Breite, Länge, Δ, Δ, ...].\n");
         kopf.Append("// Linien = [Klasse, Namensnummer, Breite, Länge, Δ, Δ, ...]. Alle Werte in Millionstel Grad; ab dem zweiten Punkt als Abstand zum vorigen.\n");
-        kopf.Append("var KARTE_OLDENBURG = { einheit: 1e-6, stand: \"" + stand + "\", namen: [");
+        kopf.Append("var KARTE_DATEN = { einheit: 1e-6, stand: \"" + stand + "\", namen: [");
         for (int i = 0; i < namen.Count; i++) { if (i > 0) kopf.Append(','); kopf.Append('"').Append(Esc(namen[i])).Append('"'); }
         kopf.Append("],\n");
 

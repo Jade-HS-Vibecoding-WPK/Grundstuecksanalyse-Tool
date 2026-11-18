@@ -1,5 +1,5 @@
-# Holt Laeden, Schulen, Aerzte/Apotheken sowie Freizeit- und Kultureinrichtungen im Stadtgebiet Oldenburg
-# von OpenStreetMap und schreibt sie in die Datei Standortanalyse\einrichtungen_oldenburg.js
+﻿# Holt Laeden, Schulen, Aerzte/Apotheken sowie Freizeit- und Kultureinrichtungen im Stadtgebiet
+# von OpenStreetMap und schreibt sie in die Datei Standortanalyse\staedte\<Stadt>\einrichtungen.js
 # (Ebenen "Laeden", "Schulen und Kitas", "Aerzte und Apotheken", "Freizeit und Kultur" der App).
 # Die Datenmenge ist klein, deshalb geht alles in einem Schritt.
 #
@@ -8,14 +8,16 @@
 # in derselben Gruppe noch kein Punkt liegt.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\einrichtungen_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\einrichtungen.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $bereich = "($sued,$west,$nord,$ost)"
 $kennung = 'Standortanalyse-Studienprojekt/1.0'
 
@@ -55,7 +57,10 @@ foreach ($dienst in $dienste) {
            -UseBasicParsing -UserAgent $kennung -TimeoutSec 200
       $text = [System.Text.Encoding]::UTF8.GetString($r.RawContentStream.ToArray())
       if ($text -notmatch '"elements"') { throw 'unbrauchbare Antwort' }
-      $antwort = $text | ConvertFrom-Json
+      # JavaScriptSerializer statt ConvertFrom-Json: Letzteres scheitert, wenn OpenStreetMap-Tags sich nur in der Gross-/Kleinschreibung unterscheiden (z. B. "FIXME" und "fixme")
+      Add-Type -AssemblyName System.Web.Extensions
+      $js = New-Object System.Web.Script.Serialization.JavaScriptSerializer; $js.MaxJsonLength = [int]::MaxValue; $js.RecursionLimit = 200
+      $antwort = $js.DeserializeObject($text)
     } catch {
       Write-Host ('  fehlgeschlagen: ' + $_.Exception.Message)
       Start-Sleep -Seconds (8 * $versuch)
@@ -87,7 +92,7 @@ foreach ($e in $antwort.elements) {
 # Name und Art kommen mit in die Datei (fuer das Fenster beim Anklicken in der App)
 # Doppelte erkennen (Raster mit Zellen von etwa 40 m, geprueft wird in der Zelle und ihren Nachbarn)
 $meterProGradBreite = 111195.0
-$meterProGradLaenge = 111195.0 * [Math]::Cos(53.14 * [Math]::PI / 180)
+$meterProGradLaenge = 111195.0 * [Math]::Cos($StadtInfo.Breite * [Math]::PI / 180)
 $zelleLat = 0.0004; $zelleLon = 0.0007
 $ergebnis = [ordered]@{}
 foreach ($g in $gruppen) { $ergebnis[$g.Name] = New-Object System.Collections.Generic.List[object] }
@@ -133,7 +138,7 @@ foreach ($name in $ergebnis.Keys) {
   Write-Host ("  {0}: {1}" -f $name, $zeilen.Count)
 }
 
-$inhalt = '// Einrichtungen in Oldenburg (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\6_Einrichtungen_aktualisieren.ps1' + "`n" +
-          'var EINRICHTUNGEN_OLDENBURG = {"stand":"' + $Stand + '","einheit":1e-6,"gruppen":{' + ($teileJs -join ',') + '}};' + "`n"
+$inhalt = '// Einrichtungen in ' + $StadtInfo.Ascii + ' (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\6_Einrichtungen_aktualisieren.ps1' + "`n" +
+          'var EINRICHTUNGEN_DATEN = {"stand":"' + $Stand + '","einheit":1e-6,"gruppen":{' + ($teileJs -join ',') + '}};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: {0} Eintraege von OpenStreetMap, in {1} geschrieben." -f $alle.Count, $Ausgabe)

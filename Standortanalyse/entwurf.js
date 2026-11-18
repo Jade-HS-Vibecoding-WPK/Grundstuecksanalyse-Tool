@@ -161,7 +161,7 @@
       lade("oepnv", window.ladeOepnvDaten),
       lade("mobil", window.ladeMobilitaetDaten),
       lade("fahrplan", window.ladeFahrplanDaten),
-      lade("luft", window.ladeLuftDaten),
+      lade("luft", (STADT.hat && STADT.hat.luft) ? window.ladeLuftDaten : function () { return Promise.resolve([]); }),
       lade("spiel", window.ladeSpielDaten),
       lade("baeume", window.ladeBaeumeDaten),
       lade("zensus", window.ladeZensus),
@@ -172,7 +172,8 @@
         return window.ladeAnsicht3d().then(function () {
           var D = window.ansicht3d && window.ansicht3d.daten;
           if (!D) { throw new Error("keine Daten"); }
-          return Promise.all([Promise.resolve(D.gebaeude()), D.gelaende()]).then(function (e) { return { gebaeude: e[0], gelaende: e[1], utm32: D.utm32 }; });
+          var dLat = 1000 / 111195, dLng = 1000 / (111195 * Math.cos(P.lat * Math.PI / 180)), box = { s: P.lat - dLat, n: P.lat + dLat, w: P.lng - dLng, o: P.lng + dLng };     // Umkreis 800 m plus Rand
+          return Promise.all([Promise.resolve(D.gebaeude(box)), D.gelaende(box)]).then(function (e) { return { gebaeude: e[0], gelaende: e[1], utm32: D.utm32 }; });
         });
       }));
     }
@@ -503,8 +504,8 @@
         B.push("Lärm (Lärmkartierung der Stadt " + STADT.name + ", nur Straßenlärm; Schienen-, Gewerbe- und Fluglärm sind nicht enthalten):");
         laermZeilen.forEach(function (t) { B.push(t); });
         teile.quellen.push(window.STADT_QUELLE_TEXT);
-      }
-      var schutz = [["nsg", "Naturschutzgebiet"], ["lsg", "Landschaftsschutzgebiet"], ["biotope", "Geschütztes Biotop"], ["wallhecken", "Wallhecken"]];
+      } else { teile.fehlt.push("Straßenlärm (Lärmkartierung): für " + STADT.name + " nicht in den App-Daten."); }
+      var schutz =[["nsg", "Naturschutzgebiet"], ["lsg", "Landschaftsschutzgebiet"], ["biotope", "Geschütztes Biotop"], ["wallhecken", "Wallhecken"]];
       var sz = [];
       schutz.forEach(function (s) {
         if (!fl[s[0]]) { return; }

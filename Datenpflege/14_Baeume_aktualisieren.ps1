@@ -1,5 +1,5 @@
-# Holt alle als Baum erfassten Punkte (natural=tree) im Stadtgebiet Oldenburg von OpenStreetMap und schreibt sie in die Datei
-# Standortanalyse\baeume_oldenburg.js (Baeume der 3D-Ansicht).
+﻿# Holt alle als Baum erfassten Punkte (natural=tree) im Stadtgebiet von OpenStreetMap und schreibt sie in die Datei
+# Standortanalyse\staedte\<Stadt>\baeume.js (Baeume der 3D-Ansicht).
 #
 # Pro Baum werden gespeichert: Breite, Laenge (Millionstel Grad), Hoehe in Dezimetern (0 = unbekannt, die App schaetzt),
 # Kronenbreite in Dezimetern (0 = unbekannt) und ob der Baum immergruen ist (1 = Nadelbaum oder immergruen).
@@ -7,16 +7,19 @@
 # Hinweis: OpenStreetMap kennt nicht alle Baeume (vor allem Strassenbaeume fehlen oft). Die Daten sind ein Stand vom Tag des Herunterladens.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\baeume_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\baeume.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Add-Type -AssemblyName System.Web.Extensions
 $kennung = 'Standortanalyse-Studienprojekt/1.0'
 $dienst = 'https://overpass.openstreetmap.fr/api/interpreter'
-$q = '[out:json][timeout:240][maxsize:536870912];node["natural"="tree"](53.05,8.06,53.225,8.345);out body;'
+$b = "($($StadtInfo.Sued),$($StadtInfo.West),$($StadtInfo.Nord),$($StadtInfo.Ost))"
+$q = '[out:json][timeout:240][maxsize:536870912];node["natural"="tree"]' + $b + ';out body;'
 
 $antwort = $null
 for ($versuch = 1; $versuch -le 4 -and -not $antwort; $versuch++) {
@@ -60,8 +63,8 @@ foreach ($e in $wurzel['elements']) {
   $zeilen.Add("[$la,$lo,$h,$k,$ig]")
 }
 
-$inhalt = '// Baeume in Oldenburg (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\14_Baeume_aktualisieren.ps1.' + "`n" +
+$inhalt = '// Baeume in ' + $StadtInfo.Ascii + ' (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\14_Baeume_aktualisieren.ps1.' + "`n" +
           '// Jeder Baum = [Breite, Laenge (Millionstel Grad), Hoehe in dm (0 = unbekannt), Kronenbreite in dm (0 = unbekannt), immergruen (0/1)].' + "`n" +
-          'var BAEUME_OLDENBURG = {"einheit":1e-6,"stand":"' + $Stand + '","anzahl":' + $zeilen.Count + ',"baeume":[' + "`n" + ($zeilen -join ",`n") + "`n" + ']};' + "`n"
+          'var BAEUME_DATEN = {"einheit":1e-6,"stand":"' + $Stand + '","anzahl":' + $zeilen.Count + ',"baeume":[' + "`n" + ($zeilen -join ",`n") + "`n" + ']};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: {0} Baeume ({1} mit Hoehe, {2} mit Kronenbreite, {3} immergruen), {4} KB in {5}" -f $zeilen.Count, $mitHoehe, $mitKrone, $immergruen, [int]((Get-Item $Ausgabe).Length / 1024), $Ausgabe)

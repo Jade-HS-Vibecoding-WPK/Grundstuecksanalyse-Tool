@@ -1,16 +1,18 @@
-# Holt alle Waelder (landuse=forest, natural=wood) im Stadtgebiet Oldenburg von OpenStreetMap und schreibt sie in die Datei
-# Standortanalyse\waelder_oldenburg.js (Waelder der 3D-Ansicht, dort als Baumbloecke).
+﻿# Holt alle Waelder (landuse=forest, natural=wood) im Stadtgebiet von OpenStreetMap und schreibt sie in die Datei
+# Standortanalyse\staedte\<Stadt>\waelder.js (Waelder der 3D-Ansicht, dort als Baumbloecke).
 #
 # Das Herunterladen dauert einige Minuten (16 Kacheln). Der Zwischenordner "rohdaten_waelder" wird am Ende geloescht.
 # Bei einem Abbruch einfach noch einmal starten: schon geladene Kacheln werden uebernommen.
 
 param(
-  [string]$Zielordner = (Join-Path $PSScriptRoot 'rohdaten_waelder'),
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\waelder_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Zielordner = (Join-Path $PSScriptRoot "rohdaten_waelder_$Stadt"),
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\waelder.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd'),
   [int]$Anzahl = 4,
   [switch]$Behalten
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Continue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -18,7 +20,7 @@ New-Item -ItemType Directory -Force $Zielordner | Out-Null
 $log = Join-Path $Zielordner '_log.txt'
 "Start $(Get-Date -Format 'HH:mm:ss')" | Set-Content $log -Encoding UTF8
 
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $dLat = ($nord - $sued) / $Anzahl
 $dLon = ($ost - $west) / $Anzahl
 $dienst = 'https://overpass.openstreetmap.fr/api/interpreter'
@@ -213,10 +215,10 @@ public static class WaldWandler
             }
         }
         var o = new StringBuilder();
-        o.Append("// Waelder in Oldenburg (landuse=forest, natural=wood) fuer die 3D-Ansicht\n");
+        o.Append("// Waelder im Stadtgebiet (landuse=forest, natural=wood) fuer die 3D-Ansicht\n");
         o.Append("// Daten: (c) OpenStreetMap-Mitwirkende, Lizenz ODbL (https://www.openstreetmap.org/copyright). Stand: " + stand + "\n");
         o.Append("// Format: Flaeche = Liste von Ringen (erster Ring = Aussenkante, weitere = Lichtungen), Ring = [Breite, Laenge, Delta, Delta, ...] in Millionstel Grad.\n");
-        o.Append("var WAELDER_OLDENBURG = { einheit: 1e-6, stand: \"" + stand + "\", wald: [\n").Append(sb).Append("]};\n");
+        o.Append("var WAELDER_DATEN = { einheit: 1e-6, stand: \"" + stand + "\", wald: [\n").Append(sb).Append("]};\n");
         File.WriteAllText(ausgabe, o.ToString(), new UTF8Encoding(false));
         return string.Format("Waelder: {0} Flaechen, uebersprungen: {1}", anzahl, uebersprungen);
     }

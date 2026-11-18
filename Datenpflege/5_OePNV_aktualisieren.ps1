@@ -1,5 +1,5 @@
-# Holt alle Bushaltestellen, Bahnhoefe und Haltepunkte im Stadtgebiet Oldenburg von OpenStreetMap
-# und schreibt sie in die Datei Standortanalyse\oepnv_oldenburg.js (Ebene "OePNV" der App).
+﻿# Holt alle Bushaltestellen, Bahnhoefe und Haltepunkte im Stadtgebiet von OpenStreetMap
+# und schreibt sie in die Datei Standortanalyse\staedte\<Stadt>\oepnv.js (Ebene "OePNV" der App).
 # Die Datenmenge ist klein, deshalb geht alles in einem Schritt.
 #
 # In OpenStreetMap ist dieselbe Haltestelle oft mehrfach eingetragen (als Haltestellen-Punkt, als Bahnsteig-Linie
@@ -7,15 +7,17 @@
 # Haltepositionen, die dort noch fehlen, und lässt Doppelte (naeher als 25 m zusammen) weg.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\oepnv_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\oepnv.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd'),
   [double]$MindestabstandMeter = 25
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $bereich = "($sued,$west,$nord,$ost)"
 $kennung = 'Standortanalyse-Studienprojekt/1.0'
 
@@ -68,7 +70,7 @@ foreach ($e in $antwort.elements) {
 
 # Doppelte erkennen: ein Raster mit Zellen von etwa 40 m, geprueft wird in der Zelle und ihren Nachbarn
 $meterProGradBreite = 111195.0
-$meterProGradLaenge = 111195.0 * [Math]::Cos(53.14 * [Math]::PI / 180)
+$meterProGradLaenge = 111195.0 * [Math]::Cos($StadtInfo.Breite * [Math]::PI / 180)
 $zelleLat = 0.0004; $zelleLon = 0.0007
 $raster = @{}
 $punkte = New-Object System.Collections.Generic.List[object]
@@ -105,8 +107,8 @@ foreach ($p in $punkte) {
   $zeilen.Add("[$lat,$lon,$($p.Art)]")
 }
 
-$inhalt = '// Haltestellen und Bahnhoefe in Oldenburg (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\5_OePNV_aktualisieren.ps1' + "`n" +
-          'var OEPNV_OLDENBURG = {"stand":"' + $Stand + '","einheit":1e-6,"punkte":[' + ($zeilen -join ',') + ']};' + "`n"
+$inhalt = '// Haltestellen und Bahnhoefe in ' + $StadtInfo.Ascii + ' (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\5_OePNV_aktualisieren.ps1' + "`n" +
+          'var OEPNV_DATEN = {"stand":"' + $Stand + '","einheit":1e-6,"punkte":[' + ($zeilen -join ',') + ']};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 
 $bahn = @($punkte | Where-Object { $_.Art -eq 1 }).Count

@@ -1,5 +1,5 @@
-# Holt das Strassennetz fuer Kraftfahrzeuge im Stadtgebiet Oldenburg (Autobahn bis Wohnstrasse, Fussgaengerzonen) von OpenStreetMap
-# samt Hoechstgeschwindigkeit (maxspeed) und schreibt es in die Datei Standortanalyse\strassennetz_oldenburg.js
+﻿# Holt das Strassennetz fuer Kraftfahrzeuge im Stadtgebiet (Autobahn bis Wohnstrasse, Fussgaengerzonen) von OpenStreetMap
+# samt Hoechstgeschwindigkeit (maxspeed) und schreibt es in die Datei Standortanalyse\staedte\<Stadt>\strassennetz.js
 # (Ebenen "Strassen nach Hoechstgeschwindigkeit" und "Strassen nach Strassenart" der App, Abschnitt "Verkehr und Mobilitaet").
 # Alles geht in einem Schritt (etwa 1 Minute).
 #
@@ -11,16 +11,18 @@
 # Wirtschaftswege, Zufahrten (service), Rad- und Fusswege gehoeren nicht dazu.
 
 param(
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\strassennetz_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\strassennetz.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Add-Type -AssemblyName System.Web.Extensions
 
-# Stadtgebiet Oldenburg mit etwas Rand: Sued, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Sued, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $b = "($sued,$west,$nord,$ost)"
 $kennung = 'Standortanalyse-Studienprojekt/1.0'
 $dienste = @(
@@ -105,8 +107,8 @@ Write-Host ("{0} Strassenabschnitte" -f $zeilen.Count)
 Write-Host ("  nach Art:   " + (($nachArt.Keys | Sort-Object | ForEach-Object { "$_=" + $nachArt[$_] }) -join ', '))
 Write-Host ("  nach Tempo: " + (($nachTempo.Keys | Sort-Object { [int]$_ } | ForEach-Object { "$_=" + $nachTempo[$_] }) -join ', '))
 
-$inhalt = '// Strassennetz in Oldenburg mit Hoechstgeschwindigkeit (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\26_Strassennetz_aktualisieren.ps1' + "`n" +
+$inhalt = '// Strassennetz in ' + $StadtInfo.Ascii + ' mit Hoechstgeschwindigkeit (c) OpenStreetMap-Mitwirkende, ODbL. Erzeugt mit Datenpflege\26_Strassennetz_aktualisieren.ps1' + "`n" +
           '// w = [Tempo (km/h, 7 Schritt, 999 unbegrenzt, 0 unbekannt), Art (1 Autobahn ... 8 Fussgaengerzone), Breite, Laenge, Delta, Delta, ...] in Millionstel Grad' + "`n" +
-          'var STRASSENNETZ_OLDENBURG = {"stand":"' + $Stand + '","einheit":1e-6,"w":[' + ($zeilen -join ',') + ']};' + "`n"
+          'var STRASSENNETZ_DATEN = {"stand":"' + $Stand + '","einheit":1e-6,"w":[' + ($zeilen -join ',') + ']};' + "`n"
 [System.IO.File]::WriteAllText($Ausgabe, $inhalt, (New-Object System.Text.UTF8Encoding($false)))
 Write-Host ("Fertig: in {0} geschrieben ({1} KB)." -f $Ausgabe, [int]((Get-Item $Ausgabe).Length / 1024))

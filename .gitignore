@@ -34,3 +34,4 @@ node_modules/
 Datenpflege/_download/
 Datenpflege/*.zip
 Datenpflege/*.gtfs
+Datenpflege/rohdaten*/

@@ -1,15 +1,17 @@
 ﻿param(
-  [string]$Zielordner = (Join-Path $PSScriptRoot 'rohdaten_karte'),
+  [string]$Stadt = 'oldenburg',
+  [string]$Zielordner = (Join-Path $PSScriptRoot "rohdaten_karte_$Stadt"),
   [int]$Anzahl = 4
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 $ErrorActionPreference = 'Continue'
 New-Item -ItemType Directory -Force $Zielordner | Out-Null
 $log = Join-Path $Zielordner "_log.txt"
 "Start $(Get-Date -Format 'HH:mm:ss')" | Set-Content $log -Encoding UTF8
 
-# Stadtgebiet Oldenburg mit etwas Rand: Süd, West, Nord, Ost
-$sued = 53.050; $nord = 53.225; $west = 8.060; $ost = 8.345
+# Stadtgebiet mit etwas Rand: Süd, West, Nord, Ost
+$sued = $StadtInfo.Sued; $nord = $StadtInfo.Nord; $west = $StadtInfo.West; $ost = $StadtInfo.Ost
 $dLat = ($nord - $sued) / $Anzahl
 $dLon = ($ost - $west) / $Anzahl
 $dienst = 'https://overpass.openstreetmap.fr/api/interpreter'

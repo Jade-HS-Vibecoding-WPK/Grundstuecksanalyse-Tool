@@ -1,11 +1,13 @@
 ﻿param(
-  [string[]]$Dateien = (Get-ChildItem (Join-Path $PSScriptRoot 'rohdaten_nutzung') -Filter 'teil_*.json' | ForEach-Object { $_.FullName }),
-  [string]$Ausgabe = (Join-Path $PSScriptRoot '..\Standortanalyse\nutzung_oldenburg.js'),
+  [string]$Stadt = 'oldenburg',
+  [string[]]$Dateien = (Get-ChildItem (Join-Path $PSScriptRoot "rohdaten_nutzung_$Stadt") -Filter 'teil_*.json' | ForEach-Object { $_.FullName }),
+  [string]$Ausgabe = (Join-Path $PSScriptRoot "..\Standortanalyse\staedte\$Stadt\nutzung.js"),
   [string]$Stand = (Get-Date -Format 'yyyy-MM-dd')
 )
+. (Join-Path $PSScriptRoot 'stadt.ps1'); $StadtInfo = Hole-Stadt $Stadt
 
 # Wandelt die heruntergeladenen Flaechen (9_Nutzung_herunterladen.ps1) in die kompakte Datei
-# Standortanalyse\nutzung_oldenburg.js um. Vier Gruppen: wohnen, gewerbe, industrie, gemeinbedarf.
+# Standortanalyse\staedte\<Stadt>\nutzung.js um. Vier Gruppen: wohnen, gewerbe, industrie, gemeinbedarf.
 
 $code = @'
 using System;
@@ -257,11 +259,11 @@ public static class NutzungWandler
         }
 
         var o = new StringBuilder();
-        o.Append("// Nutzungsarten in Oldenburg (Wohnen, Gewerbe und Handel, Industrie, Gemeinbedarf und Bildung) fuer die Ebenen der Analyse\n");
+        o.Append("// Nutzungsarten im Stadtgebiet (Wohnen, Gewerbe und Handel, Industrie, Gemeinbedarf und Bildung) fuer die Ebenen der Analyse\n");
         o.Append("// Daten: (c) OpenStreetMap-Mitwirkende, Lizenz ODbL (https://www.openstreetmap.org/copyright). Stand: " + stand + "\n");
         o.Append("// Format: Flaeche = Liste von Ringen (erster Ring = Aussenkante, weitere = Innenhoefe), Ring = [Breite, Laenge, Delta, Delta, ...].\n");
         o.Append("// Alle Werte in Millionstel Grad; ab dem zweiten Punkt als Abstand zum vorigen.\n");
-        o.Append("var NUTZUNG_OLDENBURG = { einheit: 1e-6, stand: \"" + stand + "\",\n");
+        o.Append("var NUTZUNG_DATEN = { einheit: 1e-6, stand: \"" + stand + "\",\n");
         o.Append("wohnen: [\n").Append(sb[0]).Append("],\n");
         o.Append("gewerbe: [\n").Append(sb[1]).Append("],\n");
         o.Append("industrie: [\n").Append(sb[2]).Append("],\n");
