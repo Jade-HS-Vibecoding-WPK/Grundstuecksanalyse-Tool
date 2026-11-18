@@ -1658,6 +1658,13 @@
     karte.createPane("namenPane");
     karte.getPane("namenPane").style.zIndex = 450;
     karte.getPane("namenPane").style.pointerEvents = "none";
+    // Anklickbare Punkte und Flächen (Haltestellen, Ladestationen, Messstation, Spielplätze, Bewegungsorte) und die Grundstücksgrenzen
+    // (grundstueck.js) teilen sich EINE Leinwand (`klickRenderer`, Schicht 415). Zwei getrennte Leinwände übereinander gehen nicht: die obere
+    // fängt alle Klicks ab, dann öffnet sich das Fenster der Haltestelle nicht, sobald die Grundstücksgrenzen an sind. Auf einer gemeinsamen
+    // Leinwand gewinnt beim Klick das zuletzt gezeichnete Objekt, deshalb schiebt grundstueck.js die Grenzen mit bringToBack() nach hinten.
+    karte.createPane("grundLinienPane");
+    karte.getPane("grundLinienPane").style.zIndex = 415;
+    var klickRenderer = L.canvas({ pane: "grundLinienPane", padding: 0.3 });
 
     var EigeneKarteEbene = L.Layer.extend({
       onAdd: function (map) {
@@ -2866,7 +2873,8 @@
             weight: 1.5,
             fillColor: OEPNV.farbe,
             fillOpacity: 1,
-            interactive: true
+            interactive: true,
+            renderer: klickRenderer
           }).addTo(OEPNV.ebene).on("click", function (ereignis) {
             var marke = ereignis.target;      // Klick: Name und Linien aus dem Fahrplan (nächste Fahrplan-Haltestelle bis 90 m)
             ladeFahrplanDaten().then(function () { zeigePopup(marke, haltestellenPopup(fahrplanNaechste(p.lat, p.lng, 90))); }).catch(function () {
@@ -3128,7 +3136,7 @@
             });
           } else {
             (d.punkte || []).forEach(function (p) {
-              var m = L.circleMarker([p.lat, p.lng], { radius: g.radius, color: g.rand || "#ffffff", weight: 1.5, fillColor: g.farbe, fillOpacity: 1, interactive: !!g.popup }).addTo(g.ebene);
+              var m = L.circleMarker([p.lat, p.lng], { radius: g.radius, color: g.rand || "#ffffff", weight: 1.5, fillColor: g.farbe, fillOpacity: 1, interactive: !!g.popup, renderer: g.popup ? klickRenderer : undefined }).addTo(g.ebene);
               if (g.popup) { m.on("click", function () { zeigePopup(m, ladestationPopup(p)); }); }
             });
           }
@@ -3148,7 +3156,7 @@
         TAKT.ebene.clearLayers();
         halte.slice().sort(function (a, b) { return a.abf - b.abf; }).forEach(function (h) {
           var kl = taktKlasse(h);
-          var m = L.circleMarker([h.lat, h.lng], { radius: kl.radius, color: TAKT.rand, weight: 1.5, fillColor: kl.farbe, fillOpacity: 1, interactive: true }).addTo(TAKT.ebene);
+          var m = L.circleMarker([h.lat, h.lng], { radius: kl.radius, color: TAKT.rand, weight: 1.5, fillColor: kl.farbe, fillOpacity: 1, interactive: true, renderer: klickRenderer }).addTo(TAKT.ebene);
           m.on("click", function () { zeigePopup(m, haltestellenPopup(h)); });
         });
         kreiseNachVorn();
@@ -3213,7 +3221,7 @@
         if (!karte.hasLayer(LUFT.ebene)) { return; }
         LUFT.ebene.clearLayers();
         stationen.forEach(function (s) {
-          var m = L.circleMarker([s.lat, s.lng], { radius: LUFT.radius, color: LUFT.rand, weight: 2, fillColor: LUFT.farbe, fillOpacity: 1, interactive: true }).addTo(LUFT.ebene);
+          var m = L.circleMarker([s.lat, s.lng], { radius: LUFT.radius, color: LUFT.rand, weight: 2, fillColor: LUFT.farbe, fillOpacity: 1, interactive: true, renderer: klickRenderer }).addTo(LUFT.ebene);
           m.on("click", function () { zeigePopup(m, luftPopup(s)); });
         });
         kreiseNachVorn();
@@ -3292,8 +3300,8 @@
           if (g.art === "flaeche") {
             daten.spielplaetze.forEach(function (s) {
               var m = s.ring
-                ? L.polygon(s.ring, { color: g.farbe, weight: 1.2, fillColor: g.farbe, fillOpacity: g.deckkraft, interactive: true })
-                : L.circleMarker([s.lat, s.lng], { radius: 5, color: "#ffffff", weight: 1.5, fillColor: g.farbe, fillOpacity: 1, interactive: true });
+                ? L.polygon(s.ring, { renderer: klickRenderer, color: g.farbe, weight: 1.2, fillColor: g.farbe, fillOpacity: g.deckkraft, interactive: true })
+                : L.circleMarker([s.lat, s.lng], { renderer: klickRenderer, radius: 5, color: "#ffffff", weight: 1.5, fillColor: g.farbe, fillOpacity: 1, interactive: true });
               m.addTo(g.ebene);
               m.on("click", function (ev) { zeigePopup(m, spielplatzPopup(s), ev.latlng); });
             });
@@ -3302,7 +3310,7 @@
             band.bringToBack();
           } else {
             (daten.orte[g.id] || []).forEach(function (o) {
-              var m = L.circleMarker([o.lat, o.lng], { radius: g.radius, color: "#ffffff", weight: 1.5, fillColor: g.farbe, fillOpacity: 1, interactive: true }).addTo(g.ebene);
+              var m = L.circleMarker([o.lat, o.lng], { radius: g.radius, color: "#ffffff", weight: 1.5, fillColor: g.farbe, fillOpacity: 1, interactive: true, renderer: klickRenderer }).addTo(g.ebene);
               m.on("click", function () { zeigePopup(m, spielOrtPopup(o)); });
             });
           }

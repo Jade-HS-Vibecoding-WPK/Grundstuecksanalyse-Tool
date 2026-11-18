@@ -850,6 +850,7 @@
   var renderer_ = {};
   function renderer(pane) {
     if (!karte.getPane(pane)) { karte.createPane(pane); karte.getPane(pane).style.zIndex = pane === "grundFuellPane" ? 230 : 415; if (pane === "grundFuellPane") { karte.getPane(pane).style.pointerEvents = "none"; } }
+    if (pane === "grundLinienPane" && typeof klickRenderer !== "undefined") { return klickRenderer; }   // gemeinsame Leinwand mit Haltestellen u. a. (siehe index.html)
     if (!renderer_[pane]) { renderer_[pane] = L.canvas({ pane: pane, padding: 0.3 }); }
     return renderer_[pane];
   }
@@ -887,6 +888,7 @@
       }
       if (an1) {
         var p = L.polygon(ringe, { renderer: renderer("grundLinienPane"), color: grenzen.farbe, weight: 1.2, fill: true, fillOpacity: 0, interactive: true }).addTo(grenzen.ebene);
+        p.bringToBack();   // hinter Haltestellen u. a. auf derselben Leinwand, damit deren Klick vorgeht
         p.on("click", function (ev) { if (grundWahl) { return; } zeigePopup(p, popupInhalt(f), ev.latlng); });
         if (zoom >= 18 && f.flaeche > 0) {
           L.marker(f.mitte, { icon: L.divIcon({ className: "grundLabel", html: "<span>" + zahlDe(Math.round(f.flaeche), 0) + " m²</span>", iconSize: [0, 0] }), interactive: false, keyboard: false }).addTo(grenzen.ebene);
