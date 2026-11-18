@@ -647,6 +647,16 @@
       color: var(--tinte);
     }
     .leaflet-control-layers-selector { accent-color: var(--rot); }
+    .ki-hinweis {
+      margin: 0;
+      padding: 3px 10px 4px;
+      font-size: 10px;
+      line-height: 1.2;
+      color: #8a8a8a;
+      border-top: 1px solid #e3e0d8;
+      text-align: right;
+      user-select: none;
+    }
 
     .leaflet-control-scale-line {
       color: var(--tinte);
@@ -2243,6 +2253,14 @@
       "Hellgrau (scharf)": karteHellgrauScharf,
       "Schwarzplan": karteSchwarzplan
     }, ueberlagerungen, { collapsed: false, position: "topright" }).addTo(karte);
+
+    // Dezenter KI-Hinweis unter der Kartenauswahl (nur auf dem Bildschirm, nicht im gespeicherten Bild)
+    (function () {
+      var hinweis = document.createElement("div");
+      hinweis.className = "ki-hinweis";
+      hinweis.textContent = "*KI-generiert, kann Fehler enthalten";
+      ebenenSchalter.getContainer().appendChild(hinweis);
+    })();
 
     // Beim Wechsel der Hintergrundkarte: Im Schwarzplan die Gebäude einschalten und (wenn nötig) nah genug heranzoomen,
     // und die Gebäude in der passenden Farbe neu zeichnen
