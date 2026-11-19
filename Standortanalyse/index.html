@@ -721,6 +721,13 @@
         border-bottom: 1px solid var(--tinte);
         padding: 16px 16px 20px;
       }
+      /* Der Knopf zum Einklappen sitzt dann am oberen Kartenrand (unter der Leiste), der Pfeil zeigt nach oben bzw. unten */
+      .leiste-knopf {
+        left: 50%; top: 0; transform: translateX(-50%);
+        width: 64px; height: 26px;                 /* größer, damit man ihn mit dem Finger gut trifft */
+        border: 1px solid #e6e6e6; border-top: none;
+      }
+      .leiste-knopf::before { transform: translate(-50%, -50%) rotate(90deg); }
     }
 </style>
 </head>

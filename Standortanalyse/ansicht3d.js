@@ -202,6 +202,8 @@
     ".a3d .a3d-leisteknopf:active{background:#787878}",
     ".a3d .a3d-leisteknopf:active::before{background:#fff}",
     ".a3d.leiste-zu .a3d-leiste{display:none}",
+    // Schmale Fenster (Handy): Leiste oben, Knopf am oberen Rand der Ansicht mit Pfeil nach oben bzw. unten
+    "@media (max-width:760px){.a3d{flex-direction:column}.a3d .a3d-leiste{width:100%;flex:0 0 auto;max-height:50%;border-right:none;border-bottom:1px solid var(--tinte);padding:16px 16px 20px}.a3d .a3d-leisteknopf{left:50%;top:0;transform:translateX(-50%);width:64px;height:26px;border:1px solid #e6e6e6;border-top:none}.a3d .a3d-leisteknopf::before{transform:translate(-50%,-50%) rotate(90deg)}}",
     ".a3d canvas.a3d-bild{display:block;width:100%;height:100%;touch-action:none;cursor:grab}",
     ".a3d canvas.a3d-bild.zieht{cursor:grabbing}",
     ".a3d canvas.a3d-bild.messen{cursor:crosshair}",
