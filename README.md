@@ -44,6 +44,8 @@ Alle Datenquellen werden in der App und im gespeicherten Bild automatisch genann
 | gtfs.de / DELFI e. V. | Fahrplan (Takt der Haltestellen) | CC BY 4.0 (laut Katalogeintrag von gtfs.de, Namensnennung "gtfs.de") |
 | Umweltbundesamt | Luftmessstationen | Datenlizenz Deutschland – Namensnennung 2.0 (laut GDI-DE-Metadaten), Quellenangabe "Umweltbundesamt mit Daten der Messnetze der Länder und des Bundes" |
 
+**Nur nichtkommerzielle Nutzung:** Die Online-Karten des LBEG (Boden, Geologie, Grundwasser, Versiegelung) dürfen nur nichtkommerziell veröffentlicht werden, für eine kommerzielle Nutzung ist eine Genehmigung des LBEG nötig. Diese Anwendung ist deshalb nicht für die kommerzielle Nutzung bestimmt. Der Hinweis steht auch in der App.
+
 Bibliotheken: [Leaflet](https://leafletjs.com) (BSD-2-Clause), [pdf.js](https://mozilla.github.io/pdf.js/) (Apache 2.0), [three.js](https://threejs.org) (MIT).
 
 Der Programmcode steht unter der MIT-Lizenz (siehe `LICENSE`).
