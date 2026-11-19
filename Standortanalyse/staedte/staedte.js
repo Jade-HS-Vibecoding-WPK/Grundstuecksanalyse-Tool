@@ -34,6 +34,8 @@ var STAEDTE = {
     stadtQuelle: "Stadt Oldenburg (Oldb), Datenlizenz Deutschland – Namensnennung 2.0",
     fnpQuelle: "Flächennutzungsplan: Stadt Oldenburg (Oldb), Stand Änderungen bis 05.07.2024, Datenlizenz Deutschland – Zero 2.0",
     bezirkWort: "Bezirk",
+    // Link im Klickfenster der Bebauungspläne (der Dienst nennt keine Adresse je Plan, deshalb das Planportal der Stadt)
+    bplanLink: { text: "Pläne im Geoportal der Stadt Oldenburg", url: "https://gis4ol.oldenburg.de/BauenWohnen/index.html" },
     // Dateien mit Daten, die nur die Stadt selbst liefert (fehlt eine Datei, bleibt die Ebene für diese Stadt weg)
     hat: { stadt: true, laerm: true, fnp: true, bodenrichtwerte: true, luft: true }
   },
@@ -78,6 +80,7 @@ var STAEDTE = {
     stadtQuelle: "Stadt Osnabrück, Fachdienst Geodaten, dl-de/by-2-0; Naturschutzgebiete: © NLWKN Niedersachsen, dl-de/by-2-0",
     fnpQuelle: "Flächennutzungsplan: Stadt Osnabrück (Landesportal PlanDigital Niedersachsen), Datenlizenz Deutschland – Zero 2.0",
     bezirkWort: "Stadtteil",
+    bplanLink: { text: "Bebauungspläne der Stadt Osnabrück ansehen", url: "https://geo.osnabrueck.de/bplan/" },
     hat: { stadt: true, fnp: true, bodenrichtwerte: true, luft: true }
   },
   braunschweig: {

@@ -22,7 +22,7 @@ $basis = 'https://geo.osnabrueck.de/arcgis/rest/services/'
 
 # Was geholt wird. Offset = Vereinfachung der Linien in Grad (0.000004 ca. 0,4 m), Attr = Feld fuer die Beschriftung.
 $quellen = @(
-  @{ Id = 'bplan';         Dienst = 'Bebauungsplaene';      Ebene = 0; Offset = '0.000004'; Attr = 'B_PLAN_NR' },
+  @{ Id = 'bplan';         Dienst = 'Bebauungsplaene';      Ebene = 0; Offset = '0.000004'; Attr = 'B_PLAN_NR'; Zusatz = @('B_PLAN_NR', '', '', '', 'B_Plan_Art') },
   @{ Id = 'lsg';           Dienst = 'schutzgebiete';        Ebene = 5; Offset = '0.000004'; Attr = 'BEZEICHNUN' },
   @{ Id = 'biotope';       Dienst = 'schutzgebiete';        Ebene = 1; Offset = '0.000004'; Attr = 'Lage' },
   @{ Id = 'naturdenkmale'; Dienst = 'schutzgebiete';        Ebene = 0; Offset = '0';        Attr = 'Name' },
@@ -70,15 +70,27 @@ function Json-Text($s) {
   return $serializer.Serialize([string]$s)
 }
 
-function Wandle-Sammlung($sammlung, $attr) {
+# $zusatz = Liste von Feldnamen: je Teilstueck kommen diese Werte als Textliste in "z" (fuer das Klickfenster der Bebauungsplaene)
+function Wandle-Sammlung($sammlung, $attr, $zusatz = $null) {
   $flaechen = New-Object System.Collections.Generic.List[string]
   $punkte = New-Object System.Collections.Generic.List[string]
   $attribute = New-Object System.Collections.Generic.List[string]
+  $zusaetze = New-Object System.Collections.Generic.List[string]
   foreach ($f in $sammlung) {
     $g = $f['geometry']; if (-not $g) { continue }
     $a = ''
     if ($attr -and $f['properties'].ContainsKey($attr) -and $null -ne $f['properties'][$attr]) { $a = [string]$f['properties'][$attr] }
     if ($a -eq '<Null>') { $a = '' }
+    $zText = ''
+    if ($zusatz) {
+      $werte = foreach ($feld in $zusatz) {
+        $v = ''
+        if ($feld -and $f['properties'].ContainsKey($feld) -and $null -ne $f['properties'][$feld]) { $v = ([string]$f['properties'][$feld]).Trim() }
+        if ($v -eq '<Null>') { $v = '' }
+        Json-Text $v
+      }
+      $zText = '[' + ($werte -join ',') + ']'
+    }
     $teile = @()
     switch ($g['type']) {
       'Polygon'      { $teile = @(,$g['coordinates']) }
@@ -89,10 +101,10 @@ function Wandle-Sammlung($sammlung, $attr) {
     foreach ($polygon in $teile) {
       $ringe = New-Object System.Collections.Generic.List[string]
       foreach ($ring in $polygon) { if ($ring.Count -ge 3) { $ringe.Add((Ring-Text $ring)) } }
-      if ($ringe.Count -gt 0) { $flaechen.Add('[' + ($ringe -join ',') + ']'); $attribute.Add((Json-Text $a)) }
+      if ($ringe.Count -gt 0) { $flaechen.Add('[' + ($ringe -join ',') + ']'); $attribute.Add((Json-Text $a)); if ($zusatz) { $zusaetze.Add($zText) } }
     }
   }
-  return @{ Flaechen = $flaechen; Punkte = $punkte; Attribute = $attribute }
+  return @{ Flaechen = $flaechen; Punkte = $punkte; Attribute = $attribute; Zusaetze = $zusaetze }
 }
 
 $gruppen = New-Object System.Collections.Generic.List[string]
@@ -109,9 +121,13 @@ foreach ($q in $quellen) {
     if ($n -eq 0 -or -not ($s.ContainsKey('exceededTransferLimit') -and $s['exceededTransferLimit'])) { break }
     $offset += $n
   }
-  $w = Wandle-Sammlung $alle $q.Attr
+  $w = Wandle-Sammlung $alle $q.Attr $q.Zusatz
   if ($w.Punkte.Count -gt 0) { $eintrag = '"' + $q.Id + '":{"p":[' + ($w.Punkte -join ',') + '],"a":[' + ($w.Attribute -join ',') + ']}' }
-  else { $eintrag = '"' + $q.Id + '":{"f":[' + ($w.Flaechen -join ',') + '],"a":[' + ($w.Attribute -join ',') + ']}' }
+  else {
+    $eintrag = '"' + $q.Id + '":{"f":[' + ($w.Flaechen -join ',') + '],"a":[' + ($w.Attribute -join ',') + ']'
+    if ($q.Zusatz) { $eintrag += ',"z":[' + ($w.Zusaetze -join ',') + ']' }
+    $eintrag += '}'
+  }
   $gruppen.Add($eintrag)
   Write-Host ("  {0} Objekte, {1} Flaechen, {2} Punkte" -f $alle.Count, $w.Flaechen.Count, $w.Punkte.Count)
 }

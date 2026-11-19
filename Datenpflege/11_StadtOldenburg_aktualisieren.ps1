@@ -34,8 +34,8 @@ $naturschutz = 'Untere_Naturschutzbeh' + [char]0x00F6 + 'rde'
 $quellen = @(
   @{ Id = 'laerm_lden';     Dienst = 'Laermkartierung'; Ebene = 1; Offset = '0.00003';  Mindest = 0.00006; Attr = 'category' },
   @{ Id = 'laerm_nacht';    Dienst = 'Laermkartierung'; Ebene = 0; Offset = '0.00003';  Mindest = 0.00006; Attr = 'category' },
-  @{ Id = 'bplan';          Dienst = 'Umringe_Bplan';   Ebene = 0; Offset = '0.000004'; Mindest = 0;       Attr = 'Name' },
-  @{ Id = 'nsg';            Dienst = $naturschutz;      Ebene = 5; Offset = '0.000004'; Mindest = 0;       Attr = 'Name' },
+  @{ Id = 'bplan';          Dienst = 'Umringe_Bplan';   Ebene = 0; Offset = '0.000004'; Mindest = 0;       Attr = 'Name'; Zusatz = @('Planverfahren', 'Name', 'rechtsverbindlich', 'BauNVO') },
+  @{ Id = 'nsg';           Dienst = $naturschutz;      Ebene = 5; Offset = '0.000004'; Mindest = 0;       Attr = 'Name' },
   @{ Id = 'lsg';            Dienst = $naturschutz;      Ebene = 2; Offset = '0.000004'; Mindest = 0;       Attr = 'Name' },
   @{ Id = 'biotope';        Dienst = $naturschutz;      Ebene = 0; Offset = '0.000004'; Mindest = 0;       Attr = 'Gebietsbez' },
   @{ Id = 'wallhecken';     Dienst = $naturschutz;      Ebene = 1; Offset = '0.000004'; Mindest = 0;       Attr = '' },
@@ -87,14 +87,32 @@ function Json-Text($s) {
 }
 
 # Aus einer GeoJSON-Sammlung die Flaechen (Polygon und MultiPolygon, jedes Teilpolygon einzeln) und Punkte holen
-function Wandle-Sammlung($sammlung, $attr, $mindest = 0) {
+# Ein Feld als Text fuer die Zusatzangaben (Datumsfelder kommen als Millisekunden seit 1970, werden zu TT.MM.JJJJ)
+function Zusatz-Text($wert) {
+  if ($null -eq $wert) { return '' }
+  if ($wert -is [long] -or $wert -is [int] -or $wert -is [double] -or $wert -is [decimal]) {
+    # Datum (auch vor 1970: negative Werte); Jahreszahlen wie 1990 bleiben Zahlen
+    if ([Math]::Abs([double]$wert) -gt 1e8) { return ([DateTime]'1970-01-01').AddMilliseconds([double]$wert).ToString('dd.MM.yyyy') }
+    return ([string]$wert)
+  }
+  return ([string]$wert).Trim()
+}
+
+# $zusatz = Liste von Feldnamen: je Teilstueck kommen diese Werte als Textliste in "z" (z. B. Plannummer, Name, Datum fuer das Klickfenster)
+function Wandle-Sammlung($sammlung, $attr, $mindest = 0, $zusatz = $null) {
   $flaechen = New-Object System.Collections.Generic.List[string]
   $punkte = New-Object System.Collections.Generic.List[string]
   $attribute = New-Object System.Collections.Generic.List[string]
+  $zusaetze = New-Object System.Collections.Generic.List[string]
   foreach ($f in $sammlung['features']) {
     $g = $f['geometry']; if (-not $g) { continue }
     $a = ''
     if ($attr -and $f['properties'].ContainsKey($attr) -and $null -ne $f['properties'][$attr]) { $a = [string]$f['properties'][$attr] }
+    $zText = ''
+    if ($zusatz) {
+      $werte = foreach ($feld in $zusatz) { $v = $null; if ($f['properties'].ContainsKey($feld)) { $v = $f['properties'][$feld] }; Json-Text (Zusatz-Text $v) }
+      $zText = '[' + ($werte -join ',') + ']'
+    }
     $teile = @()
     switch ($g['type']) {
       'Polygon'      { $teile = @(,$g['coordinates']) }
@@ -115,10 +133,10 @@ function Wandle-Sammlung($sammlung, $attr, $mindest = 0) {
       }
       $ringe = New-Object System.Collections.Generic.List[string]
       foreach ($ring in $polygon) { if ($ring.Count -ge 3) { $ringe.Add((Ring-Text $ring)) } }
-      if ($ringe.Count -gt 0) { $flaechen.Add('[' + ($ringe -join ',') + ']'); $attribute.Add((Json-Text $a)) }
+      if ($ringe.Count -gt 0) { $flaechen.Add('[' + ($ringe -join ',') + ']'); $attribute.Add((Json-Text $a)); if ($zusatz) { $zusaetze.Add($zText) } }
     }
   }
-  return @{ Flaechen = $flaechen; Punkte = $punkte; Attribute = $attribute }
+  return @{ Flaechen = $flaechen; Punkte = $punkte; Attribute = $attribute; Zusaetze = $zusaetze }
 }
 
 $gruppen = New-Object System.Collections.Generic.List[string]
@@ -130,11 +148,13 @@ foreach ($q in $quellen) {
   if ($q.Offset -ne '0') { $url += '&maxAllowableOffset=' + $q.Offset }
   $sammlung = Hole-Json $url
   if ($sammlung.ContainsKey('exceededTransferLimit') -and $sammlung['exceededTransferLimit']) { throw "$($q.Id): mehr als 2000 Objekte, bitte das Programm anpassen." }
-  $w = Wandle-Sammlung $sammlung $q.Attr $q.Mindest
+  $w = Wandle-Sammlung $sammlung $q.Attr $q.Mindest $q.Zusatz
   if ($w.Punkte.Count -gt 0) {
     $eintrag = '"' + $q.Id + '":{"p":[' + ($w.Punkte -join ',') + '],"a":[' + ($w.Attribute -join ',') + ']}'
   } else {
-    $eintrag = '"' + $q.Id + '":{"f":[' + ($w.Flaechen -join ',') + '],"a":[' + ($w.Attribute -join ',') + ']}'
+    $eintrag = '"' + $q.Id + '":{"f":[' + ($w.Flaechen -join ',') + '],"a":[' + ($w.Attribute -join ',') + ']'
+    if ($q.Zusatz) { $eintrag += ',"z":[' + ($w.Zusaetze -join ',') + ']' }
+    $eintrag += '}'
   }
   if ($q.Id -like 'laerm*') { $gruppenLaerm.Add($eintrag) } else { $gruppen.Add($eintrag) }
   Write-Host ("  {0} Flaechen, {1} Punkte" -f $w.Flaechen.Count, $w.Punkte.Count)

@@ -1267,7 +1267,7 @@
             <li><strong>Seitenleiste einklappen:</strong> Der kleine Knopf mit dem Pfeil am linken Kartenrand blendet die Seitenleiste aus, dann nimmt die Karte die ganze Breite ein. Ein Klick auf den Knopf (der Pfeil zeigt dann nach rechts) holt sie zurück. Das geht genauso in der 3D-Ansicht.</li>
             <li><strong>Projekt sichern:</strong> Mit „Projekt speichern“ (ganz oben) legst du alles in einer Datei ab: Adresse, Karte, Ebenen, Plan, Zeichnung und Einstellungen. „Projekt öffnen“ holt es wieder. Zusätzlich sichert die App laufend im Browser und fragt beim nächsten Start, ob sie den letzten Stand wiederherstellen soll. Für Weitergeben und Aufheben ist die Projektdatei der sichere Weg.</li>
             <li><strong>Legende:</strong> Unter der Kartenauswahl oben rechts lässt sich mit „Legende“ eine Liste aufklappen. Sie erklärt Farben und Zeichen aller eingeschalteten Ebenen, genau wie im gespeicherten Bild.</li>
-            <li><strong>Punkte anklicken:</strong> Ein Klick auf eine Haltestelle zeigt Name, Linien und Abfahrten, ein Klick auf eine Einrichtung (Läden, Schulen, Ärzte, Freizeit) Name und Art, zum Beispiel „Bäckerei“ oder „Kita“. Das geht in der Karte und in der 3D-Ansicht, solange kein Zeichen- oder Messwerkzeug aktiv ist.</li>
+            <li><strong>Punkte anklicken:</strong> Ein Klick auf eine Haltestelle zeigt Name, Linien und Abfahrten, ein Klick auf eine Einrichtung (Läden, Schulen, Ärzte, Freizeit) Name und Art, zum Beispiel „Bäckerei“ oder „Kita“. Das geht in der Karte und in der 3D-Ansicht, solange kein Zeichen- oder Messwerkzeug aktiv ist. Bei eingeschalteten Bebauungsplänen (Oldenburg, Osnabrück) zeigt ein Klick in die Fläche Plannummer, Name und Datum, dazu einen Link zum Planportal der Stadt (dort die Plannummer suchen).</li>
             <li>Mit Esc brichst du das Zeichnen und das Einpassen ab.</li>
             <li>Die Quellenangabe (OpenStreetMap) ist Pflicht. Lass sie nur weg, wenn du sie anders nennst.</li>
             <li>Die Daten (Gebäude, Haltestellen, Einrichtungen …) sind ein Stand vom Tag des Herunterladens. Erneuern: Ordner „Datenpflege“, Datei LIESMICH.txt.</li>
@@ -2530,7 +2530,7 @@
       { quelle: "nutzung", id: "gemeinbedarf", name: "Gemeinbedarf und Bildung",    farbe: "#00a79d", legende: "Schulen, Kliniken, Kirchen, Behörden", deckkraft: 0.4 },
       // Offene Daten der Stadt Oldenburg: Planung und Naturschutz, Stadtbezirke, ganz unten der Lärm (nach dB-Klassen gefärbt).
       // Spätere Gruppen liegen unter früheren, so bleiben Umrisse und Beschriftungen über dem Lärm lesbar.
-      { quelle: "stadt", id: "bplan", name: "Bebauungspläne", legende: "Bebauungspläne (rechtsverbindlich)", farbe: "#5b6c8f", deckkraft: 0.18, kontur: 1.4, stadt: true },
+      { quelle: "stadt", id: "bplan", name: "Bebauungspläne", legende: "Bebauungspläne (rechtsverbindlich)", farbe: "#5b6c8f", deckkraft: 0.18, kontur: 1.4, stadt: true, klick: true },
       { quelle: "stadt", id: "nsg", name: "Naturschutzgebiete", legende: "Naturschutzgebiete", farbe: "#00796b", deckkraft: 0.3, kontur: 1.2, stadt: true },
       { quelle: "stadt", id: "lsg", name: "Landschaftsschutzgebiete", legende: "Landschaftsschutzgebiete", farbe: "#7cb342", deckkraft: 0.25, kontur: 1.2, stadt: true },
       { quelle: "stadt", id: "biotope", name: "Geschützte Biotope", legende: "Geschützte Biotope", farbe: "#9e9d24", deckkraft: 0.5, stadt: true },
@@ -2582,6 +2582,62 @@
     }
     function sichtbareFlaechen() { return FLAECHEN.filter(function (g) { return karte.hasLayer(g.ebene); }); }
     function istFlaechenEbene(ebene) { return FLAECHEN.some(function (g) { return g.ebene === ebene; }); }
+
+    // Klick auf einen Bebauungsplan: Fenster mit Nummer, Name, Datum und Link zum Planportal der Stadt.
+    // Die Flächen selbst sind nicht anklickbar (so ändert sich an Reihenfolge und Darstellung nichts); stattdessen sucht der Klick
+    // auf die Karte die Pläne, die den angeklickten Punkt enthalten (die Gruppe merkt sich ihre Flächen in "klickEintraege").
+    function punktInFlaeche(f, lat, lng) {
+      if (lat < f.s || lat > f.n || lng < f.w || lng > f.o) { return false; }
+      var innen = false;
+      f.ringe.forEach(function (ring) {
+        var m = ring.length / 2;
+        for (var i = 0, j = m - 1; i < m; j = i++) {
+          var yi = ring[2 * i], xi = ring[2 * i + 1], yj = ring[2 * j], xj = ring[2 * j + 1];
+          if (((yi > lat) !== (yj > lat)) && (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi)) { innen = !innen; }
+        }
+      });
+      return innen;
+    }
+    function bplanPopup(treffer) {
+      var d = document.createElement("div");
+      d.style.maxWidth = "270px";
+      treffer.forEach(function (f, i) {
+        var z = f.z || [];   // [Nummer, Name, rechtsverbindlich seit, BauNVO, Hinweis]
+        var kopf = document.createElement("div");
+        if (i > 0) { kopf.style.marginTop = "10px"; kopf.style.paddingTop = "8px"; kopf.style.borderTop = "1px solid #ccc"; }
+        d.appendChild(kopf);
+        popupZeile(kopf, "Bebauungsplan " + (z[0] || f.a || ""), true);
+        if (z[1]) { popupZeile(kopf, z[1]).style.marginTop = "2px"; }
+        if (z[2]) { popupZeile(kopf, "Rechtsverbindlich seit " + z[2]).style.marginTop = "4px"; }
+        if (z[3]) { popupZeile(kopf, "Baunutzungsverordnung von " + z[3]); }
+        if (z[4]) { popupZeile(kopf, "Planart: " + z[4]); }
+      });
+      var info = STADT.bplanLink;
+      var fuss = document.createElement("div"); fuss.style.marginTop = "10px";
+      if (info && info.url) {
+        var a = document.createElement("a");
+        a.href = info.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+        a.textContent = info.text + " ↗";
+        fuss.appendChild(a);
+        var hinweis = document.createElement("div"); hinweis.style.cssText = "color:#666;font-size:11px;margin-top:3px";
+        hinweis.textContent = treffer.length > 1 ? "Dort die Plannummern suchen." : "Dort die Plannummer suchen" + (treffer[0].z && treffer[0].z[0] ? " (" + treffer[0].z[0] + ")." : ".");
+        fuss.appendChild(hinweis);
+      }
+      d.appendChild(fuss);
+      return d;
+    }
+    karte.on("click", function (ereignis) {
+      var ort = ereignis.latlng;
+      var gruppen = FLAECHEN.filter(function (g) { return g.klick && g.klickEintraege && karte.hasLayer(g.ebene); });
+      if (!gruppen.length || !popupErlaubt()) { return; }
+      var treffer = [];
+      gruppen.forEach(function (g) { g.klickEintraege.forEach(function (f) { if (punktInFlaeche(f, ort.lat, ort.lng)) { treffer.push(f); } }); });
+      if (!treffer.length) { return; }
+      setTimeout(function () {
+        if (karte._popup && karte.hasLayer(karte._popup)) { return; }      // ein anderes Fenster (Haltestelle, Grundstück …) ist schon offen
+        L.popup({ maxWidth: 290, autoPanPadding: [20, 20] }).setLatLng(ort).setContent(bplanPopup(treffer.slice(0, 5))).openOn(karte);
+      }, 0);
+    });
 
     // Im Kästchen oben rechts steht nur "Bebauung". Fußweg, Sonnenstand, ÖPNV, Einrichtungen und Flächen werden links in der
     // Seitenleiste (Abschnitt "Analysedaten") geschaltet.
@@ -5070,6 +5126,7 @@
           gruppe.ebene.clearLayers();
           var token = gruppe.zeichenNr = (gruppe.zeichenNr || 0) + 1;
           var eintraege = daten[gruppe.id];
+          if (gruppe.klick) { gruppe.klickEintraege = eintraege; }   // für das Klickfenster (Bebauungspläne)
 
           function ringeVon(f) {
             return f.ringe.map(function (ring) {
