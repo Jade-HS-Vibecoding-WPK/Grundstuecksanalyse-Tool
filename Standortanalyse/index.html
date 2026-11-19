@@ -7777,28 +7777,83 @@
 
       c.font = schrift + "px Segoe UI, Arial, sans-serif";
       eintraege.forEach(function (e, i) {
-        var my = oben + rand + zeile * (i + 1) + zeile / 2;
-        var mx = links + rand;
-        if (e.art === "punkt") {
-          c.beginPath(); c.arc(mx + muster / 2, my, 1.7 * pxProMm, 0, 2 * Math.PI);
-          c.fillStyle = e.farbe; c.fill();
-          c.lineWidth = 0.6 * pxProMm; c.strokeStyle = e.rand || "#fff"; c.stroke();
-        } else if (e.art === "linie") {
-          c.strokeStyle = e.farbe; c.lineWidth = 0.8 * pxProMm;
-          if (e.strich) { c.setLineDash(e.strich.map(function (v) { return v * pxProMm; })); }   // gestrichelt, Maße in mm
-          c.beginPath(); c.moveTo(mx, my); c.lineTo(mx + muster, my); c.stroke();
-          c.setLineDash([]);
-        } else {
-          if (e.deckkraft) { c.globalAlpha = e.deckkraft; }   // durchscheinende Flächen auch in der Legende durchscheinend
-          c.fillStyle = e.farbe; c.fillRect(mx, my - 1.7 * pxProMm, muster, 3.4 * pxProMm);
-          c.globalAlpha = 1;
-          if (e.rand) { c.strokeStyle = e.rand; c.lineWidth = 0.3 * pxProMm; c.strokeRect(mx, my - 1.7 * pxProMm, muster, 3.4 * pxProMm); }
-        }
-        c.fillStyle = "#222";
-        c.fillText(e.text, mx + muster + abstand, my);
+        zeichneLegendenEintrag(c, e, links + rand, oben + rand + zeile * (i + 1) + zeile / 2, pxProMm, 1, muster, abstand);
       });
       c.restore();
       return hoehe;
+    }
+
+    // Ein Legendeneintrag (Muster und Text); (mx, my) = linker Rand und Mitte der Zeile, mass = Vergrößerung (1 = normal)
+    function zeichneLegendenEintrag(c, e, mx, my, pxProMm, mass, muster, abstand) {
+      var m = pxProMm * mass;
+      if (e.art === "punkt") {
+        c.beginPath(); c.arc(mx + muster / 2, my, 1.7 * m, 0, 2 * Math.PI);
+        c.fillStyle = e.farbe; c.fill();
+        c.lineWidth = 0.6 * m; c.strokeStyle = e.rand || "#fff"; c.stroke();
+      } else if (e.art === "linie") {
+        c.strokeStyle = e.farbe; c.lineWidth = 0.8 * m;
+        if (e.strich) { c.setLineDash(e.strich.map(function (v) { return v * m; })); }   // gestrichelt, Maße in mm
+        c.beginPath(); c.moveTo(mx, my); c.lineTo(mx + muster, my); c.stroke();
+        c.setLineDash([]);
+      } else {
+        if (e.deckkraft) { c.globalAlpha = e.deckkraft; }   // durchscheinende Flächen auch in der Legende durchscheinend
+        c.fillStyle = e.farbe; c.fillRect(mx, my - 1.7 * m, muster, 3.4 * m);
+        c.globalAlpha = 1;
+        if (e.rand) { c.strokeStyle = e.rand; c.lineWidth = 0.3 * m; c.strokeRect(mx, my - 1.7 * m, muster, 3.4 * m); }
+      }
+      c.fillStyle = "#222";
+      c.fillText(e.text, mx + muster + abstand, my);
+    }
+
+    // Legende allein auf einer Seite (für das PDF): weißer Grund in Papiergröße, Titel oben, Einträge in Spalten.
+    // Die Schrift wird so groß gewählt, wie es auf die Seite passt.
+    function zeichneLegendenSeite(eintraege, e, dpi) {
+      var pxProMm = dpi / 25.4;
+      var B = Math.round(e.breiteMm * pxProMm), H = Math.round(e.hoeheMm * pxProMm);
+      var leinwand = document.createElement("canvas");
+      leinwand.width = B; leinwand.height = H;
+      var c = leinwand.getContext("2d");
+      c.fillStyle = "#ffffff"; c.fillRect(0, 0, B, H);
+
+      var rand = Math.max(10, Math.min(20, e.breiteMm / 20));              // Seitenrand in mm
+      var sc = Math.min(3.6, Math.max(1, e.breiteMm / 297) * 1.3);         // größte Vergrößerung zum Probieren
+      var kopfH = 0, gut = null;
+      for (; sc >= 0.5; sc -= 0.1) {
+        var schrift = 3 * sc, zeile = 5 * sc, muster = 7 * sc, abstand = 2.4 * sc, luecke = 8 * sc;
+        c.font = schrift * pxProMm + "px Segoe UI, Arial, sans-serif";
+        var tb = 0;
+        eintraege.forEach(function (x) { tb = Math.max(tb, c.measureText(x.text).width / pxProMm); });
+        var spalte = muster + abstand + tb + luecke;                        // Breite einer Spalte in mm
+        var verfuegbarB = e.breiteMm - 2 * rand;
+        var spalten = Math.max(1, Math.floor((verfuegbarB + luecke) / spalte));
+        var zeilen = Math.ceil(eintraege.length / spalten);
+        kopfH = 14 * sc;
+        if (kopfH + zeilen * zeile <= e.hoeheMm - 2 * rand || sc <= 0.55) {
+          gut = { sc: sc, schrift: schrift, zeile: zeile, muster: muster, abstand: abstand, spalte: spalte, spalten: spalten, zeilen: zeilen };
+          break;
+        }
+      }
+      if (!gut) { return leinwand; }
+
+      c.textBaseline = "middle";
+      c.fillStyle = "#222";
+      c.font = "bold " + (gut.schrift * 1.8) * pxProMm + "px Segoe UI, Arial, sans-serif";
+      c.fillText("Legende", rand * pxProMm, (rand + gut.schrift * 1.2) * pxProMm);
+      c.font = gut.schrift * pxProMm + "px Segoe UI, Arial, sans-serif";
+      c.fillStyle = "#555";
+      var untertitel = (e.titel ? e.titel + "   ·   " : "") + "Maßstab 1 : " + e.massstab.toLocaleString("de-DE") + "   ·   " + e.papier + " " + (e.quer ? "quer" : "hoch");
+      c.fillText(untertitel, rand * pxProMm, (rand + gut.schrift * 3.2) * pxProMm);
+      c.strokeStyle = "rgba(0,0,0,0.35)"; c.lineWidth = 0.2 * pxProMm;
+      c.beginPath(); c.moveTo(rand * pxProMm, (rand + gut.schrift * 4.3) * pxProMm); c.lineTo((e.breiteMm - rand) * pxProMm, (rand + gut.schrift * 4.3) * pxProMm); c.stroke();
+
+      c.font = gut.schrift * pxProMm + "px Segoe UI, Arial, sans-serif";
+      eintraege.forEach(function (x, i) {
+        var sp = Math.floor(i / gut.zeilen), zl = i % gut.zeilen;
+        var mx = (rand + sp * gut.spalte) * pxProMm;
+        var my = (rand + kopfH + zl * gut.zeile + gut.zeile / 2) * pxProMm;
+        zeichneLegendenEintrag(c, x, mx, my, pxProMm, gut.sc, gut.muster * pxProMm, gut.abstand * pxProMm);
+      });
+      return leinwand;
     }
 
     // Legendeneinträge für die Karte auf dem Bildschirm, nach den gerade eingeschalteten Ebenen (Gegenstück zum Export)
@@ -8213,6 +8268,7 @@
 
         // unten rechts von unten nach oben: Quellenangabe, darüber die Legende
         var untenSlot = plan.H - 6 * pxProMm - fotoM.h;
+        var legendeFuerSeite = null;
         if (zeige.quelle) {
           var urheber = quelle.urheber + (gebaeude ? "  ·  Gebäude: © OpenStreetMap-Mitwirkende" : "") +
                         (hoehenImBild ? "  ·  " + HOEHEN_QUELLE_TEXT.replace("&copy;", "©") : "") +
@@ -8239,7 +8295,8 @@
         }
         if (zeige.legende) {
           var eintraege = legendenEintraege({ markerImBild: markerImBild, fotoBild: fotoBild, gebaeude: !!gebaeude, hoehenImBild: hoehenImBild, versorgungImBild: versorgungImBild, mischungImBild: mischungImBild, dl: dlImBild ? dlBild : null, zensus: zensusImBild ? zensusBild : null, bildKreise: bildKreise, kreiseImBild: kreiseImBild, bildWegenetz: bildWegenetz, oepnvImBild: oepnvImBild, baeumeImBild: baeumeImBild, sonnenImBild: sonnenImBild, sichtImBild: sichtImBild, starkregenImBild: starkregenImBild, starkregenBilder: starkregenBilder, bildEinrichtungen: bildEinrichtungen, bildMobilitaet: bildMobilitaet, bildSpiel: bildSpiel, luftImBild: luftImBild, grundG: grundG, taktImBild: taktImBild, bildFlaechen: bildFlaechen, bildSonne: bildSonne, zeichnungDa: zeichnungDa, vektor: !!quelle.vektor, live: false });
-          zeichneLegende(c, eintraege, plan.B - 6 * pxProMm, untenSlot, pxProMm);
+          if (e.legendeSeparat) { legendeFuerSeite = eintraege; }   // PDF: Legende kommt auf eine eigene Seite, nicht ins Kartenbild
+          else { zeichneLegende(c, eintraege, plan.B - 6 * pxProMm, untenSlot, pxProMm); }
         }
 
         if (zeige.balken) { zeichneMassstabsbalken(c, plan, pxProMm, fotoM.h); }
@@ -8250,7 +8307,7 @@
         c.lineWidth = 0.3 * pxProMm;
         c.strokeRect(0, 0, plan.B, plan.H);
 
-        return { leinwand: leinwand, fehlend: fehlend, von: liste.length,
+        return { leinwand: leinwand, legendeEintraege: legendeFuerSeite, fehlend: fehlend, von: liste.length,
                  mitGebaeuden: !!gebaeude, gebaeudeFehler: gebaeudeFehler, oepnvFehler: oepnvFehler,
                  einrichtungenFehler: einrichtungenFehler, flaechenFehler: flaechenFehler, wegenetzFehler: wegenetzFehler, starkregenFehler: starkregenFehler, mobilitaetFehler: mobilitaetFehler, grundFehler: grundFehler };
       });
@@ -8793,6 +8850,11 @@
 
     // Setzt die PDF-Datei zusammen (eine Seite, ein Bild)
     function baueEinseitigesPdf(bild, B, H, breitePt, hoehePt, titel) {
+      return baueMehrseitigesPdf([{ bild: bild, B: B, H: H }], breitePt, hoehePt, titel);
+    }
+
+    // Setzt das PDF aus mehreren Seiten zusammen (jede Seite ein Bild, alle in der gleichen Papiergröße)
+    function baueMehrseitigesPdf(seiten, breitePt, hoehePt, titel) {
       var kodierer = new TextEncoder();
       var teile = [], laenge = 0, versatz = [];
       function schreibe(x) {
@@ -8806,36 +8868,51 @@
       schreibe(new Uint8Array([0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));   // Kennzeichen für Binärdaten
 
       objekt(1, function () { schreibe("<< /Type /Catalog /Pages 2 0 R >>\n"); });
-      objekt(2, function () { schreibe("<< /Type /Pages /Kids [3 0 R] /Count 1 >>\n"); });
-      objekt(3, function () {
-        schreibe("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + zahl(breitePt) + " " + zahl(hoehePt) + "] " +
-          "/Resources << /XObject << /Im0 5 0 R >> /ProcSet [/PDF /ImageC] >> /Contents 4 0 R >>\n");
-      });
-      var seite = "q\n" + zahl(breitePt) + " 0 0 " + zahl(hoehePt) + " 0 0 cm\n/Im0 Do\nQ\n";
-      objekt(4, function () { schreibe("<< /Length " + seite.length + " >>\nstream\n" + seite + "endstream\n"); });
-      objekt(5, function () {
-        schreibe("<< /Type /XObject /Subtype /Image /Width " + B + " /Height " + H +
-          " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /" + bild.filter + " /Length " + bild.bytes.length + " >>\nstream\n");
-        schreibe(bild.bytes);
-        schreibe("\nendstream\n");
-      });
+      // Objekte: 1 Katalog, 2 Seitenliste, 3 Info, dann je Seite drei (Seite, Inhalt, Bild) ab Nummer 4
+      var kinder = seiten.map(function (s, i) { return (4 + 3 * i) + " 0 R"; }).join(" ");
+      objekt(2, function () { schreibe("<< /Type /Pages /Kids [" + kinder + "] /Count " + seiten.length + " >>\n"); });
       var asciiTitel = titel.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/Ä/g, "Ae")
         .replace(/Ö/g, "Oe").replace(/Ü/g, "Ue").replace(/ß/g, "ss").replace(/[^\x20-\x7E]/g, "?").replace(/[()\\]/g, "");
       var asciiProd = STADT.name.replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").replace(/[^\x20-\x7E]/g, "?");
-      objekt(6, function () { schreibe("<< /Title (" + asciiTitel + ") /Producer (Standortanalyse " + asciiProd + ") >>\n"); });
-
+      objekt(3, function () { schreibe("<< /Title (" + asciiTitel + ") /Producer (Standortanalyse " + asciiProd + ") >>\n"); });
+      seiten.forEach(function (s, i) {
+        var nr = 4 + 3 * i;
+        objekt(nr, function () {
+          schreibe("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + zahl(breitePt) + " " + zahl(hoehePt) + "] " +
+            "/Resources << /XObject << /Im0 " + (nr + 2) + " 0 R >> /ProcSet [/PDF /ImageC] >> /Contents " + (nr + 1) + " 0 R >>\n");
+        });
+        var seite = "q\n" + zahl(breitePt) + " 0 0 " + zahl(hoehePt) + " 0 0 cm\n/Im0 Do\nQ\n";
+        objekt(nr + 1, function () { schreibe("<< /Length " + seite.length + " >>\nstream\n" + seite + "endstream\n"); });
+        objekt(nr + 2, function () {
+          schreibe("<< /Type /XObject /Subtype /Image /Width " + s.B + " /Height " + s.H +
+            " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /" + s.bild.filter + " /Length " + s.bild.bytes.length + " >>\nstream\n");
+          schreibe(s.bild.bytes);
+          schreibe("\nendstream\n");
+        });
+      });
+      var anzahl = 3 + 3 * seiten.length;   // Anzahl der Objekte ohne das leere Objekt 0
       var xrefStart = laenge;
-      var tabelle = "xref\n0 7\n0000000000 65535 f \n";
-      for (var n = 1; n <= 6; n++) { tabelle += ("0000000000" + versatz[n]).slice(-10) + " 00000 n \n"; }
+      var tabelle = "xref\n0 " + (anzahl + 1) + "\n0000000000 65535 f \n";
+      for (var n = 1; n <= anzahl; n++) { tabelle += ("0000000000" + versatz[n]).slice(-10) + " 00000 n \n"; }
       schreibe(tabelle);
-      schreibe("trailer\n<< /Size 7 /Root 1 0 R /Info 6 0 R >>\nstartxref\n" + xrefStart + "\n%%EOF\n");
+      schreibe("trailer\n<< /Size " + (anzahl + 1) + " /Root 1 0 R /Info 3 0 R >>\nstartxref\n" + xrefStart + "\n%%EOF\n");
       return new Blob(teile, { type: "application/pdf" });
     }
 
-    function erzeugePdf(leinwand, e) {
+    // Das PDF: Seite 1 = Kartenbild; mit legendeEintraege folgt eine zweite Seite nur mit der Legende (gleiche Papiergröße)
+    function erzeugePdf(leinwand, e, legendeEintraege) {
       var breitePt = e.breiteMm * 72 / 25.4, hoehePt = e.hoeheMm * 72 / 25.4;   // 1 Punkt = 1/72 Zoll
+      var seiten = [];
       return bildDatenFuerPdf(leinwand).then(function (bild) {
-        return baueEinseitigesPdf(bild, leinwand.width, leinwand.height, breitePt, hoehePt, e.titel || "Standortanalyse");
+        seiten.push({ bild: bild, B: leinwand.width, H: leinwand.height });
+        if (!legendeEintraege || !legendeEintraege.length) { return null; }
+        var seite = zeichneLegendenSeite(legendeEintraege, e, Math.min(e.dpi, 150));
+        return bildDatenFuerPdf(seite).then(function (b2) {
+          seiten.push({ bild: b2, B: seite.width, H: seite.height });
+          seite.width = 0;
+        });
+      }).then(function () {
+        return baueMehrseitigesPdf(seiten, breitePt, hoehePt, e.titel || "Standortanalyse");
       });
     }
 
@@ -8861,6 +8938,7 @@
 
       exportKnopf.disabled = true;
       var istPdf = e.format === "pdf";
+      e.legendeSeparat = istPdf && !!e.zeige.legende;   // im PDF steht die Legende auf einer eigenen Seite hinter dem Bild
       zeigeExportMeldung(ohneKacheln(quelle) ? "Bild wird gezeichnet …" :
         (karte.hasLayer(bebauungEbene) ? "Kacheln und Gebäude werden geladen …" : "Kacheln werden geladen …"));
 
@@ -8868,7 +8946,7 @@
         zeigeExportMeldung("Kacheln werden geladen (" + fertig + " von " + gesamt + ") …");
       }).then(function (ergebnis) {
         zeigeExportMeldung(istPdf ? "PDF wird erstellt …" : "Bild wird gespeichert …");
-        return (istPdf ? erzeugePdf(ergebnis.leinwand, e) : erzeugePng(ergebnis.leinwand, e))
+        return (istPdf ? erzeugePdf(ergebnis.leinwand, e, ergebnis.legendeEintraege) : erzeugePng(ergebnis.leinwand, e))
           .then(function (blob) { return { blob: blob, ergebnis: ergebnis }; });
       }).then(function (x) {
         var dateiname = "standortanalyse_1-" + e.massstab + "_" + e.papier + "-" + (e.quer ? "quer" : "hoch") + (istPdf ? ".pdf" : ".png");
