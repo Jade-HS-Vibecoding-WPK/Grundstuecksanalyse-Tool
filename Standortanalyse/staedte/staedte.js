@@ -54,7 +54,7 @@ var STAEDTE = {
     ortszusatz: "Hannover",
     haltestellenVorsatz: /^Hannover\s*/,
     stadtGruppen: ["nsg", "lsg", "naturdenkmale", "bezirke"],   // welche Gruppen stadt.js hat (Bebauungspläne und Lärm fehlen)
-    stadtQuelle: "Schutzgebiete und Naturdenkmale: NLWKN Niedersachsen; Stadtbezirke: © OpenStreetMap-Mitwirkende",
+    stadtQuelle: "Schutzgebiete und Naturdenkmale: © NLWKN Niedersachsen, dl-de/by-2-0; Stadtbezirke: © OpenStreetMap-Mitwirkende",
     fnpQuelle: "Flächennutzungsplan: Landeshauptstadt Hannover (Landesportal PlanDigital Niedersachsen), Datenlizenz Deutschland – Zero 2.0",
     bezirkWort: "Stadtbezirk",
     hat: { stadt: true, fnp: true, bodenrichtwerte: true, luft: true }
@@ -75,7 +75,7 @@ var STAEDTE = {
     stadtGruppen: ["bplan", "nsg", "lsg", "biotope", "naturdenkmale", "bezirke"],   // welche Gruppen stadt.js hat (ohne Angabe: alle)
     ortszusatz: "Osnabrück",
     haltestellenVorsatz: /^Osnabrück\s*/,
-    stadtQuelle: "Stadt Osnabrück, Fachdienst Geodaten, dl-de/by-2-0; Naturschutzgebiete: NLWKN Niedersachsen",
+    stadtQuelle: "Stadt Osnabrück, Fachdienst Geodaten, dl-de/by-2-0; Naturschutzgebiete: © NLWKN Niedersachsen, dl-de/by-2-0",
     fnpQuelle: "Flächennutzungsplan: Stadt Osnabrück (Landesportal PlanDigital Niedersachsen), Datenlizenz Deutschland – Zero 2.0",
     bezirkWort: "Stadtteil",
     hat: { stadt: true, fnp: true, bodenrichtwerte: true, luft: true }
@@ -97,7 +97,7 @@ var STAEDTE = {
     ortszusatz: "Braunschweig",
     haltestellenVorsatz: /^Braunschweig\s*/,
     stadtGruppen: ["nsg", "lsg", "naturdenkmale", "bezirke"],   // welche Gruppen stadt.js hat (Bebauungspläne und Lärm fehlen)
-    stadtQuelle: "Schutzgebiete und Naturdenkmale: NLWKN Niedersachsen; Stadtbezirke: © OpenStreetMap-Mitwirkende",
+    stadtQuelle: "Schutzgebiete und Naturdenkmale: © NLWKN Niedersachsen, dl-de/by-2-0; Stadtbezirke: © OpenStreetMap-Mitwirkende",
     fnpQuelle: "Flächennutzungsplan: Stadt Braunschweig (Landesportal PlanDigital Niedersachsen), Datenlizenz Deutschland – Zero 2.0",
     bezirkWort: "Stadtbezirk",
     hat: { stadt: true, fnp: true, bodenrichtwerte: true, luft: true }

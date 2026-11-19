@@ -2177,7 +2177,8 @@
     // wie der Starkregen. Jeder Dienst ("PkgId") enthält viele Karten, "layer" ist der Name der Karte darin. Der Dienst schickt für
     // Bildausschnitte außerhalb seines Maßstabsbereichs ein leeres Bild (Versiegelung: ab Zoom 15, Altablagerungen: nur Zoom 12 und 13).
     var NIBIS_WMS = "https://nibis.lbeg.de/net3/public/ogc.ashx";
-    var NIBIS_QUELLE_TEXT = "Boden, Geologie, Grundwasser: © LBEG (NIBIS-Kartenserver)";
+    // Quellenvermerk nach den Nutzungsbedingungen des LBEG: "NIBIS® Kartenserver: Thema der Karte – Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover"
+    var NIBIS_QUELLE_TEXT = "Boden, Geologie, Grundwasser: NIBIS® Kartenserver, © Landesamt für Bergbau, Energie und Geologie (LBEG), Hannover";
     karte.createPane("untergrundPane");
     karte.getPane("untergrundPane").style.zIndex = 250;
     // Kachelgröße: Der Dienst braucht je Anfrage eine feste Zeit. Gemessen (gleiche Fläche): 1024 Bildpunkte sind am schnellsten,
@@ -2190,7 +2191,7 @@
                   legendeUrl: NIBIS_WMS + "?PkgId=" + pkg + "&Service=WMS&Request=GetLegendGraphic&Version=1.3.0&Format=image/png&Layer=" + d[2] };
         g.ebene = L.tileLayer.wms(g.wms, {
           layers: g.layer, format: "image/png", transparent: true, version: "1.3.0", opacity: g.deckkraft,
-          pane: "untergrundPane", attribution: "© LBEG (NIBIS-Kartenserver)", maxZoom: 20,
+          pane: "untergrundPane", attribution: "NIBIS® Kartenserver, © LBEG", maxZoom: 20,
           tileSize: 1024, zoomOffset: -2, updateWhenIdle: true, updateWhenZooming: false, keepBuffer: 1
         });
         return g;

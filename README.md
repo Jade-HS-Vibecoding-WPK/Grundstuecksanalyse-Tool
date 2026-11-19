@@ -36,13 +36,13 @@ Alle Datenquellen werden in der App und im gespeicherten Bild automatisch genann
 | LGLN / Gutachterausschuss (BORIS) | Bodenrichtwerte | Datenlizenz Deutschland – Namensnennung 2.0 |
 | Stadt Oldenburg, Stadt Osnabrück (Open Data) | Lärm, Bebauungspläne, Schutzgebiete, Stadtbezirke | Datenlizenz Deutschland – Namensnennung 2.0 |
 | PlanDigital Niedersachsen | Flächennutzungspläne | Datenlizenz Deutschland – Zero 2.0 |
-| NLWKN | Schutzgebiete (Hannover, Osnabrück, Braunschweig) | nur Quellenangabe "© NLWKN", keine ausdrückliche Lizenz, vor einer Veröffentlichung klären |
-| LBEG (NIBIS-Kartenserver) | Boden, Geologie, Grundwasser, Versiegelung (Online-Karten) | Nutzungsbedingungen nicht geprüft, der Dienst nennt "keine Gebühren" |
+| NLWKN | Schutzgebiete (Hannover, Osnabrück, Braunschweig) | Datenlizenz Deutschland – Namensnennung 2.0 (laut NLWKN-Open-Data-Seite und Metadaten der Naturschutzgebiete; für Landschaftsschutzgebiete und Naturdenkmale keine eigene Angabe gefunden) |
+| LBEG (NIBIS-Kartenserver) | Boden, Geologie, Grundwasser, Versiegelung (Online-Karten) | Eigene Nutzungsbedingungen des LBEG: kostenfrei, einfaches nicht übertragbares Nutzungsrecht, Quellenvermerk Pflicht; **für eine kommerzielle Veröffentlichung der Karten ist eine Genehmigung nötig** |
 | BKG | Hinweiskarte Starkregen (Online-Karte) | Datenlizenz Deutschland – Namensnennung 2.0 |
 | Statistische Ämter des Bundes und der Länder | Zensus 2022 | Datenlizenz Deutschland – Namensnennung 2.0 |
 | Bundesnetzagentur | Ladesäulenregister | CC BY 4.0 |
-| gtfs.de / DELFI e. V. | Fahrplan (Takt der Haltestellen) | CC BY 4.0 (laut gtfs.de) |
-| Umweltbundesamt | Luftmessstationen | Quellenangabe in der App, Lizenz nicht abschließend geprüft |
+| gtfs.de / DELFI e. V. | Fahrplan (Takt der Haltestellen) | CC BY 4.0 (laut Katalogeintrag von gtfs.de, Namensnennung "gtfs.de") |
+| Umweltbundesamt | Luftmessstationen | Datenlizenz Deutschland – Namensnennung 2.0 (laut GDI-DE-Metadaten), Quellenangabe "Umweltbundesamt mit Daten der Messnetze der Länder und des Bundes" |
 
 Bibliotheken: [Leaflet](https://leafletjs.com) (BSD-2-Clause), [pdf.js](https://mozilla.github.io/pdf.js/) (Apache 2.0), [three.js](https://threejs.org) (MIT).
 
