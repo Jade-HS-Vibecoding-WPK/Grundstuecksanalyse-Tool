@@ -265,7 +265,7 @@
     '    <summary><span class="nr">02</span> Bewegen</summary>',
     '    <div class="inhalt">',
     '      <div class="gruppentitel">Mit der Maus</div>',
-    '      <p class="hinweis" style="margin-top:0">Ziehen = drehen. Rechtsklick ziehen (oder Umschalt + ziehen) = verschieben. Mausrad = zoomen.</p>',
+    '      <p class="hinweis" style="margin-top:0">Ziehen = drehen. Rechtsklick ziehen (oder Umschalt + ziehen) = verschieben. Mausrad = zoomen.<br>Auf dem Handy: ein Finger ziehen = drehen, zwei Finger auseinander oder zusammen = zoomen, zwei Finger gemeinsam ziehen = verschieben.</p>',
     '      <div class="gruppentitel" style="margin-top:12px">Ansicht wählen</div>',
     '      <div class="knopfreihe"><button type="button" id="a3dDraufsicht" class="zweit">Von oben</button><button type="button" id="a3dSued" class="zweit">Von Süden</button></div>',
     '      <div class="knopfreihe" style="margin-top:6px"><button type="button" id="a3dSchraeg" class="zweit">Schräg (Start)</button></div>',
@@ -429,7 +429,7 @@
     '      <h3>So gehst du vor</h3>',
     '      <ol>',
     '        <li><strong>Sonne</strong> (01): Datum wählen (oder einen der Knöpfe) und die Uhrzeit mit dem Regler einstellen. Der Schatten wandert mit. „Tag abspielen“ lässt die Sonne von morgens bis abends laufen.</li>',
-    '        <li><strong>Bewegen</strong> (02): Ziehen dreht das Modell, Rechtsklick ziehen (oder Umschalt + ziehen) verschiebt es, das Mausrad zoomt. „Von oben“ zeigt den Grundriss mit Norden oben.</li>',
+    '        <li><strong>Bewegen</strong> (02): Ziehen dreht das Modell, Rechtsklick ziehen (oder Umschalt + ziehen) verschiebt es, das Mausrad zoomt. Auf dem Handy dreht ein Finger das Modell, zwei Finger zoomen (spreizen oder zusammenziehen) und verschieben (gemeinsam ziehen). „Von oben“ zeigt den Grundriss mit Norden oben.</li>',
     '        <li><strong>Modell</strong> (03): Mit „Ausschnitt“ bestimmst du, wie viel Umgebung um den roten Punkt gezeigt wird (250 m bis 5 km).</li>',
     '        <li><strong>Analysedaten</strong> (04): Haken setzen, dann liegen zum Beispiel Grünflächen, Lärm oder die Fußwege auf dem Boden, und Haltestellen und Einrichtungen stehen als Pfähle mit farbiger Kugel im Modell. Ein Klick auf eine Kugel zeigt bei Haltestellen Name, Linien und Abfahrten (ohne gewähltes Messwerkzeug). Die Schalter sind dieselben wie in der Karte.</li>',
     '        <li><strong>Sonnenstunden</strong> (05): „Sonnenstunden berechnen“ färbt Boden, Dächer und Fassaden nach den Sonnenstunden pro Tag im Jahresmittel (Gebäude, Bäume und Wälder werfen Schatten, ohne Wolken). Rot und Orange = viel Sonne, Blau = wenig. Das Ergebnis steht auch in der Karte (Ebene „Sonnenstunden“) und im gespeicherten Bild. Die Rechnung dauert einige Sekunden bis eine halbe Minute. Mit dem Werkzeug „Sonnenstunden“ in 08 liest du einen Wert ab.</li>',
@@ -2606,38 +2606,72 @@
     var modus = null, x0 = 0, y0 = 0;
     bild.addEventListener("contextmenu", function (ev) { ev.preventDefault(); });
     var startX = 0, startY = 0, startKnopf = 0;
+    // Touch (Handy, Tablet): Mehrere Finger werden verfolgt. Ein Finger dreht wie die linke Maustaste, zwei Finger zoomen
+    // (Spreizen und Zusammenziehen) und verschieben die Ansicht (beide Finger gemeinsam ziehen).
+    var finger = {}, fingerZahl = 0, zwei = null, keinKlick = false;
+    function schiebe(dx, dy) {
+      var s = z.dist * Math.tan(20 * Math.PI / 180) * 2 / Math.max(1, bild.clientHeight);
+      var rx = Math.cos(z.theta), rz = -Math.sin(z.theta);       // nach rechts
+      var vx = -Math.sin(z.theta), vz = -Math.cos(z.theta);      // von der Kamera weg
+      z.ziel.x += -rx * dx * s + vx * dy * s;
+      z.ziel.z += -rz * dx * s + vz * dy * s;
+      var grenze = z.radius;
+      z.ziel.x = Math.max(-grenze, Math.min(grenze, z.ziel.x));
+      z.ziel.z = Math.max(-grenze, Math.min(grenze, z.ziel.z));
+    }
+    function zweiFinger() {      // Abstand und Mittelpunkt der zwei Finger
+      var f = Object.keys(finger).map(function (k) { return finger[k]; });
+      return { abst: Math.max(1, Math.hypot(f[0].x - f[1].x, f[0].y - f[1].y)), mx: (f[0].x + f[1].x) / 2, my: (f[0].y + f[1].y) / 2 };
+    }
     bild.addEventListener("pointerdown", function (ev) {
+      finger[ev.pointerId] = { x: ev.clientX, y: ev.clientY }; fingerZahl = Object.keys(finger).length;
+      try { bild.setPointerCapture(ev.pointerId); } catch (x) { /* Finger schon weg: egal */ }
+      bild.classList.add("zieht");
+      if (fingerZahl === 2) {                    // zweiter Finger: zoomen und verschieben statt drehen
+        modus = "zwei"; zwei = zweiFinger(); keinKlick = true; punktInfoZu();
+        return;
+      }
+      if (fingerZahl > 2) { return; }
+      keinKlick = false;
       modus = (ev.button === 2 || ev.shiftKey || ev.button === 1) ? "schieben" : "drehen";
       x0 = ev.clientX; y0 = ev.clientY;
       startX = ev.clientX; startY = ev.clientY; startKnopf = ev.button;
-      bild.setPointerCapture(ev.pointerId);
-      bild.classList.add("zieht");
     });
     bild.addEventListener("pointermove", function (ev) {
+      if (finger[ev.pointerId]) { finger[ev.pointerId].x = ev.clientX; finger[ev.pointerId].y = ev.clientY; }
       if (!modus) { return; }
+      if (modus === "zwei") {
+        if (fingerZahl !== 2 || !zwei) { return; }
+        var neu = zweiFinger();
+        z.dist = Math.max(30, Math.min(z.radius * 6, z.dist * zwei.abst / neu.abst));     // Finger auseinander = näher heran
+        schiebe(neu.mx - zwei.mx, neu.my - zwei.my);
+        zwei = neu;
+        zeichne();
+        return;
+      }
+      if (fingerZahl > 1) { return; }
       var dx = ev.clientX - x0, dy = ev.clientY - y0;
       x0 = ev.clientX; y0 = ev.clientY;
       if (modus === "drehen") {
         z.theta -= dx * 0.006;
         z.pol = Math.max(0.0001, Math.min(Math.PI / 2 - 0.02, z.pol - dy * 0.006));
       } else {
-        var s = z.dist * Math.tan(20 * Math.PI / 180) * 2 / Math.max(1, bild.clientHeight);
-        var rx = Math.cos(z.theta), rz = -Math.sin(z.theta);       // nach rechts
-        var vx = -Math.sin(z.theta), vz = -Math.cos(z.theta);      // von der Kamera weg
-        z.ziel.x += -rx * dx * s + vx * dy * s;
-        z.ziel.z += -rz * dx * s + vz * dy * s;
-        var grenze = z.radius;
-        z.ziel.x = Math.max(-grenze, Math.min(grenze, z.ziel.x));
-        z.ziel.z = Math.max(-grenze, Math.min(grenze, z.ziel.z));
+        schiebe(dx, dy);
       }
       zeichne();
     });
-    function ende() { modus = null; bild.classList.remove("zieht"); }
+    function ende() { modus = null; zwei = null; finger = {}; fingerZahl = 0; bild.classList.remove("zieht"); }
     bild.addEventListener("pointerup", function (ev) {
+      delete finger[ev.pointerId]; fingerZahl = Object.keys(finger).length;
+      if (fingerZahl > 0) {                      // ein Finger bleibt liegen: er dreht weiter, ohne dass das Loslassen als Klick zählt
+        var rest = finger[Object.keys(finger)[0]];
+        modus = "drehen"; zwei = null; keinKlick = true; x0 = rest.x; y0 = rest.y; startKnopf = 0;
+        return;
+      }
       var war = modus;
       ende();
       // Ein Klick (kaum bewegt, linke Taste) setzt beim Messen einen Punkt
-      var klick = war === "drehen" && startKnopf === 0 && Math.hypot(ev.clientX - startX, ev.clientY - startY) < 5;
+      var klick = !keinKlick && war === "drehen" && startKnopf === 0 && Math.hypot(ev.clientX - startX, ev.clientY - startY) < 5;
       if (klick && z.werkzeug) { messKlick(ev.clientX, ev.clientY); }
       else if (klick) { punktKlick(ev.clientX, ev.clientY); }      // ohne Werkzeug: Haltestelle oder Ladestation anklicken
       else if (war) { punktInfoZu(); }
